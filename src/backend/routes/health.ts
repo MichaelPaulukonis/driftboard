@@ -11,7 +11,7 @@ router.get('/', (req: Request, res: Response) => {
   const response: ApiResponse = {
     success: true,
     data: {
-      status: 'ok',
+      status: 'healthy',
       timestamp: new Date().toISOString(),
       uptime: process.uptime(),
       version: process.env.npm_package_version || '1.0.0',
