@@ -44,7 +44,7 @@ globs: *
 - Use **Node.js v23** for best compatibility.
 - Frontend Framework: **React 18+** with **Vite** build tool.
 - Use **Conventional Commits** for commit messages.
-- Current date: July 2, 2025
+- Current date: July 8, 2025
 
 # Code Style
 
