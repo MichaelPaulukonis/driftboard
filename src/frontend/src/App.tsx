@@ -1,6 +1,7 @@
 import React from 'react';
 import { Routes, Route } from 'react-router-dom';
 import { BoardsPage } from './pages/BoardsPage';
+import { BoardDetailPage } from './pages/BoardDetailPage';
 import './App.css';
 
 function App() {
@@ -14,6 +15,7 @@ function App() {
         <Routes>
           <Route path="/" element={<BoardsPage />} />
           <Route path="/boards" element={<BoardsPage />} />
+          <Route path="/boards/:id" element={<BoardDetailPage />} />
         </Routes>
       </main>
     </div>

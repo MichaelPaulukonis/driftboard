@@ -1,8 +1,14 @@
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useGetBoardsQuery } from '../api/boardsApi';
 
 export function BoardsPage() {
+  const navigate = useNavigate();
   const { data: boards, error, isLoading } = useGetBoardsQuery();
+
+  const handleOpenBoard = (boardId: string) => {
+    navigate(`/boards/${boardId}`);
+  };
 
   if (isLoading) {
     return (
@@ -49,7 +55,10 @@ export function BoardsPage() {
                 </span>
               </div>
               <div className="mt-4">
-                <button className="w-full bg-gray-100 hover:bg-gray-200 text-gray-800 py-2 rounded font-medium transition-colors">
+                <button 
+                  onClick={() => handleOpenBoard(board.id)}
+                  className="w-full bg-gray-100 hover:bg-gray-200 text-gray-800 py-2 rounded font-medium transition-colors"
+                >
                   Open Board
                 </button>
               </div>
