@@ -12,31 +12,31 @@ DriftBoard is a personal Kanban board application designed as a self-hosted, con
 ┌─────────────────────────────────────────────────────────────────┐
 │                        Docker Host                              │
 │                                                                 │
-│  ┌─────────────────┐  ┌─────────────────┐  ┌─────────────────┐ │
-│  │   Frontend      │  │    Backend      │  │    Database     │ │
-│  │   Container     │  │   Container     │  │   Container     │ │
-│  │                 │  │                 │  │                 │ │
-│  │  React SPA      │  │  Node.js API    │  │   SQLite        │ │
-│  │  + Vite         │  │  + Express      │  │   + Backups     │ │
-│  │  + Redux        │◄─┤  + TypeScript   │◄─┤   + Volume      │ │
-│  │  + TypeScript   │  │  + Auth Middleware│  │     Mount      │ │
-│  │                 │  │                 │  │                 │ │
-│  │  Port: 3000     │  │  Port: 8000     │  │  Volume:        │ │
-│  └─────────────────┘  └─────────────────┘  │  /data/db       │ │
-│           │                     │          └─────────────────┘ │
-│           │                     │                              │
-│  ┌─────────────────┐  ┌─────────────────┐                     │
-│  │   Nginx         │  │   Firebase      │                     │
-│  │   Reverse       │  │   Auth Service  │                     │
-│  │   Proxy         │  │   (External)    │                     │
-│  │                 │  │                 │                     │
-│  │  Port: 80/443   │  │  API Calls      │                     │
-│  └─────────────────┘  └─────────────────┘                     │
-│           │                                                   │
-│           ▼                                                   │
-│  ┌─────────────────────────────────────────────────────────┐  │
-│  │              Host Network                              │  │
-│  └─────────────────────────────────────────────────────────┘  │
+│  ┌─────────────────┐  ┌─────────────────┐  ┌─────────────────┐  │
+│  │   Frontend      │  │    Backend      │  │    Database     │  │
+│  │   Container     │  │   Container     │  │   Container     │  │
+│  │                 │  │                 │  │                 │  │
+│  │  React SPA      │  │  Node.js API    │  │   SQLite        │  │
+│  │  + Vite         │  │  + Express      │  │   + Backups     │  │
+│  │  + Redux        │◄─┤  + TypeScript   │◄─┤   + Volume      │  │
+│  │  + TypeScript   │  │  + Auth         │  │     Mount       │  │
+│  │                 │  │      Middleware |  │                 │  │
+│  │  Port: 3000     │  │  Port: 8000     │  │  Volume:        │  │
+│  └─────────────────┘  └─────────────────┘  │  /data/db       │  │
+│           │                     │          └─────────────────┘  │
+│           │                     │                               │
+│  ┌─────────────────┐  ┌─────────────────┐                       │
+│  │   Nginx         │  │   Firebase      │                       │
+│  │   Reverse       │  │   Auth Service  │                       │
+│  │   Proxy         │  │   (External)    │                       │
+│  │                 │  │                 │                       │
+│  │  Port: 80/443   │  │  API Calls      │                       │
+│  └─────────────────┘  └─────────────────┘                       │
+│           │                                                     │
+│           ▼                                                     │
+│  ┌─────────────────────────────────────────────────────────┐    │
+│  │              Host Network                               │    │
+│  └─────────────────────────────────────────────────────────┘    │
 └─────────────────────────────────────────────────────────────────┘
 ```
 
