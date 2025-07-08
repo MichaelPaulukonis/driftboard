@@ -1,13 +1,104 @@
-# DriftBoard
+# DriftBoard - Personal Kanban Board Application
 
-A personal Kanban board application built with TypeScript, React, and Node.js. This project serves as both a replacement for Trello's paid features and a comprehensive learning platform for modern web development technologies.
+A modern, self-hosted personal kanban board application built with React, TypeScript, Node.js, and SQLite. Designed as a cost-effective alternative to Trello with a focus on simplicity and learning modern web development practices.
 
-## 🚀 Project Overview
+## 🚀 Features
 
-DriftBoard is a self-hosted personal project management tool that provides:
-- Visual kanban-style boards for organizing projects
-- Drag-and-drop functionality for task management
-- Personal workflow optimization without subscription costs
+### MVP Features (Completed)
+- ✅ **User Authentication** - Mock authentication for development (Firebase integration planned)
+- ✅ **Board Management** - Create, read, update, delete boards
+- ✅ **List Management** - Create and manage lists within boards
+- ✅ **Card Management** - Create and manage cards within lists
+- ✅ **Responsive Design** - Works on desktop and mobile devices
+- ✅ **SQLite Database** - Local file-based storage with Prisma ORM
+- ✅ **REST API** - Full CRUD operations with TypeScript
+- ✅ **Modern UI** - Built with Tailwind CSS and React 18
+
+### Planned Features (Phase 2)
+- 🔄 **Drag & Drop** - Move cards between lists with @dnd-kit
+- 🔄 **Card Metadata** - Labels, due dates, checklists
+- 🔄 **Activity History** - Track changes and comments
+- 🔄 **Markdown Support** - Rich text descriptions
+- 🔄 **Search** - Find cards and boards quickly
+- 🔄 **Firebase Auth** - Proper user authentication
+
+## 🏗️ Architecture
+
+This application uses **Approach #1: Monolithic Full-Stack with SQLite** for maximum simplicity and ease of deployment.
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│                     Single Docker Container                    │
+│                                                                 │
+│  ┌─────────────────┐  ┌─────────────────┐  ┌─────────────────┐ │
+│  │   React SPA     │  │   Express API   │  │     SQLite      │ │
+│  │   (Built)       │◄─┤   + TypeScript  │◄─┤   + File-based  │ │
+│  │   Static Files  │  │   + Prisma ORM  │  │   + WAL Mode    │ │
+│  │                 │  │                 │  │                 │ │
+│  │   Served by     │  │   Port: 8000    │  │   Volume Mount  │ │
+│  │   Express       │  │   + Static      │  │   /data/app.db  │ │
+│  └─────────────────┘  └─────────────────┘  └─────────────────┘ │
+└─────────────────────────────────────────────────────────────────┘
+```
+
+## 🛠️ Technology Stack
+
+- **Frontend**: React 18 + TypeScript + Vite + Redux Toolkit + RTK Query
+- **Backend**: Node.js + Express + TypeScript + Prisma ORM
+- **Database**: SQLite with WAL mode
+- **UI**: Tailwind CSS + Radix UI components
+- **Authentication**: Firebase Auth (planned) / Mock auth (current)
+- **Testing**: Vitest + React Testing Library + Playwright
+- **Deployment**: Docker + Docker Compose
+
+## 🚀 Quick Start
+
+### Prerequisites
+- Node.js 18+ 
+- npm or yarn
+- Docker (optional, for containerized deployment)
+
+### Development Setup
+
+1. **Clone the repository**
+   ```bash
+   git clone <repository-url>
+   cd driftboard
+   ```
+
+2. **Install dependencies**
+   ```bash
+   npm install
+   cd src/backend && npm install
+   cd ../frontend && npm install
+   cd ../..
+   ```
+
+3. **Set up environment variables**
+   ```bash
+   cp .env.example .env
+   # Edit .env with your configuration
+   ```
+
+4. **Initialize the database**
+   ```bash
+   npx prisma generate
+   npx prisma migrate dev --name init
+   npx prisma db seed
+   ```
+
+5. **Start development servers**
+   ```bash
+   # Terminal 1: Backend
+   cd src/backend && npm run dev
+
+   # Terminal 2: Frontend
+   cd src/frontend && npm run dev
+   ```
+
+6. **Open your browser**
+   - Frontend: http://localhost:3001
+   - Backend API: http://localhost:8000/api
 - Modern tech stack implementation as a learning experience
 
 ## 🏗️ Architecture

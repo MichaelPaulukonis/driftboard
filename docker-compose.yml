@@ -1,0 +1,48 @@
+# Docker Compose for DriftBoard development
+
+version: '3.8'
+
+services:
+  driftboard:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./data:/app/data
+      - ./backups:/app/backups
+    environment:
+      - NODE_ENV=production
+      - DATABASE_URL=file:/app/data/app.db
+      - PORT=8000
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/api/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  # Optional: Backup service
+  backup:
+    image: alpine:latest
+    volumes:
+      - ./data:/data:ro
+      - ./backups:/backups
+    command: |
+      sh -c "while true; do 
+        echo 'Creating backup at $(date)'
+        cp /data/app.db /backups/backup-$(date +%Y%m%d-%H%M%S).db
+        echo 'Cleaning old backups (keeping last 7 days)'
+        find /backups -name '*.db' -mtime +7 -delete
+        echo 'Backup complete, sleeping for 24 hours'
+        sleep 86400
+      done"
+    restart: unless-stopped
+    depends_on:
+      - driftboard
+
+volumes:
+  data:
+  backups:

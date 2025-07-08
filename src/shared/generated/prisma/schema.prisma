@@ -1,0 +1,95 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../src/shared/generated/prisma"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String   @id
+  email     String   @unique
+  name      String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  boards    Board[]
+
+  @@map("users")
+}
+
+model Board {
+  id          String    @id @default(cuid())
+  name        String
+  description String?
+  userId      String
+  position    Int
+  archivedAt  DateTime?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  lists       List[]
+
+  @@index([userId])
+  @@map("boards")
+}
+
+model List {
+  id        String   @id @default(cuid())
+  name      String
+  boardId   String
+  position  Int
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  board     Board    @relation(fields: [boardId], references: [id], onDelete: Cascade)
+  cards     Card[]
+
+  @@index([boardId])
+  @@map("lists")
+}
+
+model Card {
+  id          String     @id @default(cuid())
+  title       String
+  description String?
+  listId      String
+  position    Int
+  dueDate     DateTime?
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+  list        List       @relation(fields: [listId], references: [id], onDelete: Cascade)
+  labels      Label[]
+  activities  Activity[]
+
+  @@index([listId])
+  @@map("cards")
+}
+
+model Label {
+  id     String @id @default(cuid())
+  name   String
+  color  String
+  cardId String
+  card   Card   @relation(fields: [cardId], references: [id], onDelete: Cascade)
+
+  @@index([cardId])
+  @@map("labels")
+}
+
+model Activity {
+  id        String   @id @default(cuid())
+  type      String // 'comment', 'moved', 'edited', 'created', 'archived'
+  content   String?
+  cardId    String
+  userId    String
+  createdAt DateTime @default(now())
+  card      Card     @relation(fields: [cardId], references: [id], onDelete: Cascade)
+
+  @@index([cardId])
+  @@index([userId])
+  @@map("activities")
+}
