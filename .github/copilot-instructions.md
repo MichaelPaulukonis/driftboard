@@ -1,196 +1,505 @@
----
-description: AI rules template for TypeScript/Node.js projects
-globs: *
----
+# GitHub Copilot Instructions for DriftBoard
 
-## Copilot Instructions for DriftBoard
+## Project Context
 
-# Project Context
+This is a **Personal Kanban Board Application (API + Web App)** built with TypeScript and Node.js. DriftBoard is designed as a cost-effective, self-hosted alternative to Trello with a focus on simplicity and learning modern web development practices.
 
-- This is a **Personal Kanban Board Application (API + Web App)** built with TypeScript and Node.js.
-- State management: **Redux Toolkit + RTK Query** for predictable state management with built-in caching.
-- Security considerations: **Firebase Auth + JWT tokens** with production-ready security practices from day one.
-- Deployment: **Docker containerized** for consistent local development and deployment.
-- Target: **Single user initially**, designed to scale to multi-user in future phases.
+## Technology Stack
 
-# Documentation
+When suggesting code, please use the following technologies:
 
-- **Project Architecture and Features:**  
-  Reference `docs/architecture/README.md` for comprehensive architecture documentation and `docs/product_requirements_doc.md` for project requirements.
-- **Module Documentation:**  
-  Place concise, context-focused overviews for AI-assisted development in `docs/src/`, mirroring the module folder structure.
-- **Plans and Refactor Documentation:**  
-  Save all refactor plans, implementation outlines, and significant design changes in `docs/plans/` (e.g., `docs/plans/feature-refactor.md`).  
-  - When a plan changes during implementation, append the reasons and changes to the same markdown file; do not erase the original plan.
+- **React 18+** with TypeScript and functional components using hooks
+- **Vite** for build tooling and development server
+- **Redux Toolkit (RTK)** with RTK Query for state management and API caching
+- **TypeScript** in strict mode for all code files with comprehensive typing
+- **Tailwind CSS** for utility-first styling
+- **ShadCN/UI** components built on Radix UI primitives
+- **Express.js** backend API with TypeScript
+- **Prisma ORM** with SQLite database (MVP) → PostgreSQL (future)
+- **Firebase Auth** for authentication (Phase 3+)
+- **@dnd-kit** for drag-and-drop functionality (Phase 2)
 
-# Copilot Guidance
+## 1. Project Structure
 
-- **Never assume missing context or make guesses. If any part of the request is unclear or ambiguous, ask the user for clarification before proceeding.**
-- **Always specify the target file or files for any code or modification suggestions.**
-- **Write modular, reusable code.** Split logic into distinct functions, classes, or modules as appropriate.
-- **All code must be fully optimized:**  
-  - Maximize algorithmic efficiency (runtime and memory).  
-  - Follow project style conventions.  
-  - Avoid unnecessary code and technical debt.
-- **Do not agree with me by default.** Your role is to assist by providing the best technical guidance, even if it means constructively challenging my assumptions or requests.
-- **When generating code, first outline your plan in pseudocode or comments, then provide the code.**  
-  - Save these plans and any refactor documentation according to the Documentation section above.
-- **Keep responses concise and focused.** Use Markdown formatting for clarity.
-- **Never generate or suggest code that violates copyright or project policies.**
+1. Follow the monolithic full-stack architecture with clear separation:
+   
+   **Frontend (`src/frontend/`):**
+   - **src/**: Main React application source
+     - **components/**: Reusable UI components
+       - **ui/**: ShadCN/UI base components (Button, Dialog, Input, Card)
+       - **kanban/**: Kanban-specific components (Board, List, Card, BoardList)
+       - **forms/**: Reusable form components (BoardForm, CardForm)
+       - **layout/**: Layout components (Header, Sidebar, Layout)
+     - **pages/**: Route-level page components (BoardsPage, BoardDetailPage)
+     - **store/**: Redux Toolkit store configuration and slices
+     - **api/**: RTK Query API definitions and endpoints
+     - **hooks/**: Custom React hooks and composables
+     - **utils/**: Helper functions and utilities
+   
+   **Backend (`src/backend/`):**
+   - **server.ts**: Main Express application entry point
+   - **routes/**: API route handlers (boards, lists, cards, auth)
+   - **middleware/**: Express middleware (auth, error handling, logging)
+   - **services/**: Business logic and data access layer
+   - **utils/**: Backend utility functions
+   
+   **Shared (`src/shared/`):**
+   - **types/**: TypeScript interfaces and types used across frontend/backend
+   - **generated/**: Prisma client and generated types
 
-# Technology Preferences
+2. Database and Infrastructure:
+   - **prisma/**: Database schema, migrations, and seed data
+   - **data/**: SQLite database file (gitignored)
+   - **tests/**: Unit, integration, and E2E tests
+   - **docs/**: Architecture documentation and project plans
 
-- Use **TypeScript** for all code (strict mode enabled).
-- Use **Node.js v23** for best compatibility.
-- Frontend Framework: **React 18+** with **Vite** build tool.
-- Use **Conventional Commits** for commit messages.
-- Current date: July 8, 2025
+3. Maintain clear separation between frontend and backend with API-first design.
+4. Use absolute imports with path aliases (`@/` for src directories - already configured in Vite and TypeScript).
 
-# Code Style
+## 2. Coding Standards
 
-- Use TypeScript for all files with strict type checking.
-- Type all function parameters and return values.
-- Prefer pure functions and immutable data patterns.
-- Use modern ES6+ features and async/await for asynchronous operations.
-- camelCase for variables/functions, PascalCase for classes/components/types.
-- Use absolute imports with path aliases (`@/` for src, `~/` for project root).
-- Document complex business logic and algorithms.
-- Handle errors gracefully with proper error boundaries/try-catch blocks.
+1. Use ESLint and Prettier for code quality and consistent formatting.
 
-# Framework Patterns
+2. **Always use TypeScript** with strict mode enabled. Define comprehensive types in shared/types/.
 
-## React Projects
-- Use functional components with hooks.
-- Use React 18+ features (Suspense, Concurrent features).
-- Use Vite for development and build tooling.
-- Use TypeScript interfaces for prop types.
-- Implement proper error boundaries for component error handling.
+3. Follow consistent naming conventions:
+   - Components and Types: PascalCase (`BoardCard`, `ApiResponse`)
+   - Files and folders: kebab-case (`board-detail.tsx`, `api-client.ts`)
+   - Variables and functions: camelCase (`handleCardMove`, `fetchBoards`)
+   - Constants: UPPER_SNAKE_CASE (`API_BASE_URL`, `DEFAULT_BOARD_NAME`)
 
-# State Management
+4. Use async/await over promises for asynchronous operations.
 
-Choose based on project complexity:
+5. **React Component Structure**: Always follow this order for consistency:
+   ```tsx
+   // 1. Imports (external libraries first, then internal)
+   import React from 'react';
+   import { useSelector, useDispatch } from 'react-redux';
+   import { Button } from '@/components/ui/button';
+   import { useBoards } from '@/hooks/useBoards';
+   
+   // 2. Types and interfaces
+   interface BoardCardProps {
+     board: Board;
+     onEdit: (id: string) => void;
+   }
+   
+   // 3. Component definition
+   export const BoardCard: React.FC<BoardCardProps> = ({ board, onEdit }) => {
+     // 4. Hooks and state
+     const dispatch = useDispatch();
+     const [isLoading, setIsLoading] = useState(false);
+     
+     // 5. Event handlers
+     const handleClick = useCallback(() => {
+       onEdit(board.id);
+     }, [board.id, onEdit]);
+     
+     // 6. Render
+     return (
+       <div className="p-4 border rounded-lg">
+         {/* Component JSX */}
+       </div>
+     );
+   };
+   ```
 
-## Simple Projects
-- **React**: Use `useState`/`useContext` or Zustand for simple global state.
+6. Always use semantic HTML and ensure WCAG 2.1 AA compliance.
 
-## Complex Projects
-- **React**: Use Redux Toolkit (RTK) with RTK Query, or Zustand with persistence.
+## 3. Prettier Configuration
 
-## Additional Options
-- **Server State**: TanStack Query (React Query) for Vue/React.
-- **Local Storage**: Persist state as needed with proper serialization.
-- **URL State**: Use router query params for shareable state.
+1. **Semicolons**: Always use semicolons for clarity
+2. **Indentation**: 2 spaces per level
+3. **Quotes**: Single quotes for strings, double quotes for JSX attributes
+4. **Line Length**: 100 characters maximum
+5. **Trailing Commas**: Use trailing commas in multi-line structures
 
-# Styling
+## 4. React Best Practices
 
-- Use **Tailwind CSS** for utility-first styling.
-- Use **ShadCN/ui** components for consistent UI elements.
-- Follow responsive design principles (mobile-first).
-- Maintain design system consistency.
-- Use CSS-in-TS solutions sparingly, prefer Tailwind utilities.
+1. **Functional Components Only**: Use React 18+ features with hooks pattern.
 
-# Accessibility
+2. **State Management Hierarchy**:
+   - Local component state: `useState`, `useReducer`
+   - Shared state: Redux Toolkit slices
+   - Server state: RTK Query with automatic caching
+   - URL state: React Router params and search params
 
-- Use semantic HTML elements.
-- Ensure keyboard navigation support.
-- Maintain WCAG 2.1 AA compliance.
-- Include proper ARIA labels and roles.
-- Test with screen readers when possible.
+3. **Component Props**: Define with TypeScript interfaces:
+   ```typescript
+   interface CardProps {
+     card: Card;
+     onMove?: (cardId: string, targetListId: string) => void;
+     isDragging?: boolean;
+     className?: string;
+   }
+   ```
 
-# Testing
+4. **Event Handling**: Use descriptive names and proper typing:
+   ```typescript
+   const handleCardDrop = useCallback((event: DragEndEvent) => {
+     // Handle drag and drop logic
+   }, []);
+   ```
 
-## Unit Testing
-- Use **Jest** with TypeScript support.
-- Test utility functions and business logic.
-- Mock external dependencies appropriately.
-- Aim for high coverage on critical paths.
+5. **Error Boundaries**: Implement for robust error handling in production.
 
-## End-to-End Testing
-- Use **Playwright** for e2e testing.
-- Test critical user journeys.
-- Include visual regression testing where appropriate.
-- Test across multiple browsers and devices.
+## 5. Redux Toolkit Patterns
 
-## Component Testing (Frontend)
-- **React**: Use React Testing Library with Jest.
-- Focus on user behavior over implementation details.
+1. **Store Structure**: Organize by feature domains:
+   ```typescript
+   // store/index.ts
+   export const store = configureStore({
+     reducer: {
+       boards: boardsSlice.reducer,
+       lists: listsSlice.reducer,
+       cards: cardsSlice.reducer,
+       auth: authSlice.reducer,
+       ui: uiSlice.reducer,
+     },
+     middleware: (getDefaultMiddleware) =>
+       getDefaultMiddleware().concat(api.middleware),
+   });
+   ```
 
-# Linting & Formatting
+2. **RTK Query**: Define API endpoints with proper typing:
+   ```typescript
+   export const boardsApi = createApi({
+     reducerPath: 'boardsApi',
+     baseQuery: fetchBaseQuery({
+       baseUrl: '/api/boards',
+       prepareHeaders: (headers, { getState }) => {
+         // Add auth headers
+         return headers;
+       },
+     }),
+     tagTypes: ['Board', 'List', 'Card'],
+     endpoints: (builder) => ({
+       getBoards: builder.query<Board[], void>({
+         query: () => '',
+         providesTags: ['Board'],
+       }),
+     }),
+   });
+   ```
 
-- Use **ESLint** with TypeScript rules.
-- Use **Prettier** for code formatting.
-- Configure pre-commit hooks with **husky** and **lint-staged**.
-- Recommended VS Code extensions: ESLint, Prettier, TypeScript Hero.
+3. **Optimistic Updates**: Implement for smooth UX in drag-and-drop operations.
 
-# Performance
+## 6. Backend API Development
 
-- Optimize bundle size with tree shaking.
-- Use code splitting for large applications.
-- Implement proper caching strategies.
-- Monitor Core Web Vitals.
-- Use lazy loading for images and components.
+1. **Express Route Structure**: Organize by resource with proper middleware:
+   ```typescript
+   // routes/boards.ts
+   import { Router } from 'express';
+   import { authMiddleware } from '../middleware/authMiddleware';
+   import { validateRequest } from '../middleware/validation';
+   import { boardSchema } from '../schemas/board';
+   
+   const router = Router();
+   
+   router.use(authMiddleware); // Apply auth to all board routes
+   
+   router.get('/', getBoardsHandler);
+   router.post('/', validateRequest(boardSchema), createBoardHandler);
+   ```
 
-# Security
+2. **Database Operations**: Use Prisma with proper error handling:
+   ```typescript
+   export const createBoard = async (data: CreateBoardInput): Promise<Board> => {
+     try {
+       return await prisma.board.create({
+         data,
+         include: {
+           lists: {
+             include: {
+               cards: true,
+             },
+           },
+         },
+       });
+     } catch (error) {
+       throw new DatabaseError('Failed to create board', error);
+     }
+   };
+   ```
 
-- Validate all user inputs.
-- Use environment variables for sensitive configuration.
-- Implement proper authentication and authorization.
-- Follow OWASP security guidelines.
-- Use HTTPS in production.
+3. **Input Validation**: Use Zod schemas for request validation:
+   ```typescript
+   import { z } from 'zod';
+   
+   export const createBoardSchema = z.object({
+     name: z.string().min(1).max(100),
+     description: z.string().optional(),
+     color: z.string().optional(),
+   });
+   ```
 
-# Commit Messages
+## 7. Kanban-Specific Features
 
-- Follow Conventional Commits specification.
-- Use clear, descriptive commit messages.
-- Reference issues/tickets when applicable.
-- Example format: `feat(auth): add OAuth2 integration with Google provider`
+### Board Management
+- Support for creating, editing, archiving boards
+- Board templates and color themes
+- Board-level permissions (future multi-user)
 
-# Module Structure Example
+### List Operations
+- Dynamic list creation and reordering
+- List archiving and restoration
+- Position-based ordering system
 
+### Card Functionality
+- Rich card editing with markdown support (planned)
+- Card metadata: labels, due dates, checklists
+- Activity history and comments
+- Cross-card linking capabilities
+- File attachments (future)
+
+### Drag-and-Drop Implementation
+Use @dnd-kit for accessibility and touch support:
+```typescript
+import { DndContext, DragEndEvent } from '@dnd-kit/core';
+import { SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable';
+
+const handleDragEnd = (event: DragEndEvent) => {
+  const { active, over } = event;
+  if (over && active.id !== over.id) {
+    // Dispatch move action with optimistic update
+    dispatch(moveCard({ cardId: active.id, targetListId: over.id }));
+  }
+};
 ```
-src/
-  components/          # Reusable UI components
-    ui/               # ShadCN/ui components
-    common/           # Project-specific common components
-  pages/ (or views/)   # Route components
-  utils/              # Pure utility functions
-  hooks/ (or composables/) # Reusable logic
-  stores/ (or state/) # State management
-  types/              # TypeScript type definitions
-  api/                # API integration
-  constants/          # Application constants
-```
 
-# Module Extraction Guidelines
+## 8. Database Design Patterns
 
-- Extract reusable logic into separate modules.
-- Use factory patterns for complex dependencies.
-- Create pure functions that are easily testable.
-- Maintain clear separation of concerns.
-- Export constants and types alongside functions.
-- Ensure proper dependency injection patterns.
+1. **Prisma Schema**: Follow relational best practices:
+   ```prisma
+   model Board {
+     id          String   @id @default(cuid())
+     name        String
+     description String?
+     createdAt   DateTime @default(now())
+     updatedAt   DateTime @updatedAt
+     archivedAt  DateTime?
+     
+     lists List[]
+     
+     @@map("boards")
+   }
+   ```
 
-# Documentation for Modules
+2. **Position-based Ordering**: Use decimal positions for efficient reordering:
+   ```typescript
+   // Calculate position between two items
+   const calculatePosition = (before?: number, after?: number): number => {
+     if (!before && !after) return 1000;
+     if (!before) return after / 2;
+     if (!after) return before + 1000;
+     return (before + after) / 2;
+   };
+   ```
 
-- Create a concise overview `.md` file for each major module.
-- Optimize documentation for AI-assisted development context.
-- Place documentation in `../docs/src/` mirroring module structure.
-- Include API examples and common usage patterns.
+## 9. Styling with Tailwind CSS
 
-# Dependencies
+1. **Component Styling**: Use utility classes with consistent patterns:
+   ```tsx
+   <div className="p-4 bg-white rounded-lg shadow-sm border hover:shadow-md transition-shadow">
+     <h3 className="text-lg font-semibold text-gray-900 mb-2">{board.name}</h3>
+     <p className="text-sm text-gray-600">{board.description}</p>
+   </div>
+   ```
 
-- Use Node.js v23 for development and production.
-- Keep dependencies up to date with security patches.
-- Prefer well-maintained packages with TypeScript support.
-- Document any specific version requirements.
+2. **ShadCN/UI Components**: Prefer composed UI components:
+   ```tsx
+   import { Button } from '@/components/ui/button';
+   import { Dialog, DialogContent, DialogHeader } from '@/components/ui/dialog';
+   
+   <Dialog open={isOpen} onOpenChange={setIsOpen}>
+     <DialogContent>
+       <DialogHeader>
+         <DialogTitle>Create New Board</DialogTitle>
+       </DialogHeader>
+       {/* Form content */}
+     </DialogContent>
+   </Dialog>
+   ```
 
----
+3. **Responsive Design**: Mobile-first approach with breakpoint utilities.
 
-**Configuration Notes:**
-- Replace `[PROJECT_NAME]`, `[PROJECT_TYPE]`, `[STATE_MANAGEMENT_APPROACH]`, `[SECURITY_LEVEL]`, and `[CURRENT_DATE]` with project-specific values.
-- Remove framework sections not applicable to your project.
-- Adjust testing and styling preferences based on project requirements.
+4. **Custom CSS**: Use CSS variables for theme consistency:
+   ```css
+   :root {
+     --color-primary: 59 130 246; /* blue-500 */
+     --color-success: 34 197 94;  /* green-500 */
+     --color-danger: 239 68 68;   /* red-500 */
+   }
+   ```
 
----
+## 10. Authentication & Security
 
-This file is for Copilot and other AI coding assistants only. Do not display to end users or include in documentation.
+1. **Firebase Auth Integration** (Phase 3+):
+   ```typescript
+   import { initializeApp } from 'firebase/app';
+   import { getAuth, signInWithEmailAndPassword } from 'firebase/auth';
+   
+   export const auth = getAuth(firebaseApp);
+   
+   export const signIn = async (email: string, password: string) => {
+     try {
+       const userCredential = await signInWithEmailAndPassword(auth, email, password);
+       return userCredential.user;
+     } catch (error) {
+       throw new AuthError('Sign in failed', error);
+     }
+   };
+   ```
+
+2. **JWT Token Handling**: Secure token storage and refresh:
+   ```typescript
+   // Store tokens securely
+   const storeTokens = (tokens: AuthTokens) => {
+     // Use httpOnly cookies in production
+     localStorage.setItem('accessToken', tokens.accessToken);
+   };
+   ```
+
+3. **API Security**: Input validation, rate limiting, CORS configuration.
+
+## 11. Testing Strategy
+
+1. **Unit Tests**: Use Vitest for business logic and utilities:
+   ```typescript
+   import { describe, it, expect } from 'vitest';
+   import { calculatePosition } from '../utils/position';
+   
+   describe('calculatePosition', () => {
+     it('should calculate position between two items', () => {
+       expect(calculatePosition(1000, 2000)).toBe(1500);
+     });
+   });
+   ```
+
+2. **Component Tests**: React Testing Library for user interactions (add when implementing component tests):
+   ```typescript
+   import { render, screen, fireEvent } from '@testing-library/react';
+   import { Provider } from 'react-redux';
+   import { BoardCard } from '../BoardCard';
+   
+   test('should call onEdit when clicked', () => {
+     const mockOnEdit = vi.fn();
+     render(<BoardCard board={mockBoard} onEdit={mockOnEdit} />);
+     
+     fireEvent.click(screen.getByText(mockBoard.name));
+     expect(mockOnEdit).toHaveBeenCalledWith(mockBoard.id);
+   });
+   ```
+
+3. **E2E Tests**: Playwright for critical user flows:
+   ```typescript
+   import { test, expect } from '@playwright/test';
+   
+   test('should create and delete a board', async ({ page }) => {
+     await page.goto('/boards');
+     await page.click('[data-testid=create-board]');
+     await page.fill('[data-testid=board-name]', 'Test Board');
+     await page.click('[data-testid=save-board]');
+     
+     await expect(page.locator('text=Test Board')).toBeVisible();
+   });
+   ```
+
+## 12. Performance Optimization
+
+1. **Code Splitting**: Lazy load pages and large components:
+   ```typescript
+   const BoardDetailPage = lazy(() => import('./pages/BoardDetailPage'));
+   
+   <Suspense fallback={<Loading />}>
+     <BoardDetailPage />
+   </Suspense>
+   ```
+
+2. **Memoization**: Optimize re-renders with React.memo and useMemo:
+   ```typescript
+   export const CardList = React.memo<CardListProps>(({ cards, onMove }) => {
+     const sortedCards = useMemo(() => 
+       cards.sort((a, b) => a.position - b.position), 
+       [cards]
+     );
+     
+     return <div>{/* Render cards */}</div>;
+   });
+   ```
+
+3. **RTK Query Caching**: Configure appropriate cache lifetimes and tag invalidation.
+
+## 13. Docker & Deployment
+
+1. **Development**: Use docker-compose for local development:
+   ```yaml
+   services:
+     app:
+       build: .
+       ports:
+         - "8000:8000"
+       volumes:
+         - ./data:/app/data
+       environment:
+         - NODE_ENV=development
+   ```
+
+2. **Production**: Multi-stage Docker builds for optimized images.
+
+## 14. Documentation Standards
+
+1. **Component Documentation**: Use JSDoc for complex components:
+   ```typescript
+   /**
+    * Kanban board card component with drag-and-drop support
+    * 
+    * @param card - The card data to display
+    * @param onMove - Callback when card is moved to different list
+    * @param isDragging - Whether card is currently being dragged
+    */
+   export const Card: React.FC<CardProps> = ({ card, onMove, isDragging }) => {
+     // Component implementation
+   };
+   ```
+
+2. **API Documentation**: Document endpoints with OpenAPI/Swagger (future).
+
+3. **Architecture Documentation**: Maintain in `docs/` directory with markdown.
+
+## 15. Commit Message Guidelines
+
+Follow Conventional Commits specification:
+- `feat(boards): add board archiving functionality`
+- `fix(cards): resolve drag-and-drop position calculation`
+- `docs(api): update endpoint documentation`
+- `refactor(store): simplify RTK Query cache management`
+
+## 16. Error Handling
+
+1. **Frontend Error Boundaries**: Catch and display user-friendly errors.
+
+2. **API Error Responses**: Consistent error format:
+   ```typescript
+   interface ApiError {
+     error: {
+       code: string;
+       message: string;
+       details?: unknown;
+     };
+     timestamp: string;
+     path: string;
+   }
+   ```
+
+3. **Graceful Degradation**: Handle offline scenarios and network failures.
+
+## Key Differences from Standard React Apps
+
+- **Kanban-specific UX patterns**: Focus on drag-and-drop, visual organization
+- **Local-first architecture**: SQLite with potential for offline functionality
+- **Single-user optimization**: Simplified auth and data models initially
+- **Learning-focused**: Emphasis on modern React patterns and TypeScript
+- **Cost-conscious**: Self-hosted deployment, minimal external dependencies
+
+By following these guidelines, we ensure that DriftBoard remains efficient, scalable, and maintainable while providing an excellent user experience for personal kanban board management.
