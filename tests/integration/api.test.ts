@@ -7,7 +7,7 @@ describe('API Health Check', () => {
     
     expect(response.status).toBe(200);
     expect(data.success).toBe(true);
-    expect(data.data.status).toBe('ok');
+    expect(data.data.status).toBe('healthy');
   });
 });
 

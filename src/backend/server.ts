@@ -73,7 +73,7 @@ if (NODE_ENV === 'production') {
   app.use(express.static(frontendBuildPath));
   
   // Fallback to React app for client-side routing
-  app.get('*', (req, res) => {
+  app.get('*', (_req, res) => {
     res.sendFile(path.join(frontendBuildPath, 'index.html'));
   });
 }
@@ -92,15 +92,17 @@ process.on('SIGINT', () => {
   process.exit(0);
 });
 
-// Start server
-app.listen(PORT, () => {
-  console.log(`🚀 DriftBoard server running on port ${PORT}`);
-  console.log(`📱 Environment: ${NODE_ENV}`);
-  console.log(`🔗 API Base URL: http://localhost:${PORT}/api`);
-  
-  if (NODE_ENV === 'production') {
-    console.log(`🌐 Frontend served at: http://localhost:${PORT}`);
-  }
-});
+// Only start server if this file is run directly (not imported)
+if (import.meta.url === `file://${process.argv[1]}`) {
+  app.listen(PORT, () => {
+    console.log(`🚀 DriftBoard server running on port ${PORT}`);
+    console.log(`📱 Environment: ${NODE_ENV}`);
+    console.log(`🔗 API Base URL: http://localhost:${PORT}/api`);
+    
+    if (NODE_ENV === 'production') {
+      console.log(`🌐 Frontend served at: http://localhost:${PORT}`);
+    }
+  });
+}
 
 export default app;

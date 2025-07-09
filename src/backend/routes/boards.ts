@@ -255,4 +255,88 @@ router.delete('/:id', async (req: Request, res: Response, next: NextFunction) =>
   }
 });
 
+/**
+ * Create a list in a board
+ * POST /api/boards/:id/lists
+ */
+router.post('/:id/lists', async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const userId = req.user?.uid;
+    const boardId = req.params.id;
+
+    if (!userId) {
+      throw new AppError('User not authenticated', 401, 'NOT_AUTHENTICATED');
+    }
+
+    const { name, position }: { name: string; position?: number } = req.body;
+
+    if (!name || name.trim().length === 0) {
+      throw new AppError('List name is required', 400, 'MISSING_LIST_NAME');
+    }
+
+    // Verify board exists and belongs to user
+    const board = await prisma.board.findFirst({
+      where: { 
+        id: boardId,
+        userId,
+      },
+    });
+
+    if (!board) {
+      throw new AppError('Board not found', 404, 'BOARD_NOT_FOUND');
+    }
+
+    // Calculate position if not provided
+    let listPosition = position;
+    if (listPosition === undefined) {
+      const maxPosition = await prisma.list.aggregate({
+        where: { boardId },
+        _max: { position: true },
+      });
+      listPosition = (maxPosition._max.position ?? -1) + 1;
+    } else {
+      // If position is specified, shift existing lists
+      await prisma.list.updateMany({
+        where: {
+          boardId,
+          position: {
+            gte: listPosition,
+          },
+        },
+        data: {
+          position: {
+            increment: 1,
+          },
+        },
+      });
+    }
+
+    const list = await prisma.list.create({
+      data: {
+        name: name.trim(),
+        boardId,
+        position: listPosition,
+      },
+      include: {
+        cards: {
+          orderBy: { position: 'asc' },
+          include: {
+            labels: true,
+          },
+        },
+      },
+    });
+
+    const response: ApiResponse = {
+      success: true,
+      data: list,
+      message: 'List created successfully',
+    };
+
+    res.status(201).json(response);
+  } catch (error) {
+    next(error);
+  }
+});
+
 export { router as boardsRouter };

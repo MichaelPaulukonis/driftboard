@@ -68,7 +68,62 @@ Please generalize the plan-file naming schema and add it to the appropriate sect
 
 _**Assistant**_
 
-I'll add a section about plan file naming schema to the copilot instructions. Let me first check if there's already a section about documentation or file naming that I should 
+I'll add a section about plan file naming schema to the copilot instructions. Let me first check if there's already a section about documentation or file naming that I should extend. Perfect! I can see there's already a "Documentation Standards" section. I'll add the plan file naming schema there. Let me read that section first to understand the current structure. Now I'll add the plan file naming schema to the Documentation Standards section: 
+```
+
+```
+Perfect! I've added a comprehensive plan file naming schema to the Documentation Standards section of the copilot instructions. The new section includes:
+
+## **4. Plan File Naming** specification:
+
+- **Format**: `NN.semantic-name.md`
+- **Two-digit prefix** (01-99) for ordering
+- **Dot separator** after the number
+- **Kebab-case** for the semantic name portion
+- **Sequential numbering** for chronological order
+- **Examples** showing the current naming pattern
+
+This ensures all future plan files will follow a consistent, ordered naming convention that makes it easy to:
+- See the chronological order of plans
+- Quickly identify plan files in directory listings
+- Scale up to 99 plan files before needing three digits
+- Maintain readability with semantic names
+
+The schema matches the pattern you established with the file renaming and provides clear guidance for any future plan documentation.
+
+---
+
+_**User**_
+
+I've added all files to stage, please make a commit message focusing on the phase-assessment, but also mention the plan renaming and associated instruction add.
+
+---
+
+_**Assistant**_
+
+I'll create a commit message that focuses on the phase assessment while also mentioning the plan file renaming and instruction updates. Perfect! I've created a comprehensive commit message that:
+
+## **Primary Focus**: Phase Assessment
+- Highlights the comprehensive Phase 1 vs Phase 2 gap analysis
+- Identifies the critical missing features (Lists/Cards APIs, drag-drop, Firebase auth)
+- Corrects the implementation timeline showing actual 60% Phase 1 completion
+- Emphasizes the need to focus on core kanban functionality
+
+## **Secondary Items**: Plan Organization
+- Mentions establishing the plan file naming convention (`NN.semantic-name.md`)
+- Notes the update to copilot instructions with plan file standards  
+- References the file renaming to follow the new schema
+
+## **Clear Status**: 
+- Concludes with current status: "Phase 1 incomplete, focus needed on kanban core functionality"
+
+The commit shows 8 files changed with 340 insertions, including:
+- All existing plan files renamed to the new numbering scheme (00-03)
+- New phase assessment document (04)
+- Updated copilot instructions
+- The comprehensive analysis and corrected roadmap
+
+This commit clearly documents the important realization that we're not actually ready for Phase 2 and need to complete the core kanban functionality first.
 
 ---
 

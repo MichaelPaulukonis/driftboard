@@ -24,9 +24,9 @@ export const authMiddleware = async (
   next: NextFunction,
 ): Promise<void> => {
   try {
-    // For development, use a mock user
+    // For development and testing, use a mock user
     // TODO: Replace with actual Firebase auth
-    if (process.env.NODE_ENV === 'development') {
+    if (process.env.NODE_ENV === 'development' || process.env.NODE_ENV === 'test') {
       req.user = {
         uid: 'test-user-id',
         email: 'test@example.com',
