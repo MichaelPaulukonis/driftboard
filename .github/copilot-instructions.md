@@ -467,6 +467,24 @@ const handleDragEnd = (event: DragEndEvent) => {
 
 3. **Architecture Documentation**: Maintain in `docs/` directory with markdown.
 
+4. **Plan File Naming**: Use consistent naming for project plan files in `docs/plans/`:
+   ```
+   Format: NN.semantic-name.md
+   
+   Examples:
+   - 01.mvp-completion-summary.md
+   - 02.e2e-testing-setup.md
+   - 03.monolithic-implementation.md
+   - 04.phase-assessment-next-steps.md
+   
+   Rules:
+   - Two-digit prefix (01-99) for ordering
+   - Dot separator after number
+   - Kebab-case for semantic name
+   - .md extension
+   - Sequential numbering for chronological order
+   ```
+
 ## 15. Commit Message Guidelines
 
 Follow Conventional Commits specification:
