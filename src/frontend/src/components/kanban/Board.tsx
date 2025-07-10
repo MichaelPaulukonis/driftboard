@@ -11,6 +11,9 @@ interface BoardProps {
   onCreateList?: (boardId: string, listData: any) => void;
   onUpdateList?: (listId: string, updates: any) => void;
   onDeleteList?: (listId: string) => void;
+  onCreateCard?: (listId: string, cardData: any) => void;
+  onUpdateCard?: (cardId: string, updates: any) => void;
+  onDeleteCard?: (cardId: string) => void;
   className?: string;
 }
 
@@ -20,6 +23,9 @@ export const Board: React.FC<BoardProps> = ({
   onCreateList,
   onUpdateList,
   onDeleteList,
+  onCreateCard,
+  onUpdateCard,
+  onDeleteCard,
   className
 }) => {
   const [showCreateList, setShowCreateList] = useState(false);
@@ -75,6 +81,9 @@ export const Board: React.FC<BoardProps> = ({
             list={list}
             onUpdate={(updates: any) => onUpdateList?.(list.id, updates)}
             onDelete={() => onDeleteList?.(list.id)}
+            onCreateCard={(cardData: any) => onCreateCard?.(list.id, cardData)}
+            onUpdateCard={onUpdateCard}
+            onDeleteCard={onDeleteCard}
             className="flex-shrink-0 w-80"
           />
         ))}

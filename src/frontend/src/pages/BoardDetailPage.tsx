@@ -1,11 +1,28 @@
-import React from 'react';
 import { useParams } from 'react-router-dom';
-import { useGetBoardByIdQuery } from '../api/boardsApi';
+import { 
+  useGetBoardByIdQuery, 
+  useUpdateBoardMutation,
+  useCreateListMutation, 
+  useUpdateListMutation, 
+  useDeleteListMutation,
+  useCreateCardMutation, 
+  useUpdateCardMutation, 
+  useDeleteCardMutation 
+} from '../api/api';
 import { Board } from '@/components/kanban/Board';
 
 export function BoardDetailPage() {
   const { id } = useParams<{ id: string }>();
   const { data: board, error, isLoading } = useGetBoardByIdQuery(id!);
+  
+  // RTK Query mutations
+  const [updateBoard] = useUpdateBoardMutation();
+  const [createList] = useCreateListMutation();
+  const [updateList] = useUpdateListMutation();
+  const [deleteList] = useDeleteListMutation();
+  const [createCard] = useCreateCardMutation();
+  const [updateCard] = useUpdateCardMutation();
+  const [deleteCard] = useDeleteCardMutation();
 
   if (isLoading) {
     return (
@@ -29,21 +46,54 @@ export function BoardDetailPage() {
   return (
     <Board
       board={board}
-      onUpdateBoard={(boardId, updates) => {
-        console.log('Update board:', boardId, updates);
-        // TODO: Implement board update
+      onUpdateBoard={async (boardId, updates) => {
+        try {
+          await updateBoard({ id: boardId, updates }).unwrap();
+        } catch (error) {
+          console.error('Failed to update board:', error);
+        }
       }}
-      onCreateList={(boardId, listData) => {
-        console.log('Create list:', boardId, listData);
-        // TODO: Implement list creation
+      onCreateList={async (boardId, listData) => {
+        try {
+          await createList({ boardId, listData }).unwrap();
+        } catch (error) {
+          console.error('Failed to create list:', error);
+        }
       }}
-      onUpdateList={(listId, updates) => {
-        console.log('Update list:', listId, updates);
-        // TODO: Implement list update
+      onUpdateList={async (listId, updates) => {
+        try {
+          await updateList({ id: listId, updates }).unwrap();
+        } catch (error) {
+          console.error('Failed to update list:', error);
+        }
       }}
-      onDeleteList={(listId) => {
-        console.log('Delete list:', listId);
-        // TODO: Implement list deletion
+      onDeleteList={async (listId) => {
+        try {
+          await deleteList(listId).unwrap();
+        } catch (error) {
+          console.error('Failed to delete list:', error);
+        }
+      }}
+      onCreateCard={async (listId, cardData) => {
+        try {
+          await createCard({ listId, cardData }).unwrap();
+        } catch (error) {
+          console.error('Failed to create card:', error);
+        }
+      }}
+      onUpdateCard={async (cardId, updates) => {
+        try {
+          await updateCard({ id: cardId, updates }).unwrap();
+        } catch (error) {
+          console.error('Failed to update card:', error);
+        }
+      }}
+      onDeleteCard={async (cardId) => {
+        try {
+          await deleteCard(cardId).unwrap();
+        } catch (error) {
+          console.error('Failed to delete card:', error);
+        }
       }}
     />
   );

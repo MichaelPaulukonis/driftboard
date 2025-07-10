@@ -1,5 +1,5 @@
 import { useState, useCallback } from 'react';
-import { useGetBoardsQuery, useCreateBoardMutation, useDeleteBoardMutation } from '../api/boardsApi';
+import { useGetBoardsQuery, useCreateBoardMutation, useDeleteBoardMutation } from '../api/api';
 import { BoardCard } from '@/components/kanban/BoardCard';
 import { BoardForm } from '@/components/forms/BoardForm';
 import { Button } from '@/components/ui/button';
