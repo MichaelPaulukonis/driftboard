@@ -106,7 +106,50 @@ When suggesting code, please use the following technologies:
 
 6. Always use semantic HTML and ensure WCAG 2.1 AA compliance.
 
-## 3. Prettier Configuration
+## 3. Mandatory Planning Process
+
+**CRITICAL**: All development work must follow this planning process before any code implementation.
+
+### Plan-File Requirement
+
+1. **Before Any Code Changes**: ALL feature requests, architectural changes, or significant modifications must begin with creating a plan-file in `docs/plans/`
+
+2. **User Confirmation Protocol**: When a user requests changes to the project, respond with:
+   
+   "This change requires a plan-file to be created first in `docs/plans/`. This helps ensure proper architecture and prevents technical debt. Are you sure you want to proceed without creating a plan-file first?"
+
+3. **Plan-File Naming Convention**: Already defined in Section 15.4:
+   ```
+   Format: NN.semantic-name.md
+   Examples:
+   - 01.mvp-completion-summary.md  
+   - 02.e2e-testing-setup.md
+   - 03.monolithic-implementation.md
+   ```
+
+4. **Required Plan Contents**:
+   - **Implementation Phase**: Explicit reference to which Implementation Phase, as defined in `docs/architecture/07-implementation-phases.md`, these changes belong to
+   - **Problem Statement**: Clear description of what needs to be solved
+   - **Requirements**: Functional and non-functional requirements
+   - **Technical Approach**: Architecture decisions and implementation strategy
+   - **Implementation Steps**: Ordered list of development tasks
+   - **Testing Strategy**: How the changes will be validated
+   - **Risks and Mitigation**: Potential issues and how to address them
+   - **Dependencies**: Other systems or features that might be affected
+
+5. **No Exceptions**: Do not implement code for feature changes without an approved plan-file, even for seemingly simple modifications.
+
+### Implementation Workflow
+
+1. User requests change → Prompt for plan-file creation
+2. Create plan-file with proper naming convention
+3. Review and approve plan with user
+4. Implement code following the approved plan
+5. Test according to the testing strategy in the plan
+
+This process ensures architectural consistency and prevents technical debt accumulation.
+
+## 4. Prettier Configuration
 
 1. **Semicolons**: Always use semicolons for clarity
 2. **Indentation**: 2 spaces per level
@@ -114,7 +157,7 @@ When suggesting code, please use the following technologies:
 4. **Line Length**: 100 characters maximum
 5. **Trailing Commas**: Use trailing commas in multi-line structures
 
-## 4. React Best Practices
+## 5. React Best Practices
 
 1. **Functional Components Only**: Use React 18+ features with hooks pattern.
 
@@ -143,7 +186,7 @@ When suggesting code, please use the following technologies:
 
 5. **Error Boundaries**: Implement for robust error handling in production.
 
-## 5. Redux Toolkit Patterns
+## 6. Redux Toolkit Patterns
 
 1. **Store Structure**: Organize by feature domains:
    ```typescript
@@ -184,7 +227,7 @@ When suggesting code, please use the following technologies:
 
 3. **Optimistic Updates**: Implement for smooth UX in drag-and-drop operations.
 
-## 6. Backend API Development
+## 7. Backend API Development
 
 1. **Express Route Structure**: Organize by resource with proper middleware:
    ```typescript
@@ -233,7 +276,7 @@ When suggesting code, please use the following technologies:
    });
    ```
 
-## 7. Kanban-Specific Features
+## 8. Kanban-Specific Features
 
 ### Board Management
 - Support for creating, editing, archiving boards
@@ -267,7 +310,7 @@ const handleDragEnd = (event: DragEndEvent) => {
 };
 ```
 
-## 8. Database Design Patterns
+## 9. Database Design Patterns
 
 1. **Prisma Schema**: Follow relational best practices:
    ```prisma
@@ -296,7 +339,7 @@ const handleDragEnd = (event: DragEndEvent) => {
    };
    ```
 
-## 9. Styling with Tailwind CSS
+## 10. Styling with Tailwind CSS
 
 1. **Component Styling**: Use utility classes with consistent patterns:
    ```tsx
@@ -332,7 +375,7 @@ const handleDragEnd = (event: DragEndEvent) => {
    }
    ```
 
-## 10. Authentication & Security
+## 11. Authentication & Security
 
 1. **Firebase Auth Integration** (Phase 3+):
    ```typescript
@@ -362,7 +405,7 @@ const handleDragEnd = (event: DragEndEvent) => {
 
 3. **API Security**: Input validation, rate limiting, CORS configuration.
 
-## 11. Testing Strategy
+## 12. Testing Strategy
 
 1. **Unit Tests**: Use Vitest for business logic and utilities:
    ```typescript
@@ -405,7 +448,7 @@ const handleDragEnd = (event: DragEndEvent) => {
    });
    ```
 
-## 12. Performance Optimization
+## 13. Performance Optimization
 
 1. **Code Splitting**: Lazy load pages and large components:
    ```typescript
@@ -430,7 +473,7 @@ const handleDragEnd = (event: DragEndEvent) => {
 
 3. **RTK Query Caching**: Configure appropriate cache lifetimes and tag invalidation.
 
-## 13. Docker & Deployment
+## 14. Docker & Deployment
 
 1. **Development**: Use docker-compose for local development:
    ```yaml
@@ -447,7 +490,7 @@ const handleDragEnd = (event: DragEndEvent) => {
 
 2. **Production**: Multi-stage Docker builds for optimized images.
 
-## 14. Documentation Standards
+## 15. Documentation Standards
 
 1. **Component Documentation**: Use JSDoc for complex components:
    ```typescript
@@ -485,7 +528,7 @@ const handleDragEnd = (event: DragEndEvent) => {
    - Sequential numbering for chronological order
    ```
 
-## 15. Commit Message Guidelines
+## 16. Commit Message Guidelines
 
 Follow Conventional Commits specification:
 - `feat(boards): add board archiving functionality`
@@ -493,7 +536,7 @@ Follow Conventional Commits specification:
 - `docs(api): update endpoint documentation`
 - `refactor(store): simplify RTK Query cache management`
 
-## 16. Error Handling
+## 17. Error Handling
 
 1. **Frontend Error Boundaries**: Catch and display user-friendly errors.
 

@@ -1136,6 +1136,68 @@ Of course. A monolithic architecture is now in place, so I'll update the `README
 ````
 
 ````
+You've got it. I've updated the `README.md` to remove the outdated single-container architecture diagram and replaced it with a more accurate description of the multi-container setup. I've also included a link to the detailed architecture documentation for anyone who wants to dive deeper.
+
+---
+
+_**User**_
+
+Thanks you. Now, let's commit these fixes and changes! I have added the following files to stage:
+
+.specstory/history/2025-07-10_14-39Z-task-complete-phase-1b-implement-lists-and-card.md
+.specstory/history/2025-07-10_17-56Z-we-should-be-ready-to-move-on-to-phase-2!.md
+Dockerfile
+Dockerfile.backend
+Dockerfile.frontend
+README.md
+docker-compose.yml
+docs/architecture/05-development-deployment.md
+nginx.conf
+package-lock.json
+package.json
+src/backend/middleware/errorHandler.ts
+src/backend/package.json
+src/backend/routes/boards.ts
+src/backend/routes/cards.ts
+src/backend/routes/health.ts
+src/backend/server.ts
+src/shared/generated/prisma/client.d.ts
+src/shared/generated/prisma/client.js
+src/shared/generated/prisma/default.js
+src/shared/generated/prisma/edge.js
+src/shared/generated/prisma/index-browser.js
+src/shared/generated/prisma/index.d.ts
+src/shared/generated/prisma/index.js
+src/shared/generated/prisma/libquery_engine-darwin-arm64.dylib.node
+src/shared/generated/prisma/package.json
+src/shared/generated/prisma/runtime/edge-esm.js
+src/shared/generated/prisma/runtime/edge.js
+src/shared/generated/prisma/runtime/index-browser.d.ts
+src/shared/generated/prisma/runtime/index-browser.js
+src/shared/generated/prisma/runtime/library.d.ts
+src/shared/generated/prisma/runtime/library.js
+src/shared/generated/prisma/runtime/react-native.js
+src/shared/generated/prisma/runtime/wasm-compiler-edge.js
+src/shared/generated/prisma/runtime/wasm-engine-edge.js
+src/shared/generated/prisma/wasm.js
+tsconfig.backend.json
+
+---
+
+_**Assistant**_
+
+I will now commit these changes with a detailed message that explains the Nginx fix and the documentation updates. 
+
+---
+
+_**User**_
+
+You also updated the Prisma version and other issues. This all started with getting the original Dockerfile to work. If you go back through this chat, you should see a full history of our changes (and also painted with the large list of modified files). I think the Prisma update warrants mention, maybe the other parts do not.
+
+---
+
+_**Assistant**_
+
 
 
 ---
