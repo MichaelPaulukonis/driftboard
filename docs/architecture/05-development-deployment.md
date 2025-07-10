@@ -140,6 +140,35 @@ volumes:
   db_data:
 ```
 
+### Docker Networking and Nginx Proxy
+
+In our Docker-based development environment, `nginx` serves as a reverse proxy. It directs traffic to the appropriate service (frontend or backend) based on the request URL. This setup is crucial for simulating a production-like environment where a single entry point serves both the frontend application and the backend API.
+
+**Key Configuration (`nginx.conf`):**
+
+-   **Upstream Service:** We define an `upstream` block to represent our backend API. This makes the configuration cleaner and allows for easy load balancing in the future.
+    ```nginx
+    upstream backend_api {
+        # 'backend' is the service name from docker-compose.yml
+        # '8000' is the port the backend service exposes inside the Docker network
+        server backend:8000;
+    }
+    ```
+
+-   **API Proxying:** A `location` block is used to match API requests and forward them to our backend service.
+    ```nginx
+    location /api/ {
+        proxy_pass http://backend_api;
+    }
+    ```
+    Any request made to `http://localhost:8000/api/...` from the host machine is received by Nginx on port 80 (inside the container) and then proxied to the `backend_api` group.
+
+**Common Pitfalls & Troubleshooting (Resolved):**
+
+1.  **`502 Bad Gateway` Error**: This error typically occurs if Nginx cannot communicate with the upstream service (`backend`). The most common cause is a port mismatch. We recently resolved an issue where `nginx.conf` was incorrectly configured to proxy requests to port `3000`, while the backend service was actually listening on port `8000`. **Always ensure the port in the `upstream` block matches the port the backend service is running on.**
+
+2.  **Unhealthy Container Status**: The `docker-compose.yml` file includes a `healthcheck` for the backend service. This command periodically checks if the backend is responsive. A misconfiguration in the healthcheck's port can cause the container to be marked as `unhealthy` and be terminated by Docker, even if the server process itself has started correctly. The healthcheck must also target the correct port (`8000`).
+
 #### Frontend Development Configuration
 ```typescript
 // vite.config.ts
@@ -696,99 +725,4 @@ export const logger = winston.createLogger({
   level: process.env.LOG_LEVEL || 'info',
   format: logFormat,
   defaultMeta: { service: 'driftboard-api' },
-  transports: [
-    new winston.transports.File({ 
-      filename: 'logs/error.log', 
-      level: 'error' 
-    }),
-    new winston.transports.File({ 
-      filename: 'logs/combined.log' 
-    }),
-  ],
-});
-
-if (process.env.NODE_ENV !== 'production') {
-  logger.add(new winston.transports.Console({
-    format: winston.format.combine(
-      winston.format.colorize(),
-      winston.format.simple()
-    )
-  }));
-}
-
-// Request logging middleware
-export const requestLogger = (req: Request, res: Response, next: NextFunction) => {
-  logger.info('HTTP Request', {
-    method: req.method,
-    url: req.url,
-    userAgent: req.get('User-Agent'),
-    ip: req.ip,
-    userId: req.user?.id,
-  });
-  next();
-};
-```
-
-### Health Check Endpoints
-```typescript
-// backend/src/routes/health.ts
-export const healthRouter = Router();
-
-healthRouter.get('/health', async (req, res) => {
-  const checks = {
-    server: 'ok',
-    database: 'checking',
-    timestamp: new Date().toISOString(),
-  };
-
-  try {
-    // Check database connection
-    await prisma.$queryRaw`SELECT 1`;
-    checks.database = 'ok';
-  } catch (error) {
-    checks.database = 'error';
-    logger.error('Database health check failed', error);
-  }
-
-  const status = Object.values(checks).includes('error') ? 500 : 200;
-  res.status(status).json(checks);
-});
-
-healthRouter.get('/metrics', metricsEndpoint);
-```
-
-### Log Aggregation (Future)
-```yaml
-# docker-compose.monitoring.yml
-version: '3.8'
-
-services:
-  # ... existing services ...
-
-  loki:
-    image: grafana/loki:latest
-    ports:
-      - "3100:3100"
-    volumes:
-      - ./monitoring/loki.yml:/etc/loki/local-config.yaml
-    command: -config.file=/etc/loki/local-config.yaml
-
-  promtail:
-    image: grafana/promtail:latest
-    volumes:
-      - logs:/var/log
-      - ./monitoring/promtail.yml:/etc/promtail/config.yml
-    command: -config.file=/etc/promtail/config.yml
-
-  grafana:
-    image: grafana/grafana:latest
-    ports:
-      - "3001:3000"
-    environment:
-      - GF_SECURITY_ADMIN_PASSWORD=admin
-    volumes:
-      - grafana_data:/var/lib/grafana
-
-volumes:
-  grafana_data:
-```
+  transports:

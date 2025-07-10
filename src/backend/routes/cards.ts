@@ -1,5 +1,5 @@
 import { Router, Request, Response, NextFunction } from 'express';
-import { ApiResponse, UpdateCardDto, MoveCardDto, Card } from '../../shared/types/index.js';
+import { ApiResponse, UpdateCardDto, Card } from '../../shared/types/index.js';
 import { prisma } from '../services/database.js';
 import { authMiddleware } from '../middleware/authMiddleware.js';
 
@@ -42,7 +42,7 @@ router.get('/:id', async (req: Request, res: Response, next: NextFunction): Prom
 
     const response: ApiResponse<Card> = {
       success: true,
-      data: card,
+      data: card as Card,
     };
 
     res.json(response);
@@ -148,7 +148,7 @@ router.put('/:id', async (req: Request, res: Response, next: NextFunction): Prom
 
     const response: ApiResponse<Card> = {
       success: true,
-      data: updatedCard,
+      data: updatedCard as Card,
       message: 'Card updated successfully',
     };
 
@@ -266,7 +266,7 @@ router.put('/:id/move', async (req: Request, res: Response, next: NextFunction):
 
     const response: ApiResponse<Card> = {
       success: true,
-      data: updatedCard,
+      data: updatedCard as Card,
       message: 'Card moved successfully',
     };
 

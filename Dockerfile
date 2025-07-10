@@ -1,18 +1,18 @@
-# Multi-stage Docker build for DriftBoard monolithic application
+# Multi-stage Docker build for DriftBoard
 
 # Stage 1: Build frontend
-FROM node:20-alpine AS frontend-builder
+FROM node:22-alpine AS frontend-builder
 
 WORKDIR /app/frontend
 COPY src/frontend/package*.json ./
-RUN npm ci --only=production
+RUN npm ci --include=dev
 
 COPY src/frontend/ ./
 COPY src/shared/ ../shared/
 RUN npm run build
 
 # Stage 2: Build backend
-FROM node:20-alpine AS backend-builder
+FROM node:22-alpine AS backend-builder
 
 WORKDIR /app
 COPY package*.json ./
@@ -22,17 +22,20 @@ COPY src/shared/ ./src/shared/
 COPY src/backend/ ./src/backend/
 
 # Install dependencies and generate Prisma client
-RUN npm ci --only=production
+RUN npm ci --omit=dev --ignore-scripts
 RUN npx prisma generate
 
 # Build backend
 RUN npm run build:backend
 
-# Stage 3: Production runtime
-FROM node:20-alpine AS runtime
+# Copy generated Prisma client to dist directory
+RUN mkdir -p dist/shared/generated && cp -r src/shared/generated/* dist/shared/generated/
 
-# Install SQLite and other dependencies
-RUN apk add --no-cache sqlite
+# Stage 3: Production runtime
+FROM node:22-alpine AS runtime
+
+# Install SQLite and OpenSSL 3.x for Prisma 6
+RUN apk add --no-cache sqlite openssl3
 
 WORKDIR /app
 
@@ -40,8 +43,12 @@ WORKDIR /app
 COPY package*.json ./
 COPY tsconfig*.json ./
 
+# Set Prisma environment variables for Alpine Linux (auto-detect architecture)
+ENV OPENSSL_CONF=/dev/null
+
 # Copy built backend
-COPY --from=backend-builder /app/src/backend/dist ./dist/
+COPY --from=backend-builder /app/dist/backend ./dist/backend/
+COPY --from=backend-builder /app/dist/shared ./dist/shared/
 COPY --from=backend-builder /app/src/shared ./src/shared/
 COPY --from=backend-builder /app/node_modules ./node_modules/
 
@@ -65,4 +72,4 @@ HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
   CMD node -e "http.get('http://localhost:8000/api/health', (res) => { process.exit(res.statusCode === 200 ? 0 : 1) })" || exit 1
 
 # Start the application
-CMD ["node", "dist/server.js"]
+CMD ["node", "dist/backend/server.js"]

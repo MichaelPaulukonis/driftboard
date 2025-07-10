@@ -1,28 +1,59 @@
-# Docker Compose for DriftBoard development
-
-version: '3.8'
+# Docker Compose for DriftBoard with Nginx Reverse Proxy
 
 services:
-  driftboard:
+  # Backend API Server
+  backend:
     build:
       context: .
-      dockerfile: Dockerfile
-    ports:
-      - "8000:8000"
-    volumes:
-      - ./data:/app/data
-      - ./backups:/app/backups
-    environment:
-      - NODE_ENV=production
-      - DATABASE_URL=file:/app/data/app.db
-      - PORT=8000
+      dockerfile: Dockerfile.backend
+    container_name: driftboard-backend
     restart: unless-stopped
+    environment:
+      - NODE_ENV=development
+      - DATABASE_URL=file:/app/data/app.db
+    volumes:
+      - ./prisma/data:/app/data
+      - ./backups:/app/backups
+    networks:
+      - driftboard-network
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8000/api/health"]
+      test: ["CMD", "node", "-e", "http.get('http://localhost:8000/api/health', (res) => { process.exit(res.statusCode === 200 ? 0 : 1) })"]
       interval: 30s
       timeout: 10s
       retries: 3
       start_period: 40s
+
+  # Nginx Reverse Proxy & Static File Server
+  nginx:
+    image: nginx:alpine
+    container_name: driftboard-nginx
+    ports:
+      - "8000:80"
+    volumes:
+      - ./nginx.conf:/etc/nginx/conf.d/default.conf
+      - frontend-dist:/usr/share/nginx/html
+    depends_on:
+      backend:
+        condition: service_healthy
+      frontend-builder:
+        condition: service_completed_successfully
+    networks:
+      - driftboard-network
+    restart: unless-stopped
+
+  # Frontend Builder (builds and exits)
+  frontend-builder:
+    build:
+      context: .
+      dockerfile: Dockerfile.frontend
+    container_name: driftboard-frontend-builder
+    volumes:
+      - frontend-dist:/app/dist
+    healthcheck:
+      test: ["CMD-SHELL", "exit 0"] # Dummy healthcheck for service_completed_successfully
+      interval: 1s
+      timeout: 1s
+      retries: 1
 
   # Optional: Backup service
   backup:
@@ -32,6 +63,8 @@ services:
       - ./backups:/backups
     command: |
       sh -c "while true; do 
+        echo 'Waiting for database to be ready...'
+        while [ ! -f /data/app.db ]; do sleep 5; done;
         echo 'Creating backup at $(date)'
         cp /data/app.db /backups/backup-$(date +%Y%m%d-%H%M%S).db
         echo 'Cleaning old backups (keeping last 7 days)'
@@ -41,8 +74,16 @@ services:
       done"
     restart: unless-stopped
     depends_on:
-      - driftboard
+      backend:
+        condition: service_healthy
+    networks:
+      - driftboard-network
 
 volumes:
+  frontend-dist:
   data:
   backups:
+
+networks:
+  driftboard-network:
+    driver: bridge

@@ -24,22 +24,14 @@ A modern, self-hosted personal kanban board application built with React, TypeSc
 
 ## 🏗️ Architecture
 
-This application uses **Approach #1: Monolithic Full-Stack with SQLite** for maximum simplicity and ease of deployment.
+This application utilizes a multi-container architecture orchestrated by Docker Compose to create a robust and scalable development environment that mirrors a production setup. This approach separates the frontend, backend, and other services into distinct containers.
 
-```
-┌─────────────────────────────────────────────────────────────────┐
-│                     Single Docker Container                    │
-│                                                                 │
-│  ┌─────────────────┐  ┌─────────────────┐  ┌─────────────────┐ │
-│  │   React SPA     │  │   Express API   │  │     SQLite      │ │
-│  │   (Built)       │◄─┤   + TypeScript  │◄─┤   + File-based  │ │
-│  │   Static Files  │  │   + Prisma ORM  │  │   + WAL Mode    │ │
-│  │                 │  │                 │  │                 │ │
-│  │   Served by     │  │   Port: 8000    │  │   Volume Mount  │ │
-│  │   Express       │  │   + Static      │  │   /data/app.db  │ │
-│  └─────────────────┘  └─────────────────┘  └─────────────────┘ │
-└─────────────────────────────────────────────────────────────────┘
-```
+The key services are:
+-   **Nginx:** Serves the static React frontend application and acts as a reverse proxy, directing API requests to the backend service.
+-   **Backend:** A Node.js/Express container that runs the application's REST API and communicates with the database.
+-   **Backup:** A utility container responsible for performing periodic backups of the database.
+
+For a complete overview and detailed diagrams of the system, please refer to the [**Architecture Documentation](./docs/architecture/01-system-overview.md)**.
 
 ## 🛠️ Technology Stack
 

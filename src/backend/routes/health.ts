@@ -7,7 +7,7 @@ const router = Router();
  * Health check endpoint
  * GET /api/health
  */
-router.get('/', (req: Request, res: Response) => {
+router.get('/', (_req: Request, res: Response) => {
   const response: ApiResponse = {
     success: true,
     data: {

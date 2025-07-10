@@ -2,6 +2,7 @@ import { Router, Request, Response, NextFunction } from 'express';
 import { prisma } from '../services/database.js';
 import { AppError } from '../middleware/errorHandler.js';
 import { ApiResponse, CreateBoardDto, UpdateBoardDto, BoardWithDetails } from '../../shared/types/index.js';
+import { authMiddleware } from '../middleware/authMiddleware.js';
 
 const router = Router();
 
@@ -59,6 +60,10 @@ router.get('/:id', async (req: Request, res: Response, next: NextFunction) => {
       throw new AppError('User not authenticated', 401, 'NOT_AUTHENTICATED');
     }
 
+    if (!boardId) {
+      throw new AppError('Board ID is required', 400, 'INVALID_INPUT');
+    }
+
     const board = await prisma.board.findFirst({
       where: { 
         id: boardId,
@@ -85,7 +90,7 @@ router.get('/:id', async (req: Request, res: Response, next: NextFunction) => {
 
     const response: ApiResponse<BoardWithDetails> = {
       success: true,
-      data: board,
+      data: board as BoardWithDetails,
       message: 'Board retrieved successfully',
     };
 
@@ -167,6 +172,10 @@ router.put('/:id', async (req: Request, res: Response, next: NextFunction) => {
       throw new AppError('User not authenticated', 401, 'NOT_AUTHENTICATED');
     }
 
+    if (!boardId) {
+      throw new AppError('Board ID is required', 400, 'INVALID_INPUT');
+    }
+
     const { name, description, position }: UpdateBoardDto = req.body;
 
     // Verify board exists and belongs to user
@@ -205,7 +214,7 @@ router.put('/:id', async (req: Request, res: Response, next: NextFunction) => {
 
     const response: ApiResponse<BoardWithDetails> = {
       success: true,
-      data: board,
+      data: board as BoardWithDetails,
       message: 'Board updated successfully',
     };
 
@@ -226,6 +235,10 @@ router.delete('/:id', async (req: Request, res: Response, next: NextFunction) =>
 
     if (!userId) {
       throw new AppError('User not authenticated', 401, 'NOT_AUTHENTICATED');
+    }
+
+    if (!boardId) {
+      throw new AppError('Board ID is required', 400, 'INVALID_INPUT');
     }
 
     // Verify board exists and belongs to user
@@ -268,6 +281,10 @@ router.post('/:id/lists', async (req: Request, res: Response, next: NextFunction
       throw new AppError('User not authenticated', 401, 'NOT_AUTHENTICATED');
     }
 
+    if (!boardId) {
+      throw new AppError('Board ID is required', 400, 'INVALID_INPUT');
+    }
+
     const { name, position }: { name: string; position?: number } = req.body;
 
     if (!name || name.trim().length === 0) {
@@ -293,7 +310,7 @@ router.post('/:id/lists', async (req: Request, res: Response, next: NextFunction
         where: { boardId },
         _max: { position: true },
       });
-      listPosition = (maxPosition._max.position ?? -1) + 1;
+      listPosition = (maxPosition._max?.position ?? -1) + 1;
     } else {
       // If position is specified, shift existing lists
       await prisma.list.updateMany({

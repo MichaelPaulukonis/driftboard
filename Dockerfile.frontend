@@ -1,0 +1,22 @@
+# Frontend-only Dockerfile for DriftBoard
+# This Dockerfile builds the static assets for the frontend.
+# The output is placed into a volume by Docker Compose.
+FROM node:22-alpine AS frontend-builder
+
+WORKDIR /app
+
+# Copy frontend package files and install dependencies
+COPY src/frontend/package*.json ./
+RUN npm ci --include=dev
+
+# Copy source files
+# Note: We copy shared files to a location accessible by the frontend build process
+COPY src/frontend/ ./
+COPY src/shared/ ../shared/
+
+# Build the frontend application
+RUN npm run build
+
+# This container's purpose is just to build the files.
+# The resulting /app/dist directory will be mounted as a volume
+# by docker-compose, so no CMD is needed.

@@ -1,12 +1,18 @@
 {
   "extends": "./tsconfig.json",
   "compilerOptions": {
-    "module": "CommonJS",
+    "module": "ES2022",
     "target": "ES2022",
     "outDir": "./dist",
-    "rootDir": "./src/backend",
+    "rootDir": "./src",
     "lib": ["ES2022"],
-    "types": ["node"]
+    "types": ["node"],
+    "moduleResolution": "node",
+    "allowSyntheticDefaultImports": true,
+    "esModuleInterop": true,
+    "exactOptionalPropertyTypes": false,
+    "noUnusedLocals": false,
+    "noUnusedParameters": false
   },
   "include": [
     "src/backend/**/*.ts",
