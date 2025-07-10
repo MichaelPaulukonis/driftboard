@@ -3,7 +3,8 @@ import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { List } from './List';
 import { CreateListForm } from '@/components/forms/CreateListForm';
-import type { BoardWithDetails } from '@/shared/types';
+import { EditBoardForm } from '@/components/forms/EditBoardForm';
+import type { BoardWithDetails, UpdateBoardDto } from '@/shared/types';
 
 interface BoardProps {
   board: BoardWithDetails;
@@ -29,11 +30,55 @@ export const Board: React.FC<BoardProps> = ({
   className
 }) => {
   const [showCreateList, setShowCreateList] = useState(false);
+  const [showEditForm, setShowEditForm] = useState(false);
+  const [isEditingName, setIsEditingName] = useState(false);
+  const [isEditingDescription, setIsEditingDescription] = useState(false);
+  const [editName, setEditName] = useState(board.name);
+  const [editDescription, setEditDescription] = useState(board.description || '');
 
   const handleCreateList = useCallback((listData: any) => {
     onCreateList?.(board.id, listData);
     setShowCreateList(false);
   }, [board.id, onCreateList]);
+
+  const handleUpdateBoard = useCallback((updates: UpdateBoardDto) => {
+    onUpdateBoard?.(board.id, updates);
+    setShowEditForm(false);
+  }, [board.id, onUpdateBoard]);
+
+  const handleSaveName = useCallback(() => {
+    if (editName.trim() && editName !== board.name) {
+      onUpdateBoard?.(board.id, { name: editName.trim() });
+    }
+    setIsEditingName(false);
+  }, [editName, board.name, board.id, onUpdateBoard]);
+
+  const handleSaveDescription = useCallback(() => {
+    const newDescription = editDescription.trim() || undefined;
+    if (newDescription !== board.description) {
+      onUpdateBoard?.(board.id, { description: newDescription });
+    }
+    setIsEditingDescription(false);
+  }, [editDescription, board.description, board.id, onUpdateBoard]);
+
+  const handleKeyPress = useCallback((e: React.KeyboardEvent, field: 'name' | 'description') => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      if (field === 'name') {
+        handleSaveName();
+      } else {
+        handleSaveDescription();
+      }
+    } else if (e.key === 'Escape') {
+      if (field === 'name') {
+        setEditName(board.name);
+        setIsEditingName(false);
+      } else {
+        setEditDescription(board.description || '');
+        setIsEditingDescription(false);
+      }
+    }
+  }, [handleSaveName, handleSaveDescription, board.name, board.description]);
 
   // Sort lists by position (create a copy first since RTK Query data is immutable)
   const sortedLists = board.lists ? [...board.lists].sort((a, b) => a.position - b.position) : [];
@@ -42,7 +87,7 @@ export const Board: React.FC<BoardProps> = ({
     <div className={`h-full ${className}`}>
       {/* Header */}
       <div className="flex justify-between items-center mb-6">
-        <div>
+        <div className="flex-1">
           <div className="flex items-center gap-4 mb-2">
             <Link 
               to="/boards" 
@@ -51,11 +96,57 @@ export const Board: React.FC<BoardProps> = ({
               ← Back to Boards
             </Link>
           </div>
-          <h1 className="text-3xl font-bold text-gray-800">{board.name}</h1>
-          {board.description && (
-            <p className="text-gray-600 mt-2">{board.description}</p>
+          
+          {/* Board Name - editable on double-click */}
+          {isEditingName ? (
+            <input
+              type="text"
+              value={editName}
+              onChange={(e) => setEditName(e.target.value)}
+              onBlur={handleSaveName}
+              onKeyDown={(e) => handleKeyPress(e, 'name')}
+              className="text-3xl font-bold text-gray-800 bg-transparent border-2 border-blue-500 rounded px-2 py-1 focus:outline-none"
+              autoFocus
+            />
+          ) : (
+            <h1 
+              className="text-3xl font-bold text-gray-800 cursor-pointer hover:bg-gray-50 rounded px-2 py-1 -mx-2 -my-1"
+              onDoubleClick={() => {
+                setEditName(board.name);
+                setIsEditingName(true);
+              }}
+              title="Double-click to edit"
+            >
+              {board.name}
+            </h1>
+          )}
+          
+          {/* Board Description - editable on double-click */}
+          {isEditingDescription ? (
+            <textarea
+              value={editDescription}
+              onChange={(e) => setEditDescription(e.target.value)}
+              onBlur={handleSaveDescription}
+              onKeyDown={(e) => handleKeyPress(e, 'description')}
+              className="text-gray-600 mt-2 bg-transparent border-2 border-blue-500 rounded px-2 py-1 focus:outline-none resize-none w-full"
+              placeholder="Enter board description (optional)"
+              rows={2}
+              autoFocus
+            />
+          ) : (
+            <p 
+              className="text-gray-600 mt-2 cursor-pointer hover:bg-gray-50 rounded px-2 py-1 -mx-2 -my-1 min-h-[1.5rem]"
+              onDoubleClick={() => {
+                setEditDescription(board.description || '');
+                setIsEditingDescription(true);
+              }}
+              title="Double-click to edit"
+            >
+              {board.description || 'Add a description...'}
+            </p>
           )}
         </div>
+        
         <div className="flex gap-2">
           <Button
             onClick={() => setShowCreateList(true)}
@@ -64,13 +155,25 @@ export const Board: React.FC<BoardProps> = ({
             Add List
           </Button>
           <Button
-            onClick={() => onUpdateBoard?.(board.id, {})}
+            onClick={() => setShowEditForm(true)}
             variant="outline"
           >
             Edit Board
           </Button>
         </div>
       </div>
+
+      {/* Edit Board Modal/Form */}
+      {showEditForm && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <EditBoardForm
+            initialName={board.name}
+            initialDescription={board.description || undefined}
+            onSubmit={handleUpdateBoard}
+            onCancel={() => setShowEditForm(false)}
+          />
+        </div>
+      )}
 
       {/* Board Content */}
       <div className="flex gap-6 overflow-x-auto pb-6">

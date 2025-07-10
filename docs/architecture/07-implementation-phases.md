@@ -13,12 +13,12 @@ This document outlines a phased approach to implementing DriftBoard, breaking do
 - Core CRUD operations functional
 
 ### User Stories
-- ✅ As a user, I can sign in with Google/GitHub via Firebase Auth
+- ❌ As a user, I can sign in with Google/GitHub via Firebase Auth (Deferred to Phase 2)
 - ✅ As a user, I can create, view, edit, and delete boards
 - ✅ As a user, I can create, view, edit, and delete lists within boards
 - ✅ As a user, I can create, view, edit, and delete cards within lists
-- ✅ As a user, I can drag and drop cards between lists
-- ✅ As a user, I can access the app via Docker container
+- ❌ As a user, I can drag and drop cards between lists (Moved to Phase 2)
+- ❌ As a user, I can access the app via Docker container (Partial - needs production polish)
 
 ### Technical Implementation
 
@@ -219,12 +219,15 @@ CMD ["node", "dist/index.js"]
 ```
 
 ### Success Criteria
-- [ ] User can sign in and see their dashboard
-- [ ] User can create a board and see it in the list
-- [ ] User can create lists and cards
-- [ ] Drag and drop works between lists
-- [ ] App runs in Docker container
-- [ ] Data persists between container restarts
+- ❌ User can sign in and see their dashboard (Firebase Auth deferred)
+- ✅ User can create a board and see it in the list
+- ✅ User can create lists and cards
+- ❌ Drag and drop works between lists (Moved to Phase 2)
+- ❌ App runs in Docker container (Partial implementation)
+- ✅ Data persists between application restarts
+- ✅ Core CRUD operations work end-to-end
+- ✅ RTK Query API integration with cache invalidation
+- ✅ Real-time UI updates without page refresh
 
 ### Dependencies Complete
 - Firebase project setup and configuration
@@ -234,18 +237,23 @@ CMD ["node", "dist/index.js"]
 ## Phase 2: Enhanced Functionality (Week 3-4)
 
 ### Objectives
-- Rich card editing capabilities
+- Drag and drop functionality for cards and lists
+- Rich card editing capabilities  
 - Activity tracking and history
 - Search and filtering
 - Improved UI/UX with ShadCN components
+- Firebase authentication integration
 
 ### User Stories
-- ✅ As a user, I can add descriptions to cards with Markdown support
-- ✅ As a user, I can set due dates on cards
-- ✅ As a user, I can add labels to cards for categorization
-- ✅ As a user, I can see activity history on cards
-- ✅ As a user, I can search across all boards and cards
-- ✅ As a user, I can archive boards and cards
+- ❌ As a user, I can drag and drop cards between lists (Priority #1)
+- ❌ As a user, I can reorder lists on a board via drag & drop  
+- ❌ As a user, I can sign in with Google/GitHub via Firebase Auth
+- ❌ As a user, I can add descriptions to cards with Markdown support
+- ❌ As a user, I can set due dates on cards
+- ❌ As a user, I can add labels to cards for categorization
+- ❌ As a user, I can see activity history on cards
+- ❌ As a user, I can search across all boards and cards
+- ❌ As a user, I can archive boards and cards
 
 ### Technical Implementation
 
