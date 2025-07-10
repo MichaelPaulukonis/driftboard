@@ -29,8 +29,8 @@ export const Board: React.FC<BoardProps> = ({
     setShowCreateList(false);
   }, [board.id, onCreateList]);
 
-  // Sort lists by position
-  const sortedLists = board.lists?.sort((a, b) => a.position - b.position) || [];
+  // Sort lists by position (create a copy first since RTK Query data is immutable)
+  const sortedLists = board.lists ? [...board.lists].sort((a, b) => a.position - b.position) : [];
 
   return (
     <div className={`h-full ${className}`}>

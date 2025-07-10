@@ -49,8 +49,8 @@ export const List: React.FC<ListProps> = ({
     }
   }, [handleSaveName, list.name]);
 
-  // Sort cards by position
-  const sortedCards = (list.cards || []).sort((a: CardType, b: CardType) => a.position - b.position);
+  // Sort cards by position (create a copy first since RTK Query data is immutable)
+  const sortedCards = (list.cards ? [...list.cards] : []).sort((a: CardType, b: CardType) => a.position - b.position);
 
   return (
     <Card className={`${className}`}>
