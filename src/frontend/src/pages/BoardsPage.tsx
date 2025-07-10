@@ -1,14 +1,36 @@
-import React from 'react';
-import { useNavigate } from 'react-router-dom';
-import { useGetBoardsQuery } from '../api/boardsApi';
+import { useState, useCallback } from 'react';
+import { useGetBoardsQuery, useCreateBoardMutation, useDeleteBoardMutation } from '../api/boardsApi';
+import { BoardCard } from '@/components/kanban/BoardCard';
+import { BoardForm } from '@/components/forms/BoardForm';
+import { Button } from '@/components/ui/button';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import type { CreateBoardDto } from '@/shared/types';
 
 export function BoardsPage() {
-  const navigate = useNavigate();
   const { data: boards, error, isLoading } = useGetBoardsQuery();
+  const [createBoard, { isLoading: isCreating }] = useCreateBoardMutation();
+  const [deleteBoard] = useDeleteBoardMutation();
+  
+  const [showCreateDialog, setShowCreateDialog] = useState(false);
 
-  const handleOpenBoard = (boardId: string) => {
-    navigate(`/boards/${boardId}`);
-  };
+  const handleCreateBoard = useCallback(async (boardData: CreateBoardDto) => {
+    try {
+      await createBoard(boardData).unwrap();
+      setShowCreateDialog(false);
+    } catch (error) {
+      console.error('Failed to create board:', error);
+    }
+  }, [createBoard]);
+
+  const handleDeleteBoard = useCallback(async (boardId: string) => {
+    if (window.confirm('Are you sure you want to delete this board?')) {
+      try {
+        await deleteBoard(boardId).unwrap();
+      } catch (error) {
+        console.error('Failed to delete board:', error);
+      }
+    }
+  }, [deleteBoard]);
 
   if (isLoading) {
     return (
@@ -30,39 +52,22 @@ export function BoardsPage() {
   }
 
   return (
-    <div className="container mx-auto p-6">
+    <div>
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-3xl font-bold text-gray-800">My Boards</h1>
-        <button className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium transition-colors">
+        <Button onClick={() => setShowCreateDialog(true)}>
           Create Board
-        </button>
+        </Button>
       </div>
 
       {boards && boards.length > 0 ? (
-        <div className="board-grid">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
           {boards.map((board) => (
-            <div key={board.id} className="board-card">
-              <h3 className="text-xl font-semibold text-gray-800 mb-2">
-                {board.name}
-              </h3>
-              {board.description && (
-                <p className="text-gray-600 mb-4">{board.description}</p>
-              )}
-              <div className="flex justify-between items-center text-sm text-gray-500">
-                <span>{board.lists?.length || 0} lists</span>
-                <span>
-                  {board.lists?.reduce((total, list) => total + (list.cards?.length || 0), 0) || 0} cards
-                </span>
-              </div>
-              <div className="mt-4">
-                <button 
-                  onClick={() => handleOpenBoard(board.id)}
-                  className="w-full bg-gray-100 hover:bg-gray-200 text-gray-800 py-2 rounded font-medium transition-colors"
-                >
-                  Open Board
-                </button>
-              </div>
-            </div>
+            <BoardCard
+              key={board.id}
+              board={board}
+              onDelete={handleDeleteBoard}
+            />
           ))}
         </div>
       ) : (
@@ -74,11 +79,24 @@ export function BoardsPage() {
           </div>
           <h3 className="text-lg font-medium text-gray-900 mb-2">No boards yet</h3>
           <p className="text-gray-500 mb-4">Get started by creating your first board.</p>
-          <button className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg font-medium transition-colors">
+          <Button onClick={() => setShowCreateDialog(true)}>
             Create Your First Board
-          </button>
+          </Button>
         </div>
       )}
+
+      <Dialog open={showCreateDialog} onOpenChange={setShowCreateDialog}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Create New Board</DialogTitle>
+          </DialogHeader>
+          <BoardForm
+            onSubmit={handleCreateBoard}
+            onCancel={() => setShowCreateDialog(false)}
+            isLoading={isCreating}
+          />
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
