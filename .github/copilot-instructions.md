@@ -112,46 +112,68 @@ When suggesting code, please use the following technologies:
 
 ### Plan-File Requirement
 
-1. **Before Any Code Changes**: ALL feature requests, architectural changes, or significant modifications must begin with creating a plan-file in `docs/plans/`
+1. **Before Any Code Changes**  
+   ALL feature requests, architectural changes, or significant modifications must begin with creating—or reusing—an appropriate plan-file in `docs/plans/`.
 
-2. **User Confirmation Protocol**: When a user requests changes to the project, respond with:
-   
-   "This change requires a plan-file to be created first in `docs/plans/`. This helps ensure proper architecture and prevents technical debt. Are you sure you want to proceed without creating a plan-file first?"
+2. **User Confirmation Protocol**  
+   When a user requests changes:
 
-3. **Plan-File Naming Convention**: Formally defined in Section 15.4:
-   ```
-   Format: NN.semantic-name.md
-   Examples:
-   - 01.mvp-completion-summary.md  
-   - 02.e2e-testing-setup.md
-   - 03.monolithic-implementation.md
-   ```
+   1. **Inspect for Existing Plans**  
+      - If you find one or more candidate files in `docs/plans/`, present:  
+        > “I’ve found an existing plan-file (`NN.semantic-name.md`) that seems relevant.  
+        > **Options:**  
+        > 1. Update & use this plan  
+        > 2. Draft a new plan-file  
+        > 3. Proceed without a plan-file”  
 
-4. **Required Plan Contents**:
-   - **Problem Statement**: Clear description of what needs to be solved
-   - **Requirements**: Functional and non-functional requirements
-   - **Technical Approach**: Architecture decisions and implementation strategy
-   - **Implementation Steps**: Ordered list of development tasks
-   - **Testing Strategy**: How the changes will be validated
-   - **Risks and Mitigation**: Potential issues and how to address them
-   - **Dependencies**: Other systems or features that might be affected
+   2. **Fallback to Creation Prompt**  
+      - If no suitable candidate exists, ask:  
+        > “No plan-file covers this change.  
+        > **Options:**  
+        > 1. Create a new plan-file now  
+        > 2. Proceed without a plan-file”  
 
-5. **Exceptions and Scope**: 
-   - **Plan-file creation itself**: Creating, updating, or organizing plan-files does NOT require a plan-file
-   - **Documentation updates**: Adding to existing docs, README updates, or comment improvements
-   - **Minor bug fixes**: Single-line fixes or typo corrections that don't change functionality
-   - **Everything else**: Feature additions, architecture changes, new components, API modifications, database schema changes, etc. ALL require plan-files
+   3. **Honor the User’s Choice**  
+      - If they pick “proceed without…,” continue directly to step 3 of the **Implementation Workflow**.  
+      - Do **not** re-prompt on that same change request.
+
+3. **Plan-File Naming Convention**  
+   See Section 15.4 for formal rules.  
+```
+
+Format: NN.semantic-name.md
+Examples:
+
+* 01.mvp-completion-summary.md
+* 02.e2e-testing-setup.md
+* 03.monolithic-implementation.md
+
+```
+
+4. **Required Plan Contents**  
+- **Problem Statement**  
+- **Requirements** (functional & non-functional)  
+- **Technical Approach**  
+- **Implementation Steps**  
+- **Testing Strategy**  
+- **Risks & Mitigation**  
+- **Dependencies**
+
+5. **Exceptions and Scope**  
+- **Plan-file creation itself**  
+- **Documentation updates** (README tweaks, comments)  
+- **Minor bug fixes** (single-line or typo corrections)  
+- **All other significant work** requires a plan-file.
 
 ### Implementation Workflow
 
-1. User requests change → Prompt for plan-file creation
-2. Create plan-file with proper naming convention
-3. Review and approve plan with user
-4. Implement code following the approved plan
-5. Test according to the testing strategy in the plan
-
-This process ensures architectural consistency and prevents technical debt accumulation.
-
+1. **Detect or Create Plan**  
+- **Detect**: Scan `docs/plans/` for an existing relevant plan-file.  
+- **Create**: If none found (or user opts for a new file), generate `NN.semantic-name.md` with the required sections.  
+2. **Review & Approve**  
+3. **Implement Code**  
+4. **Test** (per the plan’s Testing Strategy)  
+5. **Merge & Close Plan**
 ## 4. Prettier Configuration
 
 1. **Semicolons**: Always use semicolons for clarity
@@ -410,46 +432,78 @@ const handleDragEnd = (event: DragEndEvent) => {
 
 ## 12. Testing Strategy
 
-1. **Unit Tests**: Use Vitest for business logic and utilities:
-   ```typescript
-   import { describe, it, expect } from 'vitest';
-   import { calculatePosition } from '../utils/position';
-   
-   describe('calculatePosition', () => {
-     it('should calculate position between two items', () => {
-       expect(calculatePosition(1000, 2000)).toBe(1500);
-     });
-   });
-   ```
+Follow a **testing-first** approach when practical, but strict Test-Driven Development (TDD) is not required. Code may be written before tests, but tests must follow immediately and cover the implemented logic.
 
-2. **Component Tests**: React Testing Library for user interactions (add when implementing component tests):
-   ```typescript
-   import { render, screen, fireEvent } from '@testing-library/react';
-   import { Provider } from 'react-redux';
-   import { BoardCard } from '../BoardCard';
-   
-   test('should call onEdit when clicked', () => {
-     const mockOnEdit = vi.fn();
-     render(<BoardCard board={mockBoard} onEdit={mockOnEdit} />);
-     
-     fireEvent.click(screen.getByText(mockBoard.name));
-     expect(mockOnEdit).toHaveBeenCalledWith(mockBoard.id);
-   });
-   ```
+> **Constraint**: Backend logic must be tested before implementing any dependent frontend components.
 
-3. **E2E Tests**: Playwright for critical user flows:
-   ```typescript
-   import { test, expect } from '@playwright/test';
-   
-   test('should create and delete a board', async ({ page }) => {
-     await page.goto('/boards');
-     await page.click('[data-testid=create-board]');
-     await page.fill('[data-testid=board-name]', 'Test Board');
-     await page.click('[data-testid=save-board]');
-     
-     await expect(page.locator('text=Test Board')).toBeVisible();
-   });
-   ```
+### 12.1 Unit Tests
+
+* Use **Vitest** to test pure functions, utilities, and backend logic.
+* Each function must have at least one test for expected behavior and edge cases.
+* **If backend logic includes external API calls (e.g., Firebase Auth), use mocking to isolate and verify behavior.**
+
+```ts
+import { describe, it, expect, vi } from 'vitest';
+import { signInWithEmailAndPassword } from 'firebase/auth';
+import { auth } from '../firebase';
+import { loginUser } from '../authService';
+
+vi.mock('firebase/auth', () => ({
+  signInWithEmailAndPassword: vi.fn(),
+}));
+
+describe('loginUser', () => {
+  it('calls Firebase signInWithEmailAndPassword with correct credentials', async () => {
+    const email = 'test@example.com';
+    const password = 'secret123';
+    (signInWithEmailAndPassword as any).mockResolvedValue({ user: { uid: 'abc' } });
+
+    const result = await loginUser(email, password);
+
+    expect(signInWithEmailAndPassword).toHaveBeenCalledWith(auth, email, password);
+    expect(result.user.uid).toBe('abc');
+  });
+});
+```
+
+### 12.2 Component Tests
+
+* Use **React Testing Library** to verify component behavior and interactions.
+* Add tests during or immediately after implementation.
+* Prefer semantic queries (`getByRole`, `getByLabelText`, etc.) over test IDs unless necessary.
+
+```ts
+import { render, screen, fireEvent } from '@testing-library/react';
+import { BoardCard } from '../BoardCard';
+
+test('should call onEdit when clicked', () => {
+  const mockOnEdit = vi.fn();
+  render(<BoardCard board={mockBoard} onEdit={mockOnEdit} />);
+  fireEvent.click(screen.getByText(mockBoard.name));
+  expect(mockOnEdit).toHaveBeenCalledWith(mockBoard.id);
+});
+```
+
+### 12.3 End-to-End Tests
+
+* Use **Playwright** to validate end-to-end user flows in the UI.
+* E2E tests must include:
+
+  * Navigation and route transitions
+  * Form behavior
+  * CRUD operations
+
+```ts
+import { test, expect } from '@playwright/test';
+
+test('should create and delete a board', async ({ page }) => {
+  await page.goto('/boards');
+  await page.click('[data-testid=create-board]');
+  await page.fill('[data-testid=board-name]', 'Test Board');
+  await page.click('[data-testid=save-board]');
+  await expect(page.locator('text=Test Board')).toBeVisible();
+});
+```
 
 ## 13. Performance Optimization
 
