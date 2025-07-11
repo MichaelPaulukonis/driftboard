@@ -1,61 +1,77 @@
 import { Request, Response, NextFunction } from 'express';
+import admin from 'firebase-admin';
 import { AppError } from './errorHandler.js';
+import { prisma } from '../services/database.js';
 
 // Extend Request type to include user
 declare global {
   namespace Express {
     interface Request {
-      user?: {
-        uid: string;
-        email?: string;
-        name?: string;
-      };
+      user?: admin.auth.DecodedIdToken & { id: string }; // Ensure id is available
     }
   }
 }
 
 /**
- * Simple auth middleware for development (bypasses Firebase)
- * In production, this should be replaced with proper Firebase auth
+ * Middleware to verify Firebase ID token and handle user creation.
  */
 export const authMiddleware = async (
   req: Request,
   _res: Response,
   next: NextFunction,
 ): Promise<void> => {
-  try {
-    // For development and testing, use a mock user
-    // TODO: Replace with actual Firebase auth
-    if (process.env.NODE_ENV === 'development' || process.env.NODE_ENV === 'test') {
+  // In test environment, mock user from a special header
+  if (process.env.NODE_ENV === 'test') {
+    const testUserUid = req.headers['x-test-user-uid'] as string;
+
+    if (testUserUid) {
+      // This mock allows us to test authenticated routes
       req.user = {
-        uid: 'test-user-id',
-        email: 'test@example.com',
+        uid: testUserUid,
+        email: `${testUserUid}@example.com`,
         name: 'Test User',
-      };
+        id: testUserUid, // For consistency
+      } as unknown as admin.auth.DecodedIdToken & { id: string };
       return next();
     }
+    // If no header, proceed as unauthenticated to test protected routes
+  }
 
-    // In production, require proper authentication
-    const authHeader = req.headers.authorization;
-    
-    if (!authHeader || !authHeader.startsWith('Bearer ')) {
-      throw new AppError('No token provided', 401, 'NO_TOKEN');
+  const authHeader = req.headers.authorization;
+
+  if (!authHeader || !authHeader.startsWith('Bearer ')) {
+    return next(new AppError('Unauthorized: No token provided or invalid format', 401, 'NO_TOKEN'));
+  }
+
+  const idToken = authHeader.split('Bearer ')[1];
+
+  if (!idToken) {
+    return next(new AppError('Unauthorized: Token is missing', 401, 'NO_TOKEN'));
+  }
+
+  try {
+    const decodedToken = await admin.auth().verifyIdToken(idToken);
+
+    // Check if user exists in our DB, if not, create them
+    let user = await prisma.user.findUnique({
+      where: { id: decodedToken.uid },
+    });
+
+    if (!user) {
+      user = await prisma.user.create({
+        data: {
+          id: decodedToken.uid,
+          email: decodedToken.email || '', // email is optional on firebase token
+          name: decodedToken.name,
+        },
+      });
+      console.log(`New user created: ${user.id} - ${user.email}`);
     }
 
-    // For now, just accept any bearer token in production
-    // TODO: Implement proper Firebase token verification
-    req.user = {
-      uid: 'test-user-id',
-      email: 'test@example.com',
-      name: 'Test User',
-    };
-
+    req.user = { ...decodedToken, id: user.id }; // Attach user to request
     next();
   } catch (error) {
-    if (error instanceof AppError) {
-      next(error);
-    } else {
-      next(new AppError('Authentication failed', 401, 'AUTH_FAILED'));
-    }
+    console.error('Error verifying Firebase ID token:', error);
+    next(new AppError('Forbidden: Invalid or expired token', 403, 'INVALID_TOKEN'));
   }
 };

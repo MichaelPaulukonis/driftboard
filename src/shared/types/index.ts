@@ -16,7 +16,6 @@ export interface Board {
   name: string;
   description: string | null;
   userId: string;
-  position: number;
   archivedAt: Date | null;
   createdAt: Date;
   updatedAt: Date;

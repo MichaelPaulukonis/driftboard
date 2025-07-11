@@ -1,4 +1,5 @@
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
+import { RootState } from '../store';
 import { 
   BoardWithDetails, 
   CreateBoardDto, 
@@ -18,14 +19,10 @@ export const api = createApi({
   reducerPath: 'api',
   baseQuery: fetchBaseQuery({
     baseUrl: '/api',
-    prepareHeaders: (headers) => {
-      // In development, we don't need auth headers
-      // TODO: Add Firebase auth token in production
-      if (process.env.NODE_ENV === 'production') {
-        const token = localStorage.getItem('firebase-auth-token');
-        if (token) {
-          headers.set('authorization', `Bearer ${token}`);
-        }
+    prepareHeaders: (headers, { getState }) => {
+      const token = (getState() as RootState).auth.user?.idToken;
+      if (token) {
+        headers.set('authorization', `Bearer ${token}`);
       }
       return headers;
     },

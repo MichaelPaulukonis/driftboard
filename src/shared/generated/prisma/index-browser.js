@@ -129,11 +129,10 @@ exports.Prisma.BoardScalarFieldEnum = {
   id: 'id',
   name: 'name',
   description: 'description',
-  userId: 'userId',
-  position: 'position',
-  archivedAt: 'archivedAt',
   createdAt: 'createdAt',
-  updatedAt: 'updatedAt'
+  updatedAt: 'updatedAt',
+  archivedAt: 'archivedAt',
+  userId: 'userId'
 };
 
 exports.Prisma.ListScalarFieldEnum = {

@@ -3,6 +3,7 @@ import cors from 'cors';
 import helmet from 'helmet';
 import compression from 'compression';
 import dotenv from 'dotenv';
+import admin from 'firebase-admin';
 
 import { errorHandler } from './middleware/errorHandler.js';
 import { requestLogger } from './middleware/requestLogger.js';
@@ -16,9 +17,36 @@ import { cardsRouter } from './routes/cards.js';
 // Load environment variables
 dotenv.config();
 
+// Initialize Firebase Admin SDK
+const firebaseProjectId = process.env.FIREBASE_PROJECT_ID;
+if (!firebaseProjectId) {
+  console.error('🔥 FATAL ERROR: FIREBASE_PROJECT_ID is not set in the environment variables.');
+  process.exit(1);
+}
+
+try {
+  admin.initializeApp({
+    credential: admin.credential.applicationDefault(),
+    projectId: firebaseProjectId,
+  });
+  console.log('🌿 Firebase Admin SDK initialized successfully.');
+} catch (error: any) {
+  // In a watch mode environment, the server may be reloaded,
+  // trying to re-initialize the app. This is expected.
+  if (error.code === 'app/duplicate-app') {
+    console.log('🌿 Firebase Admin SDK already initialized.');
+  } else {
+    console.error('🔥 Error initializing Firebase Admin SDK:', error);
+    // Exit the process if initialization fails for any other reason
+    process.exit(1);
+  }
+}
+
 const app = express();
 const NODE_ENV = process.env.NODE_ENV || 'development';
-const PORT = process.env.PORT || (NODE_ENV === 'production' ? 8000 : 8001);
+const PORT =
+  process.env.PORT ||
+  (NODE_ENV === 'production' ? 8000 : NODE_ENV === 'test' ? 8002 : 8001);
 
 // Security middleware
 app.use(helmet({

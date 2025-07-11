@@ -2530,94 +2530,70 @@ export namespace Prisma {
 
   export type AggregateBoard = {
     _count: BoardCountAggregateOutputType | null
-    _avg: BoardAvgAggregateOutputType | null
-    _sum: BoardSumAggregateOutputType | null
     _min: BoardMinAggregateOutputType | null
     _max: BoardMaxAggregateOutputType | null
-  }
-
-  export type BoardAvgAggregateOutputType = {
-    position: number | null
-  }
-
-  export type BoardSumAggregateOutputType = {
-    position: number | null
   }
 
   export type BoardMinAggregateOutputType = {
     id: string | null
     name: string | null
     description: string | null
-    userId: string | null
-    position: number | null
-    archivedAt: Date | null
     createdAt: Date | null
     updatedAt: Date | null
+    archivedAt: Date | null
+    userId: string | null
   }
 
   export type BoardMaxAggregateOutputType = {
     id: string | null
     name: string | null
     description: string | null
-    userId: string | null
-    position: number | null
-    archivedAt: Date | null
     createdAt: Date | null
     updatedAt: Date | null
+    archivedAt: Date | null
+    userId: string | null
   }
 
   export type BoardCountAggregateOutputType = {
     id: number
     name: number
     description: number
-    userId: number
-    position: number
-    archivedAt: number
     createdAt: number
     updatedAt: number
+    archivedAt: number
+    userId: number
     _all: number
   }
 
-
-  export type BoardAvgAggregateInputType = {
-    position?: true
-  }
-
-  export type BoardSumAggregateInputType = {
-    position?: true
-  }
 
   export type BoardMinAggregateInputType = {
     id?: true
     name?: true
     description?: true
-    userId?: true
-    position?: true
-    archivedAt?: true
     createdAt?: true
     updatedAt?: true
+    archivedAt?: true
+    userId?: true
   }
 
   export type BoardMaxAggregateInputType = {
     id?: true
     name?: true
     description?: true
-    userId?: true
-    position?: true
-    archivedAt?: true
     createdAt?: true
     updatedAt?: true
+    archivedAt?: true
+    userId?: true
   }
 
   export type BoardCountAggregateInputType = {
     id?: true
     name?: true
     description?: true
-    userId?: true
-    position?: true
-    archivedAt?: true
     createdAt?: true
     updatedAt?: true
+    archivedAt?: true
+    userId?: true
     _all?: true
   }
 
@@ -2659,18 +2635,6 @@ export namespace Prisma {
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
      * 
-     * Select which fields to average
-    **/
-    _avg?: BoardAvgAggregateInputType
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
-     * 
-     * Select which fields to sum
-    **/
-    _sum?: BoardSumAggregateInputType
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
-     * 
      * Select which fields to find the minimum value
     **/
     _min?: BoardMinAggregateInputType
@@ -2701,8 +2665,6 @@ export namespace Prisma {
     take?: number
     skip?: number
     _count?: BoardCountAggregateInputType | true
-    _avg?: BoardAvgAggregateInputType
-    _sum?: BoardSumAggregateInputType
     _min?: BoardMinAggregateInputType
     _max?: BoardMaxAggregateInputType
   }
@@ -2711,14 +2673,11 @@ export namespace Prisma {
     id: string
     name: string
     description: string | null
-    userId: string
-    position: number
-    archivedAt: Date | null
     createdAt: Date
     updatedAt: Date
+    archivedAt: Date | null
+    userId: string
     _count: BoardCountAggregateOutputType | null
-    _avg: BoardAvgAggregateOutputType | null
-    _sum: BoardSumAggregateOutputType | null
     _min: BoardMinAggregateOutputType | null
     _max: BoardMaxAggregateOutputType | null
   }
@@ -2741,13 +2700,12 @@ export namespace Prisma {
     id?: boolean
     name?: boolean
     description?: boolean
-    userId?: boolean
-    position?: boolean
-    archivedAt?: boolean
     createdAt?: boolean
     updatedAt?: boolean
-    user?: boolean | UserDefaultArgs<ExtArgs>
+    archivedAt?: boolean
+    userId?: boolean
     lists?: boolean | Board$listsArgs<ExtArgs>
+    user?: boolean | UserDefaultArgs<ExtArgs>
     _count?: boolean | BoardCountOutputTypeDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["board"]>
 
@@ -2755,11 +2713,10 @@ export namespace Prisma {
     id?: boolean
     name?: boolean
     description?: boolean
-    userId?: boolean
-    position?: boolean
-    archivedAt?: boolean
     createdAt?: boolean
     updatedAt?: boolean
+    archivedAt?: boolean
+    userId?: boolean
     user?: boolean | UserDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["board"]>
 
@@ -2767,11 +2724,10 @@ export namespace Prisma {
     id?: boolean
     name?: boolean
     description?: boolean
-    userId?: boolean
-    position?: boolean
-    archivedAt?: boolean
     createdAt?: boolean
     updatedAt?: boolean
+    archivedAt?: boolean
+    userId?: boolean
     user?: boolean | UserDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["board"]>
 
@@ -2779,17 +2735,16 @@ export namespace Prisma {
     id?: boolean
     name?: boolean
     description?: boolean
-    userId?: boolean
-    position?: boolean
-    archivedAt?: boolean
     createdAt?: boolean
     updatedAt?: boolean
+    archivedAt?: boolean
+    userId?: boolean
   }
 
-  export type BoardOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "name" | "description" | "userId" | "position" | "archivedAt" | "createdAt" | "updatedAt", ExtArgs["result"]["board"]>
+  export type BoardOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "name" | "description" | "createdAt" | "updatedAt" | "archivedAt" | "userId", ExtArgs["result"]["board"]>
   export type BoardInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    user?: boolean | UserDefaultArgs<ExtArgs>
     lists?: boolean | Board$listsArgs<ExtArgs>
+    user?: boolean | UserDefaultArgs<ExtArgs>
     _count?: boolean | BoardCountOutputTypeDefaultArgs<ExtArgs>
   }
   export type BoardIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -2802,18 +2757,17 @@ export namespace Prisma {
   export type $BoardPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     name: "Board"
     objects: {
-      user: Prisma.$UserPayload<ExtArgs>
       lists: Prisma.$ListPayload<ExtArgs>[]
+      user: Prisma.$UserPayload<ExtArgs>
     }
     scalars: $Extensions.GetPayloadResult<{
       id: string
       name: string
       description: string | null
-      userId: string
-      position: number
-      archivedAt: Date | null
       createdAt: Date
       updatedAt: Date
+      archivedAt: Date | null
+      userId: string
     }, ExtArgs["result"]["board"]>
     composites: {}
   }
@@ -3208,8 +3162,8 @@ export namespace Prisma {
    */
   export interface Prisma__BoardClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
     readonly [Symbol.toStringTag]: "PrismaPromise"
-    user<T extends UserDefaultArgs<ExtArgs> = {}>(args?: Subset<T, UserDefaultArgs<ExtArgs>>): Prisma__UserClient<$Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
     lists<T extends Board$listsArgs<ExtArgs> = {}>(args?: Subset<T, Board$listsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ListPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+    user<T extends UserDefaultArgs<ExtArgs> = {}>(args?: Subset<T, UserDefaultArgs<ExtArgs>>): Prisma__UserClient<$Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
      * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -3242,11 +3196,10 @@ export namespace Prisma {
     readonly id: FieldRef<"Board", 'String'>
     readonly name: FieldRef<"Board", 'String'>
     readonly description: FieldRef<"Board", 'String'>
-    readonly userId: FieldRef<"Board", 'String'>
-    readonly position: FieldRef<"Board", 'Int'>
-    readonly archivedAt: FieldRef<"Board", 'DateTime'>
     readonly createdAt: FieldRef<"Board", 'DateTime'>
     readonly updatedAt: FieldRef<"Board", 'DateTime'>
+    readonly archivedAt: FieldRef<"Board", 'DateTime'>
+    readonly userId: FieldRef<"Board", 'String'>
   }
     
 
@@ -8141,11 +8094,10 @@ export namespace Prisma {
     id: 'id',
     name: 'name',
     description: 'description',
-    userId: 'userId',
-    position: 'position',
-    archivedAt: 'archivedAt',
     createdAt: 'createdAt',
-    updatedAt: 'updatedAt'
+    updatedAt: 'updatedAt',
+    archivedAt: 'archivedAt',
+    userId: 'userId'
   };
 
   export type BoardScalarFieldEnum = (typeof BoardScalarFieldEnum)[keyof typeof BoardScalarFieldEnum]
@@ -8235,16 +8187,16 @@ export namespace Prisma {
 
 
   /**
-   * Reference to a field of type 'Int'
+   * Reference to a field of type 'Float'
    */
-  export type IntFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Int'>
+  export type FloatFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Float'>
     
 
 
   /**
-   * Reference to a field of type 'Float'
+   * Reference to a field of type 'Int'
    */
-  export type FloatFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Float'>
+  export type IntFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Int'>
     
   /**
    * Deep Input Types
@@ -8313,26 +8265,24 @@ export namespace Prisma {
     id?: StringFilter<"Board"> | string
     name?: StringFilter<"Board"> | string
     description?: StringNullableFilter<"Board"> | string | null
-    userId?: StringFilter<"Board"> | string
-    position?: IntFilter<"Board"> | number
-    archivedAt?: DateTimeNullableFilter<"Board"> | Date | string | null
     createdAt?: DateTimeFilter<"Board"> | Date | string
     updatedAt?: DateTimeFilter<"Board"> | Date | string
-    user?: XOR<UserScalarRelationFilter, UserWhereInput>
+    archivedAt?: DateTimeNullableFilter<"Board"> | Date | string | null
+    userId?: StringFilter<"Board"> | string
     lists?: ListListRelationFilter
+    user?: XOR<UserScalarRelationFilter, UserWhereInput>
   }
 
   export type BoardOrderByWithRelationInput = {
     id?: SortOrder
     name?: SortOrder
     description?: SortOrderInput | SortOrder
-    userId?: SortOrder
-    position?: SortOrder
-    archivedAt?: SortOrderInput | SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
-    user?: UserOrderByWithRelationInput
+    archivedAt?: SortOrderInput | SortOrder
+    userId?: SortOrder
     lists?: ListOrderByRelationAggregateInput
+    user?: UserOrderByWithRelationInput
   }
 
   export type BoardWhereUniqueInput = Prisma.AtLeast<{
@@ -8342,29 +8292,25 @@ export namespace Prisma {
     NOT?: BoardWhereInput | BoardWhereInput[]
     name?: StringFilter<"Board"> | string
     description?: StringNullableFilter<"Board"> | string | null
-    userId?: StringFilter<"Board"> | string
-    position?: IntFilter<"Board"> | number
-    archivedAt?: DateTimeNullableFilter<"Board"> | Date | string | null
     createdAt?: DateTimeFilter<"Board"> | Date | string
     updatedAt?: DateTimeFilter<"Board"> | Date | string
-    user?: XOR<UserScalarRelationFilter, UserWhereInput>
+    archivedAt?: DateTimeNullableFilter<"Board"> | Date | string | null
+    userId?: StringFilter<"Board"> | string
     lists?: ListListRelationFilter
+    user?: XOR<UserScalarRelationFilter, UserWhereInput>
   }, "id">
 
   export type BoardOrderByWithAggregationInput = {
     id?: SortOrder
     name?: SortOrder
     description?: SortOrderInput | SortOrder
-    userId?: SortOrder
-    position?: SortOrder
-    archivedAt?: SortOrderInput | SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
+    archivedAt?: SortOrderInput | SortOrder
+    userId?: SortOrder
     _count?: BoardCountOrderByAggregateInput
-    _avg?: BoardAvgOrderByAggregateInput
     _max?: BoardMaxOrderByAggregateInput
     _min?: BoardMinOrderByAggregateInput
-    _sum?: BoardSumOrderByAggregateInput
   }
 
   export type BoardScalarWhereWithAggregatesInput = {
@@ -8374,11 +8320,10 @@ export namespace Prisma {
     id?: StringWithAggregatesFilter<"Board"> | string
     name?: StringWithAggregatesFilter<"Board"> | string
     description?: StringNullableWithAggregatesFilter<"Board"> | string | null
-    userId?: StringWithAggregatesFilter<"Board"> | string
-    position?: IntWithAggregatesFilter<"Board"> | number
-    archivedAt?: DateTimeNullableWithAggregatesFilter<"Board"> | Date | string | null
     createdAt?: DateTimeWithAggregatesFilter<"Board"> | Date | string
     updatedAt?: DateTimeWithAggregatesFilter<"Board"> | Date | string
+    archivedAt?: DateTimeNullableWithAggregatesFilter<"Board"> | Date | string | null
+    userId?: StringWithAggregatesFilter<"Board"> | string
   }
 
   export type ListWhereInput = {
@@ -8698,23 +8643,21 @@ export namespace Prisma {
     id?: string
     name: string
     description?: string | null
-    position: number
-    archivedAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
-    user: UserCreateNestedOneWithoutBoardsInput
+    archivedAt?: Date | string | null
     lists?: ListCreateNestedManyWithoutBoardInput
+    user: UserCreateNestedOneWithoutBoardsInput
   }
 
   export type BoardUncheckedCreateInput = {
     id?: string
     name: string
     description?: string | null
-    userId: string
-    position: number
-    archivedAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
+    archivedAt?: Date | string | null
+    userId: string
     lists?: ListUncheckedCreateNestedManyWithoutBoardInput
   }
 
@@ -8722,23 +8665,21 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
     description?: NullableStringFieldUpdateOperationsInput | string | null
-    position?: IntFieldUpdateOperationsInput | number
-    archivedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    user?: UserUpdateOneRequiredWithoutBoardsNestedInput
+    archivedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     lists?: ListUpdateManyWithoutBoardNestedInput
+    user?: UserUpdateOneRequiredWithoutBoardsNestedInput
   }
 
   export type BoardUncheckedUpdateInput = {
     id?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
     description?: NullableStringFieldUpdateOperationsInput | string | null
-    userId?: StringFieldUpdateOperationsInput | string
-    position?: IntFieldUpdateOperationsInput | number
-    archivedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    archivedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    userId?: StringFieldUpdateOperationsInput | string
     lists?: ListUncheckedUpdateManyWithoutBoardNestedInput
   }
 
@@ -8746,32 +8687,29 @@ export namespace Prisma {
     id?: string
     name: string
     description?: string | null
-    userId: string
-    position: number
-    archivedAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
+    archivedAt?: Date | string | null
+    userId: string
   }
 
   export type BoardUpdateManyMutationInput = {
     id?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
     description?: NullableStringFieldUpdateOperationsInput | string | null
-    position?: IntFieldUpdateOperationsInput | number
-    archivedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    archivedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   }
 
   export type BoardUncheckedUpdateManyInput = {
     id?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
     description?: NullableStringFieldUpdateOperationsInput | string | null
-    userId?: StringFieldUpdateOperationsInput | string
-    position?: IntFieldUpdateOperationsInput | number
-    archivedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    archivedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    userId?: StringFieldUpdateOperationsInput | string
   }
 
   export type ListCreateInput = {
@@ -9160,17 +9098,6 @@ export namespace Prisma {
     _max?: NestedDateTimeFilter<$PrismaModel>
   }
 
-  export type IntFilter<$PrismaModel = never> = {
-    equals?: number | IntFieldRefInput<$PrismaModel>
-    in?: number[]
-    notIn?: number[]
-    lt?: number | IntFieldRefInput<$PrismaModel>
-    lte?: number | IntFieldRefInput<$PrismaModel>
-    gt?: number | IntFieldRefInput<$PrismaModel>
-    gte?: number | IntFieldRefInput<$PrismaModel>
-    not?: NestedIntFilter<$PrismaModel> | number
-  }
-
   export type DateTimeNullableFilter<$PrismaModel = never> = {
     equals?: Date | string | DateTimeFieldRefInput<$PrismaModel> | null
     in?: Date[] | string[] | null
@@ -9182,15 +9109,15 @@ export namespace Prisma {
     not?: NestedDateTimeNullableFilter<$PrismaModel> | Date | string | null
   }
 
-  export type UserScalarRelationFilter = {
-    is?: UserWhereInput
-    isNot?: UserWhereInput
-  }
-
   export type ListListRelationFilter = {
     every?: ListWhereInput
     some?: ListWhereInput
     none?: ListWhereInput
+  }
+
+  export type UserScalarRelationFilter = {
+    is?: UserWhereInput
+    isNot?: UserWhereInput
   }
 
   export type ListOrderByRelationAggregateInput = {
@@ -9201,57 +9128,30 @@ export namespace Prisma {
     id?: SortOrder
     name?: SortOrder
     description?: SortOrder
-    userId?: SortOrder
-    position?: SortOrder
-    archivedAt?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
-  }
-
-  export type BoardAvgOrderByAggregateInput = {
-    position?: SortOrder
+    archivedAt?: SortOrder
+    userId?: SortOrder
   }
 
   export type BoardMaxOrderByAggregateInput = {
     id?: SortOrder
     name?: SortOrder
     description?: SortOrder
-    userId?: SortOrder
-    position?: SortOrder
-    archivedAt?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
+    archivedAt?: SortOrder
+    userId?: SortOrder
   }
 
   export type BoardMinOrderByAggregateInput = {
     id?: SortOrder
     name?: SortOrder
     description?: SortOrder
-    userId?: SortOrder
-    position?: SortOrder
-    archivedAt?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
-  }
-
-  export type BoardSumOrderByAggregateInput = {
-    position?: SortOrder
-  }
-
-  export type IntWithAggregatesFilter<$PrismaModel = never> = {
-    equals?: number | IntFieldRefInput<$PrismaModel>
-    in?: number[]
-    notIn?: number[]
-    lt?: number | IntFieldRefInput<$PrismaModel>
-    lte?: number | IntFieldRefInput<$PrismaModel>
-    gt?: number | IntFieldRefInput<$PrismaModel>
-    gte?: number | IntFieldRefInput<$PrismaModel>
-    not?: NestedIntWithAggregatesFilter<$PrismaModel> | number
-    _count?: NestedIntFilter<$PrismaModel>
-    _avg?: NestedFloatFilter<$PrismaModel>
-    _sum?: NestedIntFilter<$PrismaModel>
-    _min?: NestedIntFilter<$PrismaModel>
-    _max?: NestedIntFilter<$PrismaModel>
+    archivedAt?: SortOrder
+    userId?: SortOrder
   }
 
   export type DateTimeNullableWithAggregatesFilter<$PrismaModel = never> = {
@@ -9518,17 +9418,17 @@ export namespace Prisma {
     deleteMany?: BoardScalarWhereInput | BoardScalarWhereInput[]
   }
 
-  export type UserCreateNestedOneWithoutBoardsInput = {
-    create?: XOR<UserCreateWithoutBoardsInput, UserUncheckedCreateWithoutBoardsInput>
-    connectOrCreate?: UserCreateOrConnectWithoutBoardsInput
-    connect?: UserWhereUniqueInput
-  }
-
   export type ListCreateNestedManyWithoutBoardInput = {
     create?: XOR<ListCreateWithoutBoardInput, ListUncheckedCreateWithoutBoardInput> | ListCreateWithoutBoardInput[] | ListUncheckedCreateWithoutBoardInput[]
     connectOrCreate?: ListCreateOrConnectWithoutBoardInput | ListCreateOrConnectWithoutBoardInput[]
     createMany?: ListCreateManyBoardInputEnvelope
     connect?: ListWhereUniqueInput | ListWhereUniqueInput[]
+  }
+
+  export type UserCreateNestedOneWithoutBoardsInput = {
+    create?: XOR<UserCreateWithoutBoardsInput, UserUncheckedCreateWithoutBoardsInput>
+    connectOrCreate?: UserCreateOrConnectWithoutBoardsInput
+    connect?: UserWhereUniqueInput
   }
 
   export type ListUncheckedCreateNestedManyWithoutBoardInput = {
@@ -9538,24 +9438,8 @@ export namespace Prisma {
     connect?: ListWhereUniqueInput | ListWhereUniqueInput[]
   }
 
-  export type IntFieldUpdateOperationsInput = {
-    set?: number
-    increment?: number
-    decrement?: number
-    multiply?: number
-    divide?: number
-  }
-
   export type NullableDateTimeFieldUpdateOperationsInput = {
     set?: Date | string | null
-  }
-
-  export type UserUpdateOneRequiredWithoutBoardsNestedInput = {
-    create?: XOR<UserCreateWithoutBoardsInput, UserUncheckedCreateWithoutBoardsInput>
-    connectOrCreate?: UserCreateOrConnectWithoutBoardsInput
-    upsert?: UserUpsertWithoutBoardsInput
-    connect?: UserWhereUniqueInput
-    update?: XOR<XOR<UserUpdateToOneWithWhereWithoutBoardsInput, UserUpdateWithoutBoardsInput>, UserUncheckedUpdateWithoutBoardsInput>
   }
 
   export type ListUpdateManyWithoutBoardNestedInput = {
@@ -9570,6 +9454,14 @@ export namespace Prisma {
     update?: ListUpdateWithWhereUniqueWithoutBoardInput | ListUpdateWithWhereUniqueWithoutBoardInput[]
     updateMany?: ListUpdateManyWithWhereWithoutBoardInput | ListUpdateManyWithWhereWithoutBoardInput[]
     deleteMany?: ListScalarWhereInput | ListScalarWhereInput[]
+  }
+
+  export type UserUpdateOneRequiredWithoutBoardsNestedInput = {
+    create?: XOR<UserCreateWithoutBoardsInput, UserUncheckedCreateWithoutBoardsInput>
+    connectOrCreate?: UserCreateOrConnectWithoutBoardsInput
+    upsert?: UserUpsertWithoutBoardsInput
+    connect?: UserWhereUniqueInput
+    update?: XOR<XOR<UserUpdateToOneWithWhereWithoutBoardsInput, UserUpdateWithoutBoardsInput>, UserUncheckedUpdateWithoutBoardsInput>
   }
 
   export type ListUncheckedUpdateManyWithoutBoardNestedInput = {
@@ -9896,33 +9788,6 @@ export namespace Prisma {
     not?: NestedDateTimeNullableFilter<$PrismaModel> | Date | string | null
   }
 
-  export type NestedIntWithAggregatesFilter<$PrismaModel = never> = {
-    equals?: number | IntFieldRefInput<$PrismaModel>
-    in?: number[]
-    notIn?: number[]
-    lt?: number | IntFieldRefInput<$PrismaModel>
-    lte?: number | IntFieldRefInput<$PrismaModel>
-    gt?: number | IntFieldRefInput<$PrismaModel>
-    gte?: number | IntFieldRefInput<$PrismaModel>
-    not?: NestedIntWithAggregatesFilter<$PrismaModel> | number
-    _count?: NestedIntFilter<$PrismaModel>
-    _avg?: NestedFloatFilter<$PrismaModel>
-    _sum?: NestedIntFilter<$PrismaModel>
-    _min?: NestedIntFilter<$PrismaModel>
-    _max?: NestedIntFilter<$PrismaModel>
-  }
-
-  export type NestedFloatFilter<$PrismaModel = never> = {
-    equals?: number | FloatFieldRefInput<$PrismaModel>
-    in?: number[]
-    notIn?: number[]
-    lt?: number | FloatFieldRefInput<$PrismaModel>
-    lte?: number | FloatFieldRefInput<$PrismaModel>
-    gt?: number | FloatFieldRefInput<$PrismaModel>
-    gte?: number | FloatFieldRefInput<$PrismaModel>
-    not?: NestedFloatFilter<$PrismaModel> | number
-  }
-
   export type NestedDateTimeNullableWithAggregatesFilter<$PrismaModel = never> = {
     equals?: Date | string | DateTimeFieldRefInput<$PrismaModel> | null
     in?: Date[] | string[] | null
@@ -9935,6 +9800,17 @@ export namespace Prisma {
     _count?: NestedIntNullableFilter<$PrismaModel>
     _min?: NestedDateTimeNullableFilter<$PrismaModel>
     _max?: NestedDateTimeNullableFilter<$PrismaModel>
+  }
+
+  export type NestedFloatFilter<$PrismaModel = never> = {
+    equals?: number | FloatFieldRefInput<$PrismaModel>
+    in?: number[]
+    notIn?: number[]
+    lt?: number | FloatFieldRefInput<$PrismaModel>
+    lte?: number | FloatFieldRefInput<$PrismaModel>
+    gt?: number | FloatFieldRefInput<$PrismaModel>
+    gte?: number | FloatFieldRefInput<$PrismaModel>
+    not?: NestedFloatFilter<$PrismaModel> | number
   }
 
   export type NestedFloatWithAggregatesFilter<$PrismaModel = never> = {
@@ -9957,10 +9833,9 @@ export namespace Prisma {
     id?: string
     name: string
     description?: string | null
-    position: number
-    archivedAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
+    archivedAt?: Date | string | null
     lists?: ListCreateNestedManyWithoutBoardInput
   }
 
@@ -9968,10 +9843,9 @@ export namespace Prisma {
     id?: string
     name: string
     description?: string | null
-    position: number
-    archivedAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
+    archivedAt?: Date | string | null
     lists?: ListUncheckedCreateNestedManyWithoutBoardInput
   }
 
@@ -10007,32 +9881,10 @@ export namespace Prisma {
     id?: StringFilter<"Board"> | string
     name?: StringFilter<"Board"> | string
     description?: StringNullableFilter<"Board"> | string | null
-    userId?: StringFilter<"Board"> | string
-    position?: IntFilter<"Board"> | number
-    archivedAt?: DateTimeNullableFilter<"Board"> | Date | string | null
     createdAt?: DateTimeFilter<"Board"> | Date | string
     updatedAt?: DateTimeFilter<"Board"> | Date | string
-  }
-
-  export type UserCreateWithoutBoardsInput = {
-    id: string
-    email: string
-    name?: string | null
-    createdAt?: Date | string
-    updatedAt?: Date | string
-  }
-
-  export type UserUncheckedCreateWithoutBoardsInput = {
-    id: string
-    email: string
-    name?: string | null
-    createdAt?: Date | string
-    updatedAt?: Date | string
-  }
-
-  export type UserCreateOrConnectWithoutBoardsInput = {
-    where: UserWhereUniqueInput
-    create: XOR<UserCreateWithoutBoardsInput, UserUncheckedCreateWithoutBoardsInput>
+    archivedAt?: DateTimeNullableFilter<"Board"> | Date | string | null
+    userId?: StringFilter<"Board"> | string
   }
 
   export type ListCreateWithoutBoardInput = {
@@ -10062,31 +9914,25 @@ export namespace Prisma {
     data: ListCreateManyBoardInput | ListCreateManyBoardInput[]
   }
 
-  export type UserUpsertWithoutBoardsInput = {
-    update: XOR<UserUpdateWithoutBoardsInput, UserUncheckedUpdateWithoutBoardsInput>
+  export type UserCreateWithoutBoardsInput = {
+    id: string
+    email: string
+    name?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type UserUncheckedCreateWithoutBoardsInput = {
+    id: string
+    email: string
+    name?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type UserCreateOrConnectWithoutBoardsInput = {
+    where: UserWhereUniqueInput
     create: XOR<UserCreateWithoutBoardsInput, UserUncheckedCreateWithoutBoardsInput>
-    where?: UserWhereInput
-  }
-
-  export type UserUpdateToOneWithWhereWithoutBoardsInput = {
-    where?: UserWhereInput
-    data: XOR<UserUpdateWithoutBoardsInput, UserUncheckedUpdateWithoutBoardsInput>
-  }
-
-  export type UserUpdateWithoutBoardsInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    email?: StringFieldUpdateOperationsInput | string
-    name?: NullableStringFieldUpdateOperationsInput | string | null
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-  }
-
-  export type UserUncheckedUpdateWithoutBoardsInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    email?: StringFieldUpdateOperationsInput | string
-    name?: NullableStringFieldUpdateOperationsInput | string | null
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type ListUpsertWithWhereUniqueWithoutBoardInput = {
@@ -10117,14 +9963,40 @@ export namespace Prisma {
     updatedAt?: DateTimeFilter<"List"> | Date | string
   }
 
+  export type UserUpsertWithoutBoardsInput = {
+    update: XOR<UserUpdateWithoutBoardsInput, UserUncheckedUpdateWithoutBoardsInput>
+    create: XOR<UserCreateWithoutBoardsInput, UserUncheckedCreateWithoutBoardsInput>
+    where?: UserWhereInput
+  }
+
+  export type UserUpdateToOneWithWhereWithoutBoardsInput = {
+    where?: UserWhereInput
+    data: XOR<UserUpdateWithoutBoardsInput, UserUncheckedUpdateWithoutBoardsInput>
+  }
+
+  export type UserUpdateWithoutBoardsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    email?: StringFieldUpdateOperationsInput | string
+    name?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type UserUncheckedUpdateWithoutBoardsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    email?: StringFieldUpdateOperationsInput | string
+    name?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
   export type BoardCreateWithoutListsInput = {
     id?: string
     name: string
     description?: string | null
-    position: number
-    archivedAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
+    archivedAt?: Date | string | null
     user: UserCreateNestedOneWithoutBoardsInput
   }
 
@@ -10132,11 +10004,10 @@ export namespace Prisma {
     id?: string
     name: string
     description?: string | null
-    userId: string
-    position: number
-    archivedAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
+    archivedAt?: Date | string | null
+    userId: string
   }
 
   export type BoardCreateOrConnectWithoutListsInput = {
@@ -10192,10 +10063,9 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
     description?: NullableStringFieldUpdateOperationsInput | string | null
-    position?: IntFieldUpdateOperationsInput | number
-    archivedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    archivedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     user?: UserUpdateOneRequiredWithoutBoardsNestedInput
   }
 
@@ -10203,11 +10073,10 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
     description?: NullableStringFieldUpdateOperationsInput | string | null
-    userId?: StringFieldUpdateOperationsInput | string
-    position?: IntFieldUpdateOperationsInput | number
-    archivedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    archivedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    userId?: StringFieldUpdateOperationsInput | string
   }
 
   export type CardUpsertWithWhereUniqueWithoutListInput = {
@@ -10524,20 +10393,18 @@ export namespace Prisma {
     id?: string
     name: string
     description?: string | null
-    position: number
-    archivedAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
+    archivedAt?: Date | string | null
   }
 
   export type BoardUpdateWithoutUserInput = {
     id?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
     description?: NullableStringFieldUpdateOperationsInput | string | null
-    position?: IntFieldUpdateOperationsInput | number
-    archivedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    archivedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     lists?: ListUpdateManyWithoutBoardNestedInput
   }
 
@@ -10545,10 +10412,9 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
     description?: NullableStringFieldUpdateOperationsInput | string | null
-    position?: IntFieldUpdateOperationsInput | number
-    archivedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    archivedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     lists?: ListUncheckedUpdateManyWithoutBoardNestedInput
   }
 
@@ -10556,10 +10422,9 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
     description?: NullableStringFieldUpdateOperationsInput | string | null
-    position?: IntFieldUpdateOperationsInput | number
-    archivedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    archivedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   }
 
   export type ListCreateManyBoardInput = {

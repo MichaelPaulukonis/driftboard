@@ -5,6 +5,7 @@ import { ApiResponse, CreateBoardDto, UpdateBoardDto, BoardWithDetails } from '.
 import { authMiddleware } from '../middleware/authMiddleware.js';
 
 const router = Router();
+router.use(authMiddleware);
 
 /**
  * Get all boards for the authenticated user
@@ -19,7 +20,6 @@ router.get('/', async (req: Request, res: Response, next: NextFunction) => {
 
     const boards = await prisma.board.findMany({
       where: { userId },
-      orderBy: { position: 'asc' },
       include: {
         lists: {
           orderBy: { position: 'asc' },
@@ -37,7 +37,7 @@ router.get('/', async (req: Request, res: Response, next: NextFunction) => {
 
     const response: ApiResponse<BoardWithDetails[]> = {
       success: true,
-      data: boards,
+      data: boards as BoardWithDetails[],
       message: 'Boards retrieved successfully',
     };
 
@@ -111,33 +111,22 @@ router.post('/', async (req: Request, res: Response, next: NextFunction) => {
       throw new AppError('User not authenticated', 401, 'NOT_AUTHENTICATED');
     }
 
-    const { name, description }: CreateBoardDto = req.body;
+    const { name, description } = req.body as CreateBoardDto;
 
-    if (!name || name.trim().length === 0) {
-      throw new AppError('Board name is required', 400, 'MISSING_BOARD_NAME');
+    if (!name) {
+      throw new AppError('Board name is required', 400, 'INVALID_INPUT');
     }
-
-    // Get the next position for the board
-    const maxPosition = await prisma.board.aggregate({
-      where: { userId },
-      _max: { position: true },
-    });
-
-    const position = (maxPosition._max.position ?? -1) + 1;
 
     const board = await prisma.board.create({
       data: {
-        name: name.trim(),
-        description: description?.trim() || null,
+        name,
+        description: description ?? null,
         userId,
-        position,
       },
       include: {
         lists: {
-          orderBy: { position: 'asc' },
           include: {
             cards: {
-              orderBy: { position: 'asc' },
               include: {
                 labels: true,
               },
@@ -149,7 +138,7 @@ router.post('/', async (req: Request, res: Response, next: NextFunction) => {
 
     const response: ApiResponse<BoardWithDetails> = {
       success: true,
-      data: board,
+      data: board as BoardWithDetails,
       message: 'Board created successfully',
     };
 
@@ -167,6 +156,7 @@ router.put('/:id', async (req: Request, res: Response, next: NextFunction) => {
   try {
     const userId = req.user?.uid;
     const boardId = req.params.id;
+    const { name, description } = req.body as UpdateBoardDto;
 
     if (!userId) {
       throw new AppError('User not authenticated', 401, 'NOT_AUTHENTICATED');
@@ -176,33 +166,29 @@ router.put('/:id', async (req: Request, res: Response, next: NextFunction) => {
       throw new AppError('Board ID is required', 400, 'INVALID_INPUT');
     }
 
-    const { name, description, position }: UpdateBoardDto = req.body;
-
-    // Verify board exists and belongs to user
-    const existingBoard = await prisma.board.findFirst({
-      where: { 
-        id: boardId,
-        userId,
-      },
+    // First, verify the board exists and belongs to the user
+    const existingBoard = await prisma.board.findUnique({
+      where: { id: boardId },
     });
 
-    if (!existingBoard) {
-      throw new AppError('Board not found', 404, 'BOARD_NOT_FOUND');
+    if (!existingBoard || existingBoard.userId !== userId) {
+      throw new AppError('Board not found or access denied', 404, 'BOARD_NOT_FOUND');
     }
 
+    const updateData: { name?: string; description?: string | null } = {};
+    if (name !== undefined) updateData.name = name;
+    if (description !== undefined) updateData.description = description;
+
     const board = await prisma.board.update({
-      where: { id: boardId },
-      data: {
-        ...(name !== undefined && { name: name.trim() }),
-        ...(description !== undefined && { description: description?.trim() || null }),
-        ...(position !== undefined && { position }),
+      where: {
+        id: boardId,
+        // No need for userId here as we've already verified ownership
       },
+      data: updateData,
       include: {
         lists: {
-          orderBy: { position: 'asc' },
           include: {
             cards: {
-              orderBy: { position: 'asc' },
               include: {
                 labels: true,
               },
@@ -242,27 +228,21 @@ router.delete('/:id', async (req: Request, res: Response, next: NextFunction) =>
     }
 
     // Verify board exists and belongs to user
-    const existingBoard = await prisma.board.findFirst({
+    const existingBoard = await prisma.board.findUnique({
       where: { 
         id: boardId,
-        userId,
       },
     });
 
-    if (!existingBoard) {
-      throw new AppError('Board not found', 404, 'BOARD_NOT_FOUND');
+    if (!existingBoard || existingBoard.userId !== userId) {
+      throw new AppError('Board not found or access denied', 404, 'BOARD_NOT_FOUND');
     }
 
     await prisma.board.delete({
       where: { id: boardId },
     });
 
-    const response: ApiResponse = {
-      success: true,
-      message: 'Board deleted successfully',
-    };
-
-    res.json(response);
+    res.status(204).send();
   } catch (error) {
     next(error);
   }
