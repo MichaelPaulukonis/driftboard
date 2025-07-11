@@ -55,7 +55,7 @@ driftboard/
 │   ├── frontend.Dockerfile
 │   ├── backend.Dockerfile
 │   └── nginx.conf
-├── scripts/                       # Automation scripts
+├── scripts/                       # Non-test, non-application task files (e.g., data migration, seeding)
 │   ├── setup.sh                   # Initial setup script
 │   ├── dev.sh                     # Development start script
 │   └── deploy.sh                  # Deployment script
@@ -726,3 +726,4 @@ export const logger = winston.createLogger({
   format: logFormat,
   defaultMeta: { service: 'driftboard-api' },
   transports:
+```
