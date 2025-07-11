@@ -1,4 +1,6 @@
 import React, { useState, useCallback } from 'react';
+import { useSortable } from '@dnd-kit/sortable';
+import { CSS } from '@dnd-kit/utilities';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import type { Card as CardType } from '@/shared/types';
@@ -14,10 +16,26 @@ export const KanbanCard: React.FC<KanbanCardProps> = ({
   card,
   onUpdate,
   onDelete,
-  className
+  className,
 }) => {
   const [isEditing, setIsEditing] = useState(false);
   const [editTitle, setEditTitle] = useState(card.title);
+
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({ id: card.id, data: { type: 'Card', card } });
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    opacity: isDragging ? 0.5 : 1,
+    cursor: 'grab',
+  };
 
   const handleSaveTitle = useCallback(() => {
     if (editTitle.trim() && editTitle !== card.title) {
@@ -35,11 +53,19 @@ export const KanbanCard: React.FC<KanbanCardProps> = ({
     }
   }, [handleSaveTitle, card.title]);
 
-  const handleCardClick = useCallback(() => {
-    if (!isEditing) {
-      setIsEditing(true);
-    }
-  }, [isEditing]);
+  const handleCardClick = useCallback(
+    (e: React.MouseEvent) => {
+      // Prevent entering edit mode when dragging
+      if (isDragging) {
+        e.preventDefault();
+        return;
+      }
+      if (!isEditing) {
+        setIsEditing(true);
+      }
+    },
+    [isEditing, isDragging]
+  );
 
   const formatDueDate = (dueDate: Date | null) => {
     if (!dueDate) return null;
@@ -63,83 +89,88 @@ export const KanbanCard: React.FC<KanbanCardProps> = ({
   const dueDateInfo = formatDueDate(card.dueDate);
 
   return (
-    <Card 
-      className={`cursor-pointer hover:shadow-sm transition-shadow ${className}`}
-      onClick={handleCardClick}
-    >
-      <CardHeader className="pb-2">
-        {isEditing ? (
-          <input
-            type="text"
-            value={editTitle}
-            onChange={(e) => setEditTitle(e.target.value)}
-            onBlur={handleSaveTitle}
-            onKeyDown={handleKeyPress}
-            className="text-sm font-medium bg-transparent border-none outline-none focus:bg-white focus:border focus:border-blue-500 focus:rounded px-1 -mx-1"
-            autoFocus
-          />
-        ) : (
-          <CardTitle className="text-sm font-medium leading-5">
-            {card.title}
-          </CardTitle>
-        )}
-      </CardHeader>
-
-      {(card.description || card.labels?.length || dueDateInfo) && (
-        <CardContent className="pt-0">
-          {card.description && (
-            <p className="text-xs text-gray-600 mb-2 line-clamp-3">
-              {card.description}
-            </p>
+    <div ref={setNodeRef} style={style} {...attributes} {...listeners}>
+      <Card
+        className={`hover:shadow-sm transition-shadow ${className} ${
+          isDragging ? 'shadow-lg' : ''
+        }`}
+        onClick={handleCardClick}
+      >
+        <CardHeader className="pb-2">
+          {isEditing ? (
+            <input
+              type="text"
+              value={editTitle}
+              onChange={(e) => setEditTitle(e.target.value)}
+              onBlur={handleSaveTitle}
+              onKeyDown={handleKeyPress}
+              className="text-sm font-medium bg-transparent border-none outline-none focus:bg-white focus:border focus:border-blue-500 focus:rounded px-1 -mx-1"
+              autoFocus
+              onClick={(e) => e.stopPropagation()} // Prevent card click from firing
+            />
+          ) : (
+            <CardTitle className="text-sm font-medium leading-5">
+              {card.title}
+            </CardTitle>
           )}
+        </CardHeader>
 
-          <div className="flex flex-wrap items-center gap-1 text-xs">
-            {/* Due date */}
-            {dueDateInfo && (
-              <span 
-                className={`px-2 py-1 rounded text-xs ${
-                  dueDateInfo.isOverdue 
-                    ? 'bg-red-100 text-red-700'
-                    : dueDateInfo.isToday
-                    ? 'bg-yellow-100 text-yellow-700'
-                    : 'bg-gray-100 text-gray-700'
-                }`}
-              >
-                {dueDateInfo.text}
-              </span>
+        {(card.description || card.labels?.length || dueDateInfo) && (
+          <CardContent className="pt-0">
+            {card.description && (
+              <p className="text-xs text-gray-600 mb-2 line-clamp-3">
+                {card.description}
+              </p>
             )}
 
-            {/* Labels */}
-            {card.labels?.map((label) => (
-              <span
-                key={label.id}
-                className="px-2 py-1 rounded text-xs"
-                style={{ 
-                  backgroundColor: label.color + '20',
-                  color: label.color
-                }}
-              >
-                {label.name}
-              </span>
-            ))}
+            <div className="flex flex-wrap items-center gap-1 text-xs">
+              {/* Due date */}
+              {dueDateInfo && (
+                <span
+                  className={`px-2 py-1 rounded text-xs ${
+                    dueDateInfo.isOverdue
+                      ? 'bg-red-100 text-red-700'
+                      : dueDateInfo.isToday
+                      ? 'bg-yellow-100 text-yellow-700'
+                      : 'bg-gray-100 text-gray-700'
+                  }`}
+                >
+                  {dueDateInfo.text}
+                </span>
+              )}
 
-            {/* Card actions */}
-            {onDelete && (
-              <Button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  onDelete();
-                }}
-                variant="ghost"
-                size="sm"
-                className="ml-auto text-red-600 hover:text-red-700 hover:bg-red-50 h-6 w-6 p-0"
-              >
-                ×
-              </Button>
-            )}
-          </div>
-        </CardContent>
-      )}
-    </Card>
+              {/* Labels */}
+              {card.labels?.map((label) => (
+                <span
+                  key={label.id}
+                  className="px-2 py-1 rounded text-xs"
+                  style={{
+                    backgroundColor: label.color + '20',
+                    color: label.color,
+                  }}
+                >
+                  {label.name}
+                </span>
+              ))}
+
+              {/* Card actions */}
+              {onDelete && (
+                <Button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onDelete();
+                  }}
+                  variant="ghost"
+                  size="sm"
+                  className="ml-auto text-red-600 hover:text-red-700 hover:bg-red-50 h-6 w-6 p-0"
+                >
+                  ×
+                </Button>
+              )}
+            </div>
+          </CardContent>
+        )}
+      </Card>
+    </div>
   );
 };

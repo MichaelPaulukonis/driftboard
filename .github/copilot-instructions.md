@@ -118,7 +118,7 @@ When suggesting code, please use the following technologies:
    
    "This change requires a plan-file to be created first in `docs/plans/`. This helps ensure proper architecture and prevents technical debt. Are you sure you want to proceed without creating a plan-file first?"
 
-3. **Plan-File Naming Convention**: Already defined in Section 15.4:
+3. **Plan-File Naming Convention**: Formally defined in Section 15.4:
    ```
    Format: NN.semantic-name.md
    Examples:
@@ -128,7 +128,6 @@ When suggesting code, please use the following technologies:
    ```
 
 4. **Required Plan Contents**:
-   - **Implementation Phase**: Explicit reference to which Implementation Phase, as defined in `docs/architecture/07-implementation-phases.md`, these changes belong to
    - **Problem Statement**: Clear description of what needs to be solved
    - **Requirements**: Functional and non-functional requirements
    - **Technical Approach**: Architecture decisions and implementation strategy
@@ -137,7 +136,11 @@ When suggesting code, please use the following technologies:
    - **Risks and Mitigation**: Potential issues and how to address them
    - **Dependencies**: Other systems or features that might be affected
 
-5. **No Exceptions**: Do not implement code for feature changes without an approved plan-file, even for seemingly simple modifications.
+5. **Exceptions and Scope**: 
+   - **Plan-file creation itself**: Creating, updating, or organizing plan-files does NOT require a plan-file
+   - **Documentation updates**: Adding to existing docs, README updates, or comment improvements
+   - **Minor bug fixes**: Single-line fixes or typo corrections that don't change functionality
+   - **Everything else**: Feature additions, architecture changes, new components, API modifications, database schema changes, etc. ALL require plan-files
 
 ### Implementation Workflow
 

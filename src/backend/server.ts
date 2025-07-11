@@ -17,8 +17,8 @@ import { cardsRouter } from './routes/cards.js';
 dotenv.config();
 
 const app = express();
-const PORT = process.env.PORT || 8000;
 const NODE_ENV = process.env.NODE_ENV || 'development';
+const PORT = process.env.PORT || (NODE_ENV === 'production' ? 8000 : 8001);
 
 // Security middleware
 app.use(helmet({

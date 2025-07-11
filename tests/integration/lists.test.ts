@@ -139,32 +139,6 @@ describe('Lists API Integration Tests', () => {
       expect(response.body.data.id).toBe(listId);
     });
 
-    it('should update list position', async () => {
-      // Create another list first
-      const listResponse = await request(app)
-        .post(`/api/boards/${boardId}/lists`)
-        .send({
-          name: 'Second List',
-          position: 1
-        });
-
-      const secondListId = listResponse.body.data.id;
-
-      // Update position of first list
-      const response = await request(app)
-        .put(`/api/lists/${listId}`)
-        .send({
-          position: 2
-        });
-
-      expect(response.status).toBe(200);
-      expect(response.body.success).toBe(true);
-      expect(response.body.data.position).toBe(2);
-
-      // Clean up
-      await prisma.list.delete({ where: { id: secondListId } });
-    });
-
     it('should reject empty name', async () => {
       const response = await request(app)
         .put(`/api/lists/${listId}`)
@@ -177,16 +151,50 @@ describe('Lists API Integration Tests', () => {
       expect(response.body.error).toContain('List name cannot be empty');
     });
 
-    it('should return 404 for non-existent list', async () => {
+    it('should not update position', async () => {
+      const originalList = await prisma.list.findUnique({ where: { id: listId } });
+      const originalPosition = originalList?.position;
+
       const response = await request(app)
-        .put('/api/lists/non-existent-id')
+        .put(`/api/lists/${listId}`)
         .send({
-          name: 'New Name'
+          name: 'Another Update',
+          position: 9999
         });
 
-      expect(response.status).toBe(404);
+      expect(response.status).toBe(200);
+      expect(response.body.data.position).toBe(originalPosition);
+      expect(response.body.data.position).not.toBe(9999);
+    });
+  });
+
+  describe('PUT /api/lists/:id/move', () => {
+    it('should update list position', async () => {
+      const newPosition = 123.456;
+      const response = await request(app)
+        .put(`/api/lists/${listId}/move`)
+        .send({
+          position: newPosition,
+          boardId: boardId
+        });
+
+      expect(response.status).toBe(200);
+      expect(response.body.success).toBe(true);
+      expect(response.body.data.position).toBe(newPosition);
+      expect(response.body.data.id).toBe(listId);
+    });
+
+    it('should reject invalid position', async () => {
+      const response = await request(app)
+        .put(`/api/lists/${listId}/move`)
+        .send({
+          position: -100,
+          boardId: boardId
+        });
+
+      expect(response.status).toBe(400);
       expect(response.body.success).toBe(false);
-      expect(response.body.error).toContain('List not found');
+      expect(response.body.error).toContain('A valid new position is required');
     });
   });
 

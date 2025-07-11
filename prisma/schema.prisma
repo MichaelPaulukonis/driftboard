@@ -42,7 +42,7 @@ model List {
   id        String   @id @default(cuid())
   name      String
   boardId   String
-  position  Int
+  position  Float
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
   board     Board    @relation(fields: [boardId], references: [id], onDelete: Cascade)
@@ -57,7 +57,7 @@ model Card {
   title       String
   description String?
   listId      String
-  position    Int
+  position    Float
   dueDate     DateTime?
   createdAt   DateTime   @default(now())
   updatedAt   DateTime   @updatedAt

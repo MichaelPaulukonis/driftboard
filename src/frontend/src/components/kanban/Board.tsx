@@ -1,5 +1,6 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useMemo } from 'react';
 import { Link } from 'react-router-dom';
+import { SortableContext, horizontalListSortingStrategy } from '@dnd-kit/sortable';
 import { Button } from '@/components/ui/button';
 import { List } from './List';
 import { CreateListForm } from '@/components/forms/CreateListForm';
@@ -80,8 +81,12 @@ export const Board: React.FC<BoardProps> = ({
     }
   }, [handleSaveName, handleSaveDescription, board.name, board.description]);
 
-  // Sort lists by position (create a copy first since RTK Query data is immutable)
-  const sortedLists = board.lists ? [...board.lists].sort((a, b) => a.position - b.position) : [];
+  // Sort lists by position and get their IDs for SortableContext
+  const { sortedLists, listIds } = useMemo(() => {
+    const sorted = board.lists ? [...board.lists].sort((a, b) => a.position - b.position) : [];
+    const ids = sorted.map(l => l.id);
+    return { sortedLists: sorted, listIds: ids };
+  }, [board.lists]);
 
   return (
     <div className={`h-full ${className}`}>
@@ -177,19 +182,21 @@ export const Board: React.FC<BoardProps> = ({
 
       {/* Board Content */}
       <div className="flex gap-6 overflow-x-auto pb-6">
-        {/* Existing Lists */}
-        {sortedLists.map((list) => (
-          <List
-            key={list.id}
-            list={list}
-            onUpdate={(updates: any) => onUpdateList?.(list.id, updates)}
-            onDelete={() => onDeleteList?.(list.id)}
-            onCreateCard={(cardData: any) => onCreateCard?.(list.id, cardData)}
-            onUpdateCard={onUpdateCard}
-            onDeleteCard={onDeleteCard}
-            className="flex-shrink-0 w-80"
-          />
-        ))}
+        <SortableContext items={listIds} strategy={horizontalListSortingStrategy}>
+          {/* Existing Lists */}
+          {sortedLists.map((list) => (
+            <List
+              key={list.id}
+              list={list}
+              onUpdate={(updates: any) => onUpdateList?.(list.id, updates)}
+              onDelete={() => onDeleteList?.(list.id)}
+              onCreateCard={(cardData: any) => onCreateCard?.(list.id, cardData)}
+              onUpdateCard={onUpdateCard}
+              onDeleteCard={onDeleteCard}
+              className="flex-shrink-0 w-80"
+            />
+          ))}
+        </SortableContext>
 
         {/* Create List Form */}
         {showCreateList && (

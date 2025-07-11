@@ -86,6 +86,11 @@ export interface UpdateListDto {
   position?: number;
 }
 
+export interface MoveListDto {
+  position: number;
+  boardId: string;
+}
+
 export interface CreateCardDto {
   title: string;
   description?: string;
@@ -96,16 +101,12 @@ export interface CreateCardDto {
 export interface UpdateCardDto {
   title?: string;
   description?: string;
-  position?: number;
   dueDate?: Date;
-  listId?: string; // For moving cards between lists
 }
 
 export interface MoveCardDto {
-  sourceListId: string;
-  targetListId: string;
-  sourcePosition: number;
-  targetPosition: number;
+  listId: string;
+  position: number;
 }
 
 export interface CreateActivityDto {

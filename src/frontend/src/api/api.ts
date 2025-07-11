@@ -6,9 +6,11 @@ import {
   List,
   CreateListDto,
   UpdateListDto,
+  MoveListDto,
   Card,
   CreateCardDto,
   UpdateCardDto,
+  MoveCardDto,
   ApiResponse 
 } from '@/shared/types';
 
@@ -98,12 +100,39 @@ export const api = createApi({
         'Board',
       ],
     }),
-    deleteList: builder.mutation<void, string>({
-      query: (id) => ({
+    deleteList: builder.mutation<void, { id: string; boardId: string }>({
+      query: ({ id }) => ({
         url: `/lists/${id}`,
         method: 'DELETE',
       }),
-      invalidatesTags: ['Board'], // Invalidate all boards since we don't know which board
+      invalidatesTags: (_result, _error, { boardId }) => [
+        { type: 'Board', id: boardId },
+        'Board',
+      ],
+    }),
+    moveList: builder.mutation<List, { id: string; updates: MoveListDto, boardId: string }>({
+      query: ({ id, updates }) => ({
+        url: `/lists/${id}/move`,
+        method: 'PUT',
+        body: updates,
+      }),
+      async onQueryStarted({ id, updates, boardId }, { dispatch, queryFulfilled }) {
+        const patchResult = dispatch(
+          api.util.updateQueryData('getBoardById', boardId, (draft) => {
+            const list = draft.lists.find(l => l.id === id);
+            if (list) {
+              list.position = updates.position;
+              draft.lists.sort((a, b) => a.position - b.position);
+            }
+          })
+        );
+        try {
+          await queryFulfilled;
+        } catch {
+          patchResult.undo();
+        }
+      },
+      invalidatesTags: (_result, _error, { boardId }) => [{ type: 'Board', id: boardId }],
     }),
 
     // ===== CARDS =====
@@ -112,51 +141,77 @@ export const api = createApi({
       transformResponse: (response: ApiResponse<Card>) => response.data!,
       providesTags: (_result, _error, id) => [{ type: 'Card', id }],
     }),
-    createCard: builder.mutation<Card, { listId: string; cardData: CreateCardDto }>({
+    createCard: builder.mutation<Card, { listId: string; cardData: CreateCardDto; boardId: string }>({
       query: ({ listId, cardData }) => ({
         url: `/lists/${listId}/cards`,
         method: 'POST',
         body: cardData,
       }),
       transformResponse: (response: ApiResponse<Card>) => response.data!,
-      invalidatesTags: (_result, _error, { listId }) => [
-        { type: 'List', id: listId },
-        'Board', // Invalidate all boards to refresh cards
-      ],
+      invalidatesTags: (_result, _error, { boardId }) => [{ type: 'Board', id: boardId }],
     }),
-    updateCard: builder.mutation<Card, { id: string; updates: UpdateCardDto }>({
+    updateCard: builder.mutation<Card, { id: string; updates: UpdateCardDto; boardId: string }>({
       query: ({ id, updates }) => ({
         url: `/cards/${id}`,
         method: 'PUT',
         body: updates,
       }),
       transformResponse: (response: ApiResponse<Card>) => response.data!,
-      invalidatesTags: (result, _error, { id }) => [
+      invalidatesTags: (_result, _error, { id, boardId }) => [
         { type: 'Card', id },
-        { type: 'List', id: result?.listId },
-        'Board', // Invalidate all boards to refresh cards
+        { type: 'Board', id: boardId },
       ],
     }),
-    moveCard: builder.mutation<Card, { id: string; targetListId: string; position: number }>({
-      query: ({ id, targetListId, position }) => ({
+    deleteCard: builder.mutation<void, { id: string; boardId: string }>({
+        query: ({ id }) => ({
+            url: `/cards/${id}`,
+            method: 'DELETE',
+        }),
+        invalidatesTags: (_result, _error, { boardId }) => [{ type: 'Board', id: boardId }],
+    }),
+    moveCard: builder.mutation<Card, { id: string; updates: MoveCardDto, boardId: string }>({
+      query: ({ id, updates }) => ({
         url: `/cards/${id}/move`,
         method: 'PUT',
-        body: { listId: targetListId, position },
+        body: updates,
       }),
-      transformResponse: (response: ApiResponse<Card>) => response.data!,
-      invalidatesTags: (result, _error, { id, targetListId }) => [
-        { type: 'Card', id },
-        { type: 'List', id: targetListId },
-        { type: 'List', id: result?.listId }, // Original list if moved
-        'Board', // Invalidate all boards to refresh after move
-      ],
-    }),
-    deleteCard: builder.mutation<void, string>({
-      query: (id) => ({
-        url: `/cards/${id}`,
-        method: 'DELETE',
-      }),
-      invalidatesTags: ['Board'], // Invalidate all boards to refresh cards
+      async onQueryStarted({ id, updates, boardId }, { dispatch, queryFulfilled }) {
+        const patchResult = dispatch(
+          api.util.updateQueryData('getBoardById', boardId, (draft) => {
+            let cardToMove: (Card & { listId: string }) | undefined;
+            let sourceList: (List & { cards: Card[] }) | undefined;
+
+            // Find card and its source list
+            for (const list of draft.lists) {
+              const card = list.cards.find(c => c.id === id);
+              if (card) {
+                cardToMove = { ...card, listId: list.id };
+                sourceList = list;
+                break;
+              }
+            }
+
+            if (cardToMove && sourceList) {
+              // Remove from old list
+              sourceList.cards = sourceList.cards.filter(c => c.id !== id);
+              
+              // Add to new list
+              const destinationList = draft.lists.find(l => l.id === updates.listId);
+              if (destinationList) {
+                const movedCard = { ...cardToMove, listId: updates.listId, position: updates.position };
+                destinationList.cards.push(movedCard);
+                destinationList.cards.sort((a, b) => a.position - b.position);
+              }
+            }
+          })
+        );
+        try {
+          await queryFulfilled;
+        } catch {
+          patchResult.undo();
+        }
+      },
+      invalidatesTags: (_result, _error, { boardId }) => [{ type: 'Board', id: boardId }],
     }),
   }),
 });
@@ -174,11 +229,12 @@ export const {
   useCreateListMutation,
   useUpdateListMutation,
   useDeleteListMutation,
+  useMoveListMutation,
   
   // Card hooks
   useGetCardByIdQuery,
   useCreateCardMutation,
   useUpdateCardMutation,
-  useMoveCardMutation,
   useDeleteCardMutation,
+  useMoveCardMutation,
 } = api;

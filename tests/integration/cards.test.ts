@@ -180,18 +180,6 @@ describe('Cards API Integration Tests', () => {
       expect(response.body.data.title).toBe('Updated Test Card'); // Should preserve other fields
     });
 
-    it('should update card position', async () => {
-      const response = await request(app)
-        .put(`/api/cards/${cardId}`)
-        .send({
-          position: 1000
-        });
-
-      expect(response.status).toBe(200);
-      expect(response.body.success).toBe(true);
-      expect(response.body.data.position).toBe(1000);
-    });
-
     it('should reject empty title', async () => {
       const response = await request(app)
         .put(`/api/cards/${cardId}`)

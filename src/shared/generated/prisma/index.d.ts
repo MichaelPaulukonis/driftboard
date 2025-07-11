@@ -4377,7 +4377,7 @@ export namespace Prisma {
     readonly id: FieldRef<"List", 'String'>
     readonly name: FieldRef<"List", 'String'>
     readonly boardId: FieldRef<"List", 'String'>
-    readonly position: FieldRef<"List", 'Int'>
+    readonly position: FieldRef<"List", 'Float'>
     readonly createdAt: FieldRef<"List", 'DateTime'>
     readonly updatedAt: FieldRef<"List", 'DateTime'>
   }
@@ -5539,7 +5539,7 @@ export namespace Prisma {
     readonly title: FieldRef<"Card", 'String'>
     readonly description: FieldRef<"Card", 'String'>
     readonly listId: FieldRef<"Card", 'String'>
-    readonly position: FieldRef<"Card", 'Int'>
+    readonly position: FieldRef<"Card", 'Float'>
     readonly dueDate: FieldRef<"Card", 'DateTime'>
     readonly createdAt: FieldRef<"Card", 'DateTime'>
     readonly updatedAt: FieldRef<"Card", 'DateTime'>
@@ -8388,7 +8388,7 @@ export namespace Prisma {
     id?: StringFilter<"List"> | string
     name?: StringFilter<"List"> | string
     boardId?: StringFilter<"List"> | string
-    position?: IntFilter<"List"> | number
+    position?: FloatFilter<"List"> | number
     createdAt?: DateTimeFilter<"List"> | Date | string
     updatedAt?: DateTimeFilter<"List"> | Date | string
     board?: XOR<BoardScalarRelationFilter, BoardWhereInput>
@@ -8413,7 +8413,7 @@ export namespace Prisma {
     NOT?: ListWhereInput | ListWhereInput[]
     name?: StringFilter<"List"> | string
     boardId?: StringFilter<"List"> | string
-    position?: IntFilter<"List"> | number
+    position?: FloatFilter<"List"> | number
     createdAt?: DateTimeFilter<"List"> | Date | string
     updatedAt?: DateTimeFilter<"List"> | Date | string
     board?: XOR<BoardScalarRelationFilter, BoardWhereInput>
@@ -8441,7 +8441,7 @@ export namespace Prisma {
     id?: StringWithAggregatesFilter<"List"> | string
     name?: StringWithAggregatesFilter<"List"> | string
     boardId?: StringWithAggregatesFilter<"List"> | string
-    position?: IntWithAggregatesFilter<"List"> | number
+    position?: FloatWithAggregatesFilter<"List"> | number
     createdAt?: DateTimeWithAggregatesFilter<"List"> | Date | string
     updatedAt?: DateTimeWithAggregatesFilter<"List"> | Date | string
   }
@@ -8454,7 +8454,7 @@ export namespace Prisma {
     title?: StringFilter<"Card"> | string
     description?: StringNullableFilter<"Card"> | string | null
     listId?: StringFilter<"Card"> | string
-    position?: IntFilter<"Card"> | number
+    position?: FloatFilter<"Card"> | number
     dueDate?: DateTimeNullableFilter<"Card"> | Date | string | null
     createdAt?: DateTimeFilter<"Card"> | Date | string
     updatedAt?: DateTimeFilter<"Card"> | Date | string
@@ -8485,7 +8485,7 @@ export namespace Prisma {
     title?: StringFilter<"Card"> | string
     description?: StringNullableFilter<"Card"> | string | null
     listId?: StringFilter<"Card"> | string
-    position?: IntFilter<"Card"> | number
+    position?: FloatFilter<"Card"> | number
     dueDate?: DateTimeNullableFilter<"Card"> | Date | string | null
     createdAt?: DateTimeFilter<"Card"> | Date | string
     updatedAt?: DateTimeFilter<"Card"> | Date | string
@@ -8518,7 +8518,7 @@ export namespace Prisma {
     title?: StringWithAggregatesFilter<"Card"> | string
     description?: StringNullableWithAggregatesFilter<"Card"> | string | null
     listId?: StringWithAggregatesFilter<"Card"> | string
-    position?: IntWithAggregatesFilter<"Card"> | number
+    position?: FloatWithAggregatesFilter<"Card"> | number
     dueDate?: DateTimeNullableWithAggregatesFilter<"Card"> | Date | string | null
     createdAt?: DateTimeWithAggregatesFilter<"Card"> | Date | string
     updatedAt?: DateTimeWithAggregatesFilter<"Card"> | Date | string
@@ -8797,7 +8797,7 @@ export namespace Prisma {
   export type ListUpdateInput = {
     id?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
-    position?: IntFieldUpdateOperationsInput | number
+    position?: FloatFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     board?: BoardUpdateOneRequiredWithoutListsNestedInput
@@ -8808,7 +8808,7 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
     boardId?: StringFieldUpdateOperationsInput | string
-    position?: IntFieldUpdateOperationsInput | number
+    position?: FloatFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     cards?: CardUncheckedUpdateManyWithoutListNestedInput
@@ -8826,7 +8826,7 @@ export namespace Prisma {
   export type ListUpdateManyMutationInput = {
     id?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
-    position?: IntFieldUpdateOperationsInput | number
+    position?: FloatFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -8835,7 +8835,7 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
     boardId?: StringFieldUpdateOperationsInput | string
-    position?: IntFieldUpdateOperationsInput | number
+    position?: FloatFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -8870,7 +8870,7 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     title?: StringFieldUpdateOperationsInput | string
     description?: NullableStringFieldUpdateOperationsInput | string | null
-    position?: IntFieldUpdateOperationsInput | number
+    position?: FloatFieldUpdateOperationsInput | number
     dueDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -8884,7 +8884,7 @@ export namespace Prisma {
     title?: StringFieldUpdateOperationsInput | string
     description?: NullableStringFieldUpdateOperationsInput | string | null
     listId?: StringFieldUpdateOperationsInput | string
-    position?: IntFieldUpdateOperationsInput | number
+    position?: FloatFieldUpdateOperationsInput | number
     dueDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -8907,7 +8907,7 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     title?: StringFieldUpdateOperationsInput | string
     description?: NullableStringFieldUpdateOperationsInput | string | null
-    position?: IntFieldUpdateOperationsInput | number
+    position?: FloatFieldUpdateOperationsInput | number
     dueDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -8918,7 +8918,7 @@ export namespace Prisma {
     title?: StringFieldUpdateOperationsInput | string
     description?: NullableStringFieldUpdateOperationsInput | string | null
     listId?: StringFieldUpdateOperationsInput | string
-    position?: IntFieldUpdateOperationsInput | number
+    position?: FloatFieldUpdateOperationsInput | number
     dueDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -9268,6 +9268,17 @@ export namespace Prisma {
     _max?: NestedDateTimeNullableFilter<$PrismaModel>
   }
 
+  export type FloatFilter<$PrismaModel = never> = {
+    equals?: number | FloatFieldRefInput<$PrismaModel>
+    in?: number[]
+    notIn?: number[]
+    lt?: number | FloatFieldRefInput<$PrismaModel>
+    lte?: number | FloatFieldRefInput<$PrismaModel>
+    gt?: number | FloatFieldRefInput<$PrismaModel>
+    gte?: number | FloatFieldRefInput<$PrismaModel>
+    not?: NestedFloatFilter<$PrismaModel> | number
+  }
+
   export type BoardScalarRelationFilter = {
     is?: BoardWhereInput
     isNot?: BoardWhereInput
@@ -9316,6 +9327,22 @@ export namespace Prisma {
 
   export type ListSumOrderByAggregateInput = {
     position?: SortOrder
+  }
+
+  export type FloatWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: number | FloatFieldRefInput<$PrismaModel>
+    in?: number[]
+    notIn?: number[]
+    lt?: number | FloatFieldRefInput<$PrismaModel>
+    lte?: number | FloatFieldRefInput<$PrismaModel>
+    gt?: number | FloatFieldRefInput<$PrismaModel>
+    gte?: number | FloatFieldRefInput<$PrismaModel>
+    not?: NestedFloatWithAggregatesFilter<$PrismaModel> | number
+    _count?: NestedIntFilter<$PrismaModel>
+    _avg?: NestedFloatFilter<$PrismaModel>
+    _sum?: NestedFloatFilter<$PrismaModel>
+    _min?: NestedFloatFilter<$PrismaModel>
+    _max?: NestedFloatFilter<$PrismaModel>
   }
 
   export type ListScalarRelationFilter = {
@@ -9577,6 +9604,14 @@ export namespace Prisma {
     connectOrCreate?: CardCreateOrConnectWithoutListInput | CardCreateOrConnectWithoutListInput[]
     createMany?: CardCreateManyListInputEnvelope
     connect?: CardWhereUniqueInput | CardWhereUniqueInput[]
+  }
+
+  export type FloatFieldUpdateOperationsInput = {
+    set?: number
+    increment?: number
+    decrement?: number
+    multiply?: number
+    divide?: number
   }
 
   export type BoardUpdateOneRequiredWithoutListsNestedInput = {
@@ -9902,6 +9937,22 @@ export namespace Prisma {
     _max?: NestedDateTimeNullableFilter<$PrismaModel>
   }
 
+  export type NestedFloatWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: number | FloatFieldRefInput<$PrismaModel>
+    in?: number[]
+    notIn?: number[]
+    lt?: number | FloatFieldRefInput<$PrismaModel>
+    lte?: number | FloatFieldRefInput<$PrismaModel>
+    gt?: number | FloatFieldRefInput<$PrismaModel>
+    gte?: number | FloatFieldRefInput<$PrismaModel>
+    not?: NestedFloatWithAggregatesFilter<$PrismaModel> | number
+    _count?: NestedIntFilter<$PrismaModel>
+    _avg?: NestedFloatFilter<$PrismaModel>
+    _sum?: NestedFloatFilter<$PrismaModel>
+    _min?: NestedFloatFilter<$PrismaModel>
+    _max?: NestedFloatFilter<$PrismaModel>
+  }
+
   export type BoardCreateWithoutUserInput = {
     id?: string
     name: string
@@ -10061,7 +10112,7 @@ export namespace Prisma {
     id?: StringFilter<"List"> | string
     name?: StringFilter<"List"> | string
     boardId?: StringFilter<"List"> | string
-    position?: IntFilter<"List"> | number
+    position?: FloatFilter<"List"> | number
     createdAt?: DateTimeFilter<"List"> | Date | string
     updatedAt?: DateTimeFilter<"List"> | Date | string
   }
@@ -10183,7 +10234,7 @@ export namespace Prisma {
     title?: StringFilter<"Card"> | string
     description?: StringNullableFilter<"Card"> | string | null
     listId?: StringFilter<"Card"> | string
-    position?: IntFilter<"Card"> | number
+    position?: FloatFilter<"Card"> | number
     dueDate?: DateTimeNullableFilter<"Card"> | Date | string | null
     createdAt?: DateTimeFilter<"Card"> | Date | string
     updatedAt?: DateTimeFilter<"Card"> | Date | string
@@ -10272,7 +10323,7 @@ export namespace Prisma {
   export type ListUpdateWithoutCardsInput = {
     id?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
-    position?: IntFieldUpdateOperationsInput | number
+    position?: FloatFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     board?: BoardUpdateOneRequiredWithoutListsNestedInput
@@ -10282,7 +10333,7 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
     boardId?: StringFieldUpdateOperationsInput | string
-    position?: IntFieldUpdateOperationsInput | number
+    position?: FloatFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -10385,7 +10436,7 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     title?: StringFieldUpdateOperationsInput | string
     description?: NullableStringFieldUpdateOperationsInput | string | null
-    position?: IntFieldUpdateOperationsInput | number
+    position?: FloatFieldUpdateOperationsInput | number
     dueDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -10398,7 +10449,7 @@ export namespace Prisma {
     title?: StringFieldUpdateOperationsInput | string
     description?: NullableStringFieldUpdateOperationsInput | string | null
     listId?: StringFieldUpdateOperationsInput | string
-    position?: IntFieldUpdateOperationsInput | number
+    position?: FloatFieldUpdateOperationsInput | number
     dueDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -10449,7 +10500,7 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     title?: StringFieldUpdateOperationsInput | string
     description?: NullableStringFieldUpdateOperationsInput | string | null
-    position?: IntFieldUpdateOperationsInput | number
+    position?: FloatFieldUpdateOperationsInput | number
     dueDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -10462,7 +10513,7 @@ export namespace Prisma {
     title?: StringFieldUpdateOperationsInput | string
     description?: NullableStringFieldUpdateOperationsInput | string | null
     listId?: StringFieldUpdateOperationsInput | string
-    position?: IntFieldUpdateOperationsInput | number
+    position?: FloatFieldUpdateOperationsInput | number
     dueDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -10522,7 +10573,7 @@ export namespace Prisma {
   export type ListUpdateWithoutBoardInput = {
     id?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
-    position?: IntFieldUpdateOperationsInput | number
+    position?: FloatFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     cards?: CardUpdateManyWithoutListNestedInput
@@ -10531,7 +10582,7 @@ export namespace Prisma {
   export type ListUncheckedUpdateWithoutBoardInput = {
     id?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
-    position?: IntFieldUpdateOperationsInput | number
+    position?: FloatFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     cards?: CardUncheckedUpdateManyWithoutListNestedInput
@@ -10540,7 +10591,7 @@ export namespace Prisma {
   export type ListUncheckedUpdateManyWithoutBoardInput = {
     id?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
-    position?: IntFieldUpdateOperationsInput | number
+    position?: FloatFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -10559,7 +10610,7 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     title?: StringFieldUpdateOperationsInput | string
     description?: NullableStringFieldUpdateOperationsInput | string | null
-    position?: IntFieldUpdateOperationsInput | number
+    position?: FloatFieldUpdateOperationsInput | number
     dueDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -10571,7 +10622,7 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     title?: StringFieldUpdateOperationsInput | string
     description?: NullableStringFieldUpdateOperationsInput | string | null
-    position?: IntFieldUpdateOperationsInput | number
+    position?: FloatFieldUpdateOperationsInput | number
     dueDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -10583,7 +10634,7 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     title?: StringFieldUpdateOperationsInput | string
     description?: NullableStringFieldUpdateOperationsInput | string | null
-    position?: IntFieldUpdateOperationsInput | number
+    position?: FloatFieldUpdateOperationsInput | number
     dueDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string

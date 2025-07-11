@@ -8,6 +8,7 @@ export default defineConfig({
       'tests/unit/**/*.{test,spec}.{js,ts}',
       'tests/integration/**/*.{test,spec}.{js,ts}'
     ],
+    setupFiles: ['./tests/setup.ts'],
     // Exclude E2E tests, node_modules, and other files
     exclude: [
       'tests/e2e/**/*',
