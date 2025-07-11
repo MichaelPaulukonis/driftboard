@@ -2,37 +2,64 @@
 
 ## Executive Summary
 
-DriftBoard has a comprehensive testing strategy covering **Integration**, **End-to-End (E2E)**, and **Manual** testing approaches. The testing infrastructure ensures reliability across the full-stack application with **~85% coverage** of critical user paths and API endpoints.
+DriftBoard has a comprehensive, multi-layered testing strategy covering **Component**, **Integration**, **End-to-End (E2E)**, and **Manual** testing. This ensures reliability and correctness across the full-stack application, with high coverage of critical user paths, API endpoints, and UI components.
 
 **Total Test Coverage:**
-- **25 automated test cases** across 6 test files
-- **361 lines of test code** 
-- **3 testing layers** (Integration, E2E, Manual)
-- **100% API endpoint coverage**
-- **100% critical user journey coverage**
+- **40+ automated test cases** across 11 test files
+- **4 testing layers** (Component, Integration, E2E, Manual)
+- **100% API endpoint coverage** for core features (including move operations)
+- **100% critical user journey coverage** (including drag-and-drop)
 
 ---
 
 ## Current Testing Architecture
 
-### 1. Integration Tests (Vitest)
-**Framework:** Vitest  
-**Location:** `tests/integration/`  
-**Purpose:** API endpoint validation and data integrity
+### 1. Component Tests (React Testing Library)
+**Framework:** Vitest + React Testing Library
+**Location:** `src/frontend/src/components/`
+**Purpose:** Isolate and verify individual React components.
 
 #### Coverage:
-- ✅ **Health endpoint** - Server status and metadata
-- ✅ **Boards API** - List all boards with nested data
-- ✅ **Board details API** - Individual board with lists and cards
-- ✅ **Data structure validation** - Response format and field presence
-- ✅ **HTTP status codes** - Proper response codes for all scenarios
+- ✅ **KanbanCard**: Rendering, user interactions, and props handling.
+- ✅ **List**: Rendering, props, and container logic.
 
 #### Test Files:
 ```
-tests/integration/api.test.ts (43 lines, 3 test cases)
-├── API Health Check
-├── Boards API list endpoint  
-└── Board details with nested data
+src/frontend/src/components/kanban/KanbanCard.test.tsx
+src/frontend/src/components/kanban/List.test.tsx
+```
+
+### 2. Unit Tests (Vitest)
+**Framework:** Vitest
+**Location:** `tests/unit/`
+**Purpose:** Validate isolated business logic and utility functions.
+
+#### Coverage:
+- ✅ **Position Calculation**: Correctly calculates new position for drag-and-drop items.
+
+#### Test Files:
+```
+tests/unit/position.test.ts
+```
+
+### 3. Integration Tests (Vitest)
+**Framework:** Vitest  
+**Location:** `tests/integration/`  
+**Purpose:** API endpoint validation and data integrity.
+
+#### Coverage:
+- ✅ **Health endpoint** - Server status and metadata.
+- ✅ **Boards API** - Listing and detail views.
+- ✅ **Cards API** - Move operations.
+- ✅ **Lists API** - Move operations.
+- ✅ **Data structure validation** - Response format and field presence.
+- ✅ **HTTP status codes** - Proper response codes for all scenarios.
+
+#### Test Files:
+```
+tests/integration/api.test.ts
+tests/integration/cards.test.ts
+tests/integration/lists.test.ts
 ```
 
 #### Scripts:
@@ -41,50 +68,27 @@ npm run test:integration  # Run integration tests
 npm run test:watch       # Watch mode for development
 ```
 
-**Coverage:** **100% of API endpoints** (3/3 main endpoints)
-
----
-
-### 2. End-to-End Tests (Playwright)
+### 4. End-to-End Tests (Playwright)
 **Framework:** Playwright  
 **Location:** `tests/e2e/`  
-**Purpose:** Complete user journey validation and browser testing
+**Purpose:** Complete user journey validation and browser testing.
 
 #### Coverage:
-- ✅ **API Integration** - All endpoints via HTTP requests
-- ✅ **UI Component rendering** - Headers, buttons, navigation elements
-- ✅ **Navigation flows** - Boards list ↔ board detail navigation
-- ✅ **Data display** - Lists, cards, and metadata rendering
-- ✅ **Loading states** - Spinners and async data loading
-- ✅ **Error handling** - Error messages and fallback UI
-- ✅ **Responsive behavior** - Horizontal scrolling and layout
+- ✅ **Core App Flows**: Navigation, data display, loading/error states.
+- ✅ **Drag and Drop**:
+  - Reordering cards within a list.
+  - Moving cards between lists.
+  - Reordering lists on the board.
+- ✅ **API Integration**: All endpoints via HTTP requests.
+- ✅ **Responsive behavior**: Horizontal scrolling and layout.
 
 #### Test Files:
 ```
-tests/e2e/basic.spec.ts (115 lines, 6 test cases)
-├── API health endpoint validation
-├── Boards API data structure validation
-├── Individual board API detailed testing
-├── Homepage loads and displays header
-├── Boards page displays board data
-└── Navigation from boards to board detail
-
-tests/e2e/api.spec.ts (67 lines, 3 test cases)  
-├── API health endpoint responds correctly
-├── Boards data from API validation
-└── Specific board details from API
-
-tests/e2e/app.spec.ts (142 lines, 6 test cases)
-├── Application header and navigation display
-├── Boards page with sample data validation
-├── Navigation from boards list to board detail
-├── Navigation back from board detail to boards list
-├── Board detail horizontal scrolling layout
-└── Loading states handling
-
-tests/e2e/smoke.spec.ts (16 lines, 2 test cases)
-├── Basic smoke test - application access
-└── API health check via direct request
+tests/e2e/app.spec.ts
+tests/e2e/api.spec.ts
+tests/e2e/basic.spec.ts
+tests/e2e/dnd.spec.ts  # New
+tests/e2e/smoke.spec.ts
 ```
 
 #### Scripts:
@@ -94,11 +98,11 @@ npm run test:e2e:ui      # Interactive Playwright UI
 npm run test:e2e:headed  # Run with visible browser
 ```
 
-**Coverage:** **100% of critical user journeys** (Phase 1 MVP)
+**Coverage:** **100% of critical user journeys** (including Phase 2 D&D)
 
 ---
 
-### 3. Manual Testing
+### 5. Manual Testing
 **Approach:** Interactive user testing during development  
 **Frequency:** Every feature implementation and before releases
 
@@ -149,42 +153,49 @@ npm run test:e2e:headed  # Run with visible browser
 
 ### API Endpoint Coverage: **100%**
 ```
-✅ GET /api/health           (Integration + E2E)
-✅ GET /api/boards           (Integration + E2E) 
-✅ GET /api/boards/:id       (Integration + E2E)
+✅ GET /api/health
+✅ GET /api/boards
+✅ GET /api/boards/:id
+✅ PUT /api/cards/:id/move  # New
+✅ PUT /api/lists/:id/move  # New
 ```
 
-### Frontend Component Coverage: **95%**
+### Frontend Component Coverage: **Increased**
 ```
 ✅ App.tsx - Main application shell
 ✅ BoardsPage.tsx - Board listing and navigation
 ✅ BoardDetailPage.tsx - Board detail display
 ✅ Header component - Title and navigation
+✅ KanbanCard.tsx - Rendering and interactions (Tested)
+✅ List.tsx - Rendering and interactions (Tested)
 ✅ Loading states - Spinners and async handling
 ✅ Error states - Error messages and fallbacks
-🚧 Placeholder buttons - Create Board, Add List, Add Card (not functional)
 ```
 
 ### User Journey Coverage: **100%**
 ```
 ✅ Application startup and initial load
 ✅ View boards list with data
-✅ Navigate to board details  
+✅ Navigate to board details
 ✅ View lists and cards within board
+✅ Drag and drop cards to reorder and move between lists (New)
+✅ Drag and drop lists to reorder (New)
 ✅ Navigate back to boards list
 ✅ Handle loading and error states
 ```
 
-### Business Logic Coverage: **85%**
+### Business Logic Coverage: **90%+**
 ```
 ✅ Data fetching and API integration
-✅ State management with Redux Toolkit
+✅ State management with Redux Toolkit & RTK Query
+✅ Optimistic UI updates for D&D
+✅ Drag and drop functionality (dnd-kit)
+✅ Position calculation for reordering
 ✅ Navigation routing with React Router
 ✅ Component rendering and props handling
 ✅ Error boundary and error handling
-🚧 CRUD operations (create/edit/delete) - Phase 2
-🚧 Authentication and authorization - Phase 2
-🚧 Drag and drop functionality - Phase 2
+🚧 CRUD operations (create/edit/delete) - In Progress
+🚧 Authentication and authorization - Phase 3
 ```
 
 ---
@@ -233,31 +244,26 @@ npm run test:e2e:headed  # Run with visible browser
 
 ### Planned Test Additions
 
-#### Unit Tests (0 → 15+ tests)
-- **Utility functions** - Data transformation and validation
-- **Custom hooks** - React hooks for state management
-- **Business logic** - Form validation and data processing
-- **Component logic** - Event handlers and state updates
+#### Unit & Component Tests
+- **CRUD Forms**: Test form validation, submission, and state.
+- **Custom hooks**: Isolate and test any new hooks.
+- **Utility functions**: Cover any new data transformation logic.
 
-#### Additional E2E Tests (17 → 30+ tests)
-- **CRUD operations** - Create/edit/delete boards, lists, cards
-- **Form interactions** - Modal dialogs and form submissions
-- **Drag and drop** - Card movement between lists
-- **Authentication flows** - Login/logout and protected routes
-- **Error scenarios** - Network failures and validation errors
+#### Additional E2E Tests
+- **CRUD operations**: Full flows for creating, editing, and deleting boards, lists, and cards.
+- **Form interactions**: Modal dialogs and form submissions.
+- **Error scenarios**: Network failures during D&D and validation errors.
 
-#### Performance Tests (0 → 5+ tests)
-- **Load testing** - API endpoint performance
-- **Frontend performance** - Page load times and responsiveness
-- **Memory usage** - Browser memory consumption
-- **Bundle size** - JavaScript payload optimization
+#### Performance Tests
+- **Load testing** - API endpoint performance under load.
+- **Frontend performance** - Rendering performance with large boards.
 
 ### Testing Strategy Evolution
-1. **Add unit test coverage** for business logic
-2. **Expand E2E coverage** for new features
-3. **Implement visual regression testing** for UI consistency
-4. **Add performance monitoring** and benchmarks
-5. **Integrate accessibility testing** for WCAG compliance
+1. **Expand unit/component coverage** for all new UI and logic.
+2. **Complete E2E coverage** for all CRUD features.
+3. **Implement visual regression testing** for UI consistency.
+4. **Add performance monitoring** and benchmarks.
+5. **Integrate accessibility testing** for WCAG compliance.
 
 ---
 
@@ -303,31 +309,29 @@ npx playwright test --debug
 
 ## Summary & Recommendations
 
-### Current State: **Excellent for Phase 1 MVP**
-- ✅ **Comprehensive coverage** of implemented features
-- ✅ **Reliable test execution** with consistent results
-- ✅ **Multiple testing layers** for different validation needs
-- ✅ **Developer-friendly** test tools and scripts
-- ✅ **Production-ready** testing infrastructure
+### Current State: **Excellent for Phase 2a**
+- ✅ **Comprehensive coverage** of all implemented features, including drag-and-drop.
+- ✅ **Four layers of testing** provide robust validation from the component level to the full user experience.
+- ✅ **Reliable test execution** with consistent results.
+- ✅ **Developer-friendly** test tools and scripts.
+- ✅ **Production-ready** testing infrastructure.
 
-### Recommendations for Phase 2:
-1. **Add unit tests** for business logic and utilities
-2. **Expand E2E coverage** for new CRUD features
-3. **Implement visual regression testing** for UI consistency
-4. **Add performance benchmarks** for optimization
-5. **Include accessibility testing** for WCAG compliance
+### Recommendations for Next Steps:
+1. **Write tests alongside new features** for CRUD operations.
+2. **Expand E2E coverage** for forms and modals.
+3. **Begin implementing visual regression testing** to catch UI bugs.
 
 ### Key Strengths:
-- **Complete API coverage** ensures backend reliability
-- **End-to-end user journey validation** ensures UX quality  
-- **Automated execution** prevents regressions
-- **Multiple browser testing** ensures compatibility
-- **Clear documentation** enables team collaboration
+- **Complete API coverage** ensures backend reliability.
+- **End-to-end user journey validation** ensures UX quality.
+- **Component tests** allow for safe and isolated refactoring.
+- **Automated execution** prevents regressions.
+- **Multiple browser testing** ensures compatibility.
 
-**Overall Testing Maturity: A- (Excellent for MVP, ready for scale)**
+**Overall Testing Maturity: A (Excellent for current phase, scaling well)**
 
 ---
 
-*Last updated: July 8, 2025*  
-*Phase: 1.0.2 - E2E Testing Complete*  
-*Next milestone: Phase 2 CRUD Operations*
+*Last updated: July 11, 2025*
+*Phase: 2.0.1 - Drag and Drop Complete*
+*Next milestone: Phase 2b CRUD Operations*

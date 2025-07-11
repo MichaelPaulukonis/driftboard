@@ -7,8 +7,6 @@ import {
   useSensor, 
   useSensors,
   DragEndEvent,
-  DragOverlay,
-  DragStartEvent,
 } from '@dnd-kit/core';
 import { arrayMove } from '@dnd-kit/sortable';
 import { 
@@ -25,7 +23,7 @@ import {
 } from '../api/api';
 import { Board as KanbanBoard } from '@/components/kanban/Board';
 import { calculatePosition } from '@/utils/position';
-import { List, Card } from '@/shared/types';
+import { Card } from '@/shared/types';
 
 export function BoardDetailPage() {
   const { id } = useParams<{ id: string }>();
