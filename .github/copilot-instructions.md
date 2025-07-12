@@ -174,6 +174,7 @@ Examples:
 3. **Implement Code**  
 4. **Test** (per the plan’s Testing Strategy)  
 5. **Merge & Close Plan**
+
 ## 4. Prettier Configuration
 
 1. **Semicolons**: Always use semicolons for clarity
