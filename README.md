@@ -143,6 +143,24 @@ For a complete overview and detailed diagrams of the system, please refer to the
 - **Security**: Production-ready security practices from day one
 - **Scalability**: Designed to grow from single-user to multi-user
 
+## ⚙️ Environment Variables & Vite Symlink Setup
+
+DriftBoard uses a single `.env` file in the project root for all configuration, including both frontend and backend variables. However, Vite (used for the frontend) only loads environment variables from an `.env` file in the `src/frontend` directory.
+
+**Symlink Solution:**
+To avoid duplicating config files, a symlink is created:
+
+```sh
+ln -s ../../.env src/frontend/.env
+```
+
+This ensures Vite can access the correct environment variables while keeping configuration centralized.
+
+**Best Practice Note:**
+For long-term maintainability, consider splitting frontend and backend config into separate `.env` files (e.g., `.env.frontend`, `.env.backend`). For now, the symlink approach is pragmatic and keeps config management simple.
+
+If you change environment variables, restart the dev server to reload them.
+
 ## 📝 License
 
 MIT License - This is a personal learning project

@@ -1,10 +1,12 @@
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
+import { useLogout } from '@/hooks/useLogout';
 
 export const Header: React.FC = () => {
   const location = useLocation();
   const isOnBoardsPage = location.pathname === '/' || location.pathname === '/boards';
+  const logout = useLogout();
 
   return (
     <header className="bg-blue-600 text-white shadow-sm">
@@ -26,10 +28,13 @@ export const Header: React.FC = () => {
               </Link>
             )}
             
-            {/* Future: User menu, settings, etc. */}
-            <div className="text-sm text-blue-100">
-              Phase 1 MVP
-            </div>
+            <Button
+              variant="ghost"
+              className="text-white hover:bg-blue-700"
+              onClick={logout}
+            >
+              Logout
+            </Button>
           </nav>
         </div>
       </div>

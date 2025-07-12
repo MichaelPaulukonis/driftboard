@@ -993,6 +993,9 @@ const firebaseConfig = {
   measurementId: "G-GF2022T6BL"
 };
 
+// NOTE: The `VITE_FIREBASE_API_KEY` and other `VITE_` variables are for the **client-side SDK**. This key is **not a secret**. Its only purpose is to identify your specific Firebase project to Google's servers. It essentially says, "Hello, I am the DriftBoard web app." It does **not** grant any special permissions on its own. It's expected and required to be publicly visible in your frontend JavaScript code.
+
+
 // Initialize Firebase
 const app = initializeApp(firebaseConfig);
 export const analytics = getAnalytics(app);

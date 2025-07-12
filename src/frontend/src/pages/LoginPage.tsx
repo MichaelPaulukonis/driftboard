@@ -4,6 +4,7 @@ import { signInWithEmailAndPassword } from 'firebase/auth';
 import { auth } from '../firebase';
 import { setUser, setError } from '../store/authSlice';
 import { useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 
 export const LoginPage: React.FC = () => {
   const [email, setEmail] = useState('');
@@ -73,6 +74,10 @@ export const LoginPage: React.FC = () => {
             </button>
           </div>
         </form>
+        <div className="mt-4 text-center">
+          <span className="text-gray-600 text-sm">Don't have an account?</span>{' '}
+          <Link to="/signup" className="text-blue-500 hover:underline">Sign Up</Link>
+        </div>
       </div>
     </div>
   );
