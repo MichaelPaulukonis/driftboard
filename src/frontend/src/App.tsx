@@ -8,7 +8,8 @@ import { ProtectedRoute } from './components/ProtectedRoute';
 import { BoardsPage } from './pages/BoardsPage';
 import { BoardDetailPage } from './pages/BoardDetailPage';
 import { LoginPage } from './pages/LoginPage';
-import { SignUpPage } from './pages/SignUpPage'; // Import SignUpPage
+import { SignUpPage } from './pages/SignUpPage';
+import { ProfilePage } from './pages/ProfilePage';
 import { auth } from './firebase';
 import { setUser, setLoading } from './store/authSlice';
 import './App.css';
@@ -38,12 +39,13 @@ function App() {
   return (
     <Routes>
       <Route path="/login" element={<LoginPage />} />
-      <Route path="/signup" element={<SignUpPage />} /> {/* Add sign-up route */}
+      <Route path="/signup" element={<SignUpPage />} />
       <Route element={<ProtectedRoute />}>
         <Route element={<AppLayout />}>
           <Route path="/" element={<BoardsPage />} />
           <Route path="/boards" element={<BoardsPage />} />
           <Route path="/boards/:id" element={<BoardDetailPage />} />
+          <Route path="/profile" element={<ProfilePage />} />
         </Route>
       </Route>
     </Routes>

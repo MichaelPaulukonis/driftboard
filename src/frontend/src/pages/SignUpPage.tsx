@@ -1,5 +1,5 @@
 // 1. Imports
-import React, { useState, FormEvent } from 'react';
+import React, { useState, FormEvent, useEffect } from 'react';
 import { useDispatch } from 'react-redux';
 import { useNavigate, Link } from 'react-router-dom';
 import { createUserWithEmailAndPassword, updateProfile } from 'firebase/auth';
@@ -11,15 +11,17 @@ import { Button } from '@/components/ui/button';
 interface SignUpForm {
   email: string;
   password: string;
+  confirmPassword: string;
   displayName: string;
 }
 
 // 3. Component definition
 export const SignUpPage: React.FC = () => {
   // 4. Hooks and state
-  const [form, setForm] = useState<SignUpForm>({ email: '', password: '', displayName: '' });
+  const [form, setForm] = useState<SignUpForm>({ email: '', password: '', confirmPassword: '', displayName: '' });
   const [isLoading, setIsLoading] = useState(false);
   const [error, setErrorMsg] = useState<string | null>(null);
+  const [validationMessages, setValidationMessages] = useState<string[]>([]);
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
@@ -28,9 +30,24 @@ export const SignUpPage: React.FC = () => {
     setForm({ ...form, [e.target.name]: e.target.value });
   };
 
+  useEffect(() => {
+    const messages: string[] = [];
+    // Only run validations if the user has started typing in a password field
+    if (form.password || form.confirmPassword) {
+      if (form.password.length < 8) messages.push('Password must be at least 8 characters.');
+      if (!/[A-Z]/.test(form.password)) messages.push('Password must contain an uppercase letter.');
+      if (!/[a-z]/.test(form.password)) messages.push('Password must contain a lowercase letter.');
+      if (!/\d/.test(form.password)) messages.push('Password must contain a number.');
+      if (form.password !== form.confirmPassword) {
+        messages.push('Passwords do not match.');
+      }
+    }
+    setValidationMessages(messages);
+  }, [form.password, form.confirmPassword]);
+
   const validate = () => {
     if (!form.email.match(/^[^@\s]+@[^@\s]+\.[^@\s]+$/)) return 'Invalid email format.';
-    if (form.password.length < 8) return 'Password must be at least 8 characters.';
+    if (validationMessages.length > 0) return validationMessages.join(' ');
     return null;
   };
 
@@ -93,6 +110,26 @@ export const SignUpPage: React.FC = () => {
               className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
               required
             />
+            {form.password && validationMessages.length > 0 && (
+              <div className="mt-2 text-xs text-red-500">
+                {validationMessages.filter(msg => msg !== 'Passwords do not match.').map(msg => <div key={msg}>{msg}</div>)}
+              </div>
+            )}
+          </div>
+          <div className="mb-4">
+            <label htmlFor="confirmPassword" className="block text-gray-700 text-sm font-bold mb-2">Confirm Password</label>
+            <input
+              id="confirmPassword"
+              name="confirmPassword"
+              type="password"
+              value={form.confirmPassword}
+              onChange={handleChange}
+              className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+              required
+            />
+            {form.confirmPassword && validationMessages.includes('Passwords do not match.') && (
+              <div className="mt-2 text-xs text-red-500">Passwords do not match.</div>
+            )}
           </div>
           <div className="mb-6">
             <label htmlFor="displayName" className="block text-gray-700 text-sm font-bold mb-2">Display Name (optional)</label>
@@ -106,7 +143,16 @@ export const SignUpPage: React.FC = () => {
             />
           </div>
           {error && <div className="mb-4 text-red-600 text-sm">{error}</div>}
-          <Button type="submit" className="w-full" disabled={isLoading}>
+          <Button
+            type="submit"
+            className="w-full"
+            disabled={
+              isLoading ||
+              !form.email ||
+              form.password.length === 0 ||
+              validationMessages.length > 0
+            }
+          >
             {isLoading ? 'Signing up...' : 'Sign Up'}
           </Button>
         </form>

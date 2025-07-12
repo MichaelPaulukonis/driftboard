@@ -22,12 +22,18 @@ export const Header: React.FC = () => {
           <nav className="flex items-center gap-4">
             {!isOnBoardsPage && (
               <Link to="/boards">
-                <Button variant="outline" className="text-white border-white hover:bg-white hover:text-blue-600">
+                <Button variant="ghost" className="text-white hover:bg-blue-700">
                   All Boards
                 </Button>
               </Link>
             )}
             
+            <Link to="/profile">
+              <Button variant="ghost" className="text-white hover:bg-blue-700">
+                Profile
+              </Button>
+            </Link>
+
             <Button
               variant="ghost"
               className="text-white hover:bg-blue-700"

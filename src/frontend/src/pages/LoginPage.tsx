@@ -1,6 +1,6 @@
 import React, { useState, FormEvent } from 'react';
 import { useDispatch } from 'react-redux';
-import { signInWithEmailAndPassword } from 'firebase/auth';
+import { signInWithEmailAndPassword, signInWithPopup, GoogleAuthProvider } from 'firebase/auth';
 import { auth } from '../firebase';
 import { setUser, setError } from '../store/authSlice';
 import { useNavigate } from 'react-router-dom';
@@ -12,6 +12,26 @@ export const LoginPage: React.FC = () => {
   const [isLoading, setIsLoading] = useState(false);
   const dispatch = useDispatch();
   const navigate = useNavigate();
+
+  const handleGoogleSignIn = async () => {
+    const provider = new GoogleAuthProvider();
+    setIsLoading(true);
+    try {
+      const userCredential = await signInWithPopup(auth, provider);
+      const idToken = await userCredential.user.getIdToken();
+      dispatch(setUser({ 
+        uid: userCredential.user.uid, 
+        email: userCredential.user.email, 
+        displayName: userCredential.user.displayName,
+        idToken,
+      }));
+      navigate('/boards');
+    } catch (error: any) {
+      dispatch(setError(error.message));
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   const handleLogin = async (e: FormEvent) => {
     e.preventDefault();
@@ -71,6 +91,19 @@ export const LoginPage: React.FC = () => {
               disabled={isLoading}
             >
               {isLoading ? 'Logging in...' : 'Login'}
+            </button>
+          </div>
+          <div className="mt-4 text-center text-gray-600 text-sm">
+            OR
+          </div>
+          <div className="mt-4">
+            <button
+              type="button"
+              onClick={handleGoogleSignIn}
+              className="w-full bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
+              disabled={isLoading}
+            >
+              Sign in with Google
             </button>
           </div>
         </form>
