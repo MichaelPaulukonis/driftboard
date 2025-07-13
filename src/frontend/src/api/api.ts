@@ -113,22 +113,6 @@ export const api = createApi({
         method: 'PUT',
         body: updates,
       }),
-      async onQueryStarted({ id, updates, boardId }, { dispatch, queryFulfilled }) {
-        const patchResult = dispatch(
-          api.util.updateQueryData('getBoardById', boardId, (draft) => {
-            const list = draft.lists.find(l => l.id === id);
-            if (list) {
-              list.position = updates.position;
-              draft.lists.sort((a, b) => a.position - b.position);
-            }
-          })
-        );
-        try {
-          await queryFulfilled;
-        } catch {
-          patchResult.undo();
-        }
-      },
       invalidatesTags: (_result, _error, { boardId }) => [{ type: 'Board', id: boardId }],
     }),
 
@@ -172,42 +156,6 @@ export const api = createApi({
         method: 'PUT',
         body: updates,
       }),
-      async onQueryStarted({ id, updates, boardId }, { dispatch, queryFulfilled }) {
-        const patchResult = dispatch(
-          api.util.updateQueryData('getBoardById', boardId, (draft) => {
-            let cardToMove: (Card & { listId: string }) | undefined;
-            let sourceList: (List & { cards: Card[] }) | undefined;
-
-            // Find card and its source list
-            for (const list of draft.lists) {
-              const card = list.cards.find(c => c.id === id);
-              if (card) {
-                cardToMove = { ...card, listId: list.id };
-                sourceList = list;
-                break;
-              }
-            }
-
-            if (cardToMove && sourceList) {
-              // Remove from old list
-              sourceList.cards = sourceList.cards.filter(c => c.id !== id);
-              
-              // Add to new list
-              const destinationList = draft.lists.find(l => l.id === updates.listId);
-              if (destinationList) {
-                const movedCard = { ...cardToMove, listId: updates.listId, position: updates.position };
-                destinationList.cards.push(movedCard);
-                destinationList.cards.sort((a, b) => a.position - b.position);
-              }
-            }
-          })
-        );
-        try {
-          await queryFulfilled;
-        } catch {
-          patchResult.undo();
-        }
-      },
       invalidatesTags: (_result, _error, { boardId }) => [{ type: 'Board', id: boardId }],
     }),
   }),

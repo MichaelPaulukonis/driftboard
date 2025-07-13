@@ -24,8 +24,8 @@ router.get('/:id', async (req: Request, res: Response, next: NextFunction): Prom
       return;
     }
 
-    const card = await prisma.card.findUnique({
-      where: { id },
+    const card = await prisma.card.findFirst({
+      where: { id, status: 'ACTIVE' },
       include: {
         labels: true,
         activities: true,
@@ -82,13 +82,36 @@ router.put('/:id', async (req: Request, res: Response, next: NextFunction): Prom
     if (description !== undefined) dataToUpdate.description = description;
     if (dueDate !== undefined) dataToUpdate.dueDate = dueDate;
 
-    const updatedCard = await prisma.card.update({
-      where: { id },
-      data: dataToUpdate,
-      include: {
-        labels: true,
-        activities: true,
-      },
+    const existingCard = await prisma.card.findFirst({
+      where: { id, status: 'ACTIVE' },
+    });
+
+    if (!existingCard) {
+      res.status(404).json({ success: false, error: 'Card not found' });
+      return;
+    }
+
+    const updatedCard = await prisma.$transaction(async (tx) => {
+      await tx.card.update({
+        where: { id: existingCard.id },
+        data: { status: 'INACTIVE' },
+      });
+
+      return tx.card.create({
+        data: {
+          cardId: existingCard.cardId,
+          version: existingCard.version + 1,
+          title: title?.trim() ?? existingCard.title,
+          description: description ?? existingCard.description,
+          dueDate: dueDate ?? existingCard.dueDate,
+          listId: existingCard.listId,
+          position: existingCard.position,
+        },
+        include: {
+          labels: true,
+          activities: true,
+        },
+      });
     });
 
     const response: ApiResponse<Card> = {
@@ -133,9 +156,18 @@ router.put('/:id/move', async (req: Request, res: Response, next: NextFunction):
       return;
     }
 
+    const existingCard = await prisma.card.findFirst({
+      where: { id, status: 'ACTIVE' },
+    });
+
+    if (!existingCard) {
+      res.status(404).json({ success: false, error: 'Card not found' });
+      return;
+    }
+
     // Verify the target list exists
-    const targetList = await prisma.list.findUnique({
-      where: { id: listId },
+    const targetList = await prisma.list.findFirst({
+      where: { id: listId, status: 'ACTIVE' },
     });
 
     if (!targetList) {
@@ -143,12 +175,23 @@ router.put('/:id/move', async (req: Request, res: Response, next: NextFunction):
       return;
     }
 
-    const updatedCard = await prisma.card.update({
-      where: { id },
-      data: {
-        listId,
-        position,
-      },
+    const updatedCard = await prisma.$transaction(async (tx) => {
+      await tx.card.update({
+        where: { id: existingCard.id },
+        data: { status: 'INACTIVE' },
+      });
+
+      return tx.card.create({
+        data: {
+          cardId: existingCard.cardId,
+          version: existingCard.version + 1,
+          title: existingCard.title,
+          description: existingCard.description,
+          dueDate: existingCard.dueDate,
+          listId,
+          position,
+        },
+      });
     });
 
     const response: ApiResponse<Card> = {
@@ -184,27 +227,26 @@ router.delete('/:id', async (req: Request, res: Response, next: NextFunction): P
     }
 
     // Check if card exists
-    const existingCard = await prisma.card.findUnique({
-      where: { id },
+    const existingCard = await prisma.card.findFirst({
+      where: { id, status: 'ACTIVE' },
     });
 
     if (!existingCard) {
-      res.status(404).json({
-        success: false,
-        error: 'Card not found',
-      });
+      res.status(404).json({ success: false, error: 'Card not found' });
       return;
     }
 
-    // Delete the card (labels and activities will be deleted automatically due to cascade)
-    await prisma.card.delete({
+    // "Delete" the card by marking it as inactive
+    await prisma.card.update({
       where: { id },
+      data: { status: 'INACTIVE' },
     });
 
     // Reorder remaining cards to fill the gap
     await prisma.card.updateMany({
       where: {
         listId: existingCard.listId,
+        status: 'ACTIVE',
         position: {
           gt: existingCard.position,
         },

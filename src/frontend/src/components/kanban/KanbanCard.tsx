@@ -28,7 +28,7 @@ export const KanbanCard: React.FC<KanbanCardProps> = ({
     transform,
     transition,
     isDragging,
-  } = useSortable({ id: card.id, data: { type: 'Card', card } });
+  } = useSortable({ id: card.cardId, data: { type: 'Card', card } });
 
   const style = {
     transform: CSS.Transform.toString(transform),

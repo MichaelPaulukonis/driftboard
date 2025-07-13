@@ -119,6 +119,9 @@ exports.Prisma.TransactionIsolationLevel = makeStrictEnum({
 
 exports.Prisma.UserScalarFieldEnum = {
   id: 'id',
+  userId: 'userId',
+  version: 'version',
+  status: 'status',
   email: 'email',
   name: 'name',
   createdAt: 'createdAt',
@@ -127,6 +130,9 @@ exports.Prisma.UserScalarFieldEnum = {
 
 exports.Prisma.BoardScalarFieldEnum = {
   id: 'id',
+  boardId: 'boardId',
+  version: 'version',
+  status: 'status',
   name: 'name',
   description: 'description',
   createdAt: 'createdAt',
@@ -137,6 +143,9 @@ exports.Prisma.BoardScalarFieldEnum = {
 
 exports.Prisma.ListScalarFieldEnum = {
   id: 'id',
+  listId: 'listId',
+  version: 'version',
+  status: 'status',
   name: 'name',
   boardId: 'boardId',
   position: 'position',
@@ -146,6 +155,9 @@ exports.Prisma.ListScalarFieldEnum = {
 
 exports.Prisma.CardScalarFieldEnum = {
   id: 'id',
+  cardId: 'cardId',
+  version: 'version',
+  status: 'status',
   title: 'title',
   description: 'description',
   listId: 'listId',
@@ -180,7 +192,11 @@ exports.Prisma.NullsOrder = {
   first: 'first',
   last: 'last'
 };
-
+exports.Status = exports.$Enums.Status = {
+  ACTIVE: 'ACTIVE',
+  INACTIVE: 'INACTIVE',
+  ARCHIVED: 'ARCHIVED'
+};
 
 exports.Prisma.ModelName = {
   User: 'User',

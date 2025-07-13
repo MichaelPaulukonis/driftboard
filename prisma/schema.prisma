@@ -11,19 +11,31 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+enum Status {
+  ACTIVE
+  INACTIVE
+  ARCHIVED
+}
+
 model User {
-  id        String   @id // This will be the Firebase UID
-  email     String   @unique
-  name      String?
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  boards    Board[]
+  id         String   @id @default(cuid()) // Unique ID for this version
+  userId     String   @unique // This will be the Firebase UID
+  version    Int      @default(1)
+  status     Status   @default(ACTIVE)
+  email      String   @unique
+  name       String?
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+  boards     Board[]
 
   @@map("users")
 }
 
 model Board {
   id          String    @id @default(cuid())
+  boardId     String    @default(cuid())
+  version     Int       @default(1)
+  status      Status    @default(ACTIVE)
   name        String
   description String?
   createdAt   DateTime  @default(now())
@@ -35,12 +47,16 @@ model Board {
   user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
   userId String
 
-  @@index([userId])
+  @@unique([boardId, version])
+  @@index([userId, status])
   @@map("boards")
 }
 
 model List {
   id        String   @id @default(cuid())
+  listId    String   @default(cuid())
+  version   Int      @default(1)
+  status    Status   @default(ACTIVE)
   name      String
   boardId   String
   position  Float
@@ -49,12 +65,16 @@ model List {
   board     Board    @relation(fields: [boardId], references: [id], onDelete: Cascade)
   cards     Card[]
 
-  @@index([boardId])
+  @@unique([listId, version])
+  @@index([boardId, status])
   @@map("lists")
 }
 
 model Card {
   id          String     @id @default(cuid())
+  cardId      String     @default(cuid())
+  version     Int        @default(1)
+  status      Status     @default(ACTIVE)
   title       String
   description String?
   listId      String
@@ -66,7 +86,8 @@ model Card {
   labels      Label[]
   activities  Activity[]
 
-  @@index([listId])
+  @@unique([cardId, version])
+  @@index([listId, status])
   @@map("cards")
 }
 

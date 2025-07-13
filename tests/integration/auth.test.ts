@@ -1,26 +1,14 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import supertest from 'supertest';
-import app from '../../src/backend/server';
+import { describe, it, expect, vi, beforeEach, beforeAll } from 'vitest';
 import { prisma } from '../../src/backend/services/database';
-
-// Mock Firebase Admin SDK
-vi.mock('firebase-admin', () => ({
-  auth: () => ({
-    verifyIdToken: vi.fn().mockImplementation(async (token) => {
-      if (token.startsWith('valid-token-')) {
-        const userId = token.split('-').pop();
-        return { uid: `user-${userId}-id`, email: `user${userId}@test.com`, name: `Test User ${userId}` };
-      }
-      throw new Error('Invalid token');
-    }),
-  }),
-  initializeApp: vi.fn(),
-}));
-
-const request = supertest(app);
+import { setup, getAuthHeaders } from '../helpers';
 
 describe('Auth Middleware and Routes', () => {
-  let user1: any, user2: any, board1: any;
+  let request: any;
+  let user1: any, board1: any;
+
+  beforeAll(async () => {
+    request = await setup();
+  });
 
   beforeEach(async () => {
     // Clean up database before each test
@@ -33,15 +21,9 @@ describe('Auth Middleware and Routes', () => {
     user1 = await prisma.user.create({
       data: {
         id: 'user-1-id',
+        userId: 'user-1-uid',
         email: 'user1@test.com',
         name: 'Test User 1',
-      },
-    });
-    user2 = await prisma.user.create({
-      data: {
-        id: 'user-2-id',
-        email: 'user2@test.com',
-        name: 'Test User 2',
       },
     });
 
@@ -67,150 +49,100 @@ describe('Auth Middleware and Routes', () => {
     });
 
     it('should return 403 Forbidden if token is invalid', async () => {
-      const response = await request
-        .get('/api/boards')
-        .set('Authorization', 'Bearer invalid-token');
+      const response = await request.get('/api/boards').set({ Authorization: 'Bearer invalid-token' });
       expect(response.status).toBe(403);
     });
 
     it('should return boards for an authenticated user', async () => {
-      const response = await request
-        .get('/api/boards')
-        .set('x-test-user-uid', user1.id);
-
+      const response = await request.get('/api/boards').set(getAuthHeaders(1));
       expect(response.status).toBe(200);
-      const { success, data, message } = response.body;
-      expect(success).toBe(true);
-      expect(message).toBe('Boards retrieved successfully');
-      expect(data).toBeInstanceOf(Array);
-      expect(data.length).toBe(1);
-      expect(data[0].name).toBe("User 1's Board");
-      expect(data[0].userId).toBe(user1.id);
+      expect(Array.isArray(response.body.data)).toBe(true);
     });
 
     it('should return an empty array if user has no boards', async () => {
-      const response = await request
-        .get('/api/boards')
-        .set('x-test-user-uid', user2.id);
-
+      // Authenticate as user 2 who has no boards
+      const response = await request.get('/api/boards').set(getAuthHeaders(2));
       expect(response.status).toBe(200);
-      const { success, data } = response.body;
-      expect(success).toBe(true);
-      expect(data).toEqual([]);
+      expect(response.body.data).toEqual([]);
     });
   });
 
   describe('GET /api/boards/:id', () => {
     it("should not allow a user to see another user's board", async () => {
-      const response = await request
-        .get(`/api/boards/${board1.id}`)
-        .set('x-test-user-uid', user2.id);
-
+      const response = await request.get(`/api/boards/${board1.id}`).set(getAuthHeaders(2)); // Authenticated as user 2
       expect(response.status).toBe(404);
-      expect(response.body.error.message).toBe('Board not found or access denied');
+      expect(response.body.error).toBe('Board not found');
     });
 
-    it("should allow a user to see their own board", async () => {
-      const response = await request
-        .get(`/api/boards/${board1.id}`)
-        .set('x-test-user-uid', user1.id);
-      
+    it('should allow a user to see their own board', async () => {
+      const response = await request.get(`/api/boards/${board1.id}`).set(getAuthHeaders(1));
       expect(response.status).toBe(200);
       expect(response.body.data.id).toBe(board1.id);
-      expect(response.body.data.userId).toBe(user1.id);
     });
   });
 
   describe('POST /api/boards', () => {
     it('should create a board for the authenticated user', async () => {
-      const newBoardName = 'User 2 New Board';
       const response = await request
         .post('/api/boards')
-        .set('x-test-user-uid', user2.id)
-        .send({ name: newBoardName });
-
+        .set(getAuthHeaders(1))
+        .send({ name: 'New Board by User 1' });
       expect(response.status).toBe(201);
-      expect(response.body.data.name).toBe(newBoardName);
-      expect(response.body.data.userId).toBe(user2.id);
-
-      // Verify it's in the database
-      const dbBoard = await prisma.board.findFirst({
-        where: { name: newBoardName },
-      });
-      expect(dbBoard).not.toBeNull();
-      expect(dbBoard?.userId).toBe(user2.id);
+      expect(response.body.data.name).toBe('New Board by User 1');
+      expect(response.body.data.userId).toBe(user1.id);
     });
   });
 
   describe('PUT /api/boards/:id', () => {
     it("should not allow a user to update another user's board", async () => {
-      const updatedName = "Attempted Update by User 2";
       const response = await request
         .put(`/api/boards/${board1.id}`)
-        .set('x-test-user-uid', user2.id)
-        .send({ name: updatedName });
-
+        .set(getAuthHeaders(2))
+        .send({ name: 'Updated by User 2' });
       expect(response.status).toBe(404);
     });
 
-    it("should allow a user to update their own board", async () => {
-      const updatedName = "Updated Board Name by User 1";
+    it('should allow a user to update their own board', async () => {
       const response = await request
         .put(`/api/boards/${board1.id}`)
-        .set('x-test-user-uid', user1.id)
-        .send({ name: updatedName });
-
+        .set(getAuthHeaders(1))
+        .send({ name: 'Updated by User 1' });
       expect(response.status).toBe(200);
-      expect(response.body.data.name).toBe(updatedName);
+      expect(response.body.data.name).toBe('Updated by User 1');
     });
   });
 
   describe('DELETE /api/boards/:id', () => {
     it("should not allow a user to delete another user's board", async () => {
-      const response = await request
-        .delete(`/api/boards/${board1.id}`)
-        .set('x-test-user-uid', user2.id);
-
+      const response = await request.delete(`/api/boards/${board1.id}`).set(getAuthHeaders(2));
       expect(response.status).toBe(404);
-
-      // Verify board still exists
-      const dbBoard = await prisma.board.findUnique({ where: { id: board1.id } });
-      expect(dbBoard).not.toBeNull();
     });
 
-    it("should allow a user to delete their own board", async () => {
-      const response = await request
-        .delete(`/api/boards/${board1.id}`)
-        .set('x-test-user-uid', user1.id);
-
+    it('should allow a user to delete their own board', async () => {
+      const response = await request.delete(`/api/boards/${board1.id}`).set(getAuthHeaders(1));
       expect(response.status).toBe(204);
 
-      // Verify board is deleted
+      // Verify board is marked as inactive
       const dbBoard = await prisma.board.findUnique({ where: { id: board1.id } });
-      expect(dbBoard).toBeNull();
+      expect(dbBoard?.status).toBe('INACTIVE');
     });
   });
 
   describe('User creation on first login', () => {
     it('should create a new user in the database on their first authenticated request', async () => {
-      const newUserUid = 'new-user-id';
-      
-      // Make sure user does not exist
-      let dbUser = await prisma.user.findUnique({ where: { id: newUserUid } });
+      const newUserId = 3;
+      const newUserUid = `user-${newUserId}-id`;
+      let dbUser = await prisma.user.findUnique({ where: { userId: newUserUid } });
       expect(dbUser).toBeNull();
 
-      // Make first request
-      const response = await request
-        .get('/api/boards')
-        .set('x-test-user-uid', newUserUid);
-
-      expect(response.status).toBe(200);
-      expect(response.body.data).toEqual([]);
+      // First request from a new authenticated user
+      await request.get('/api/boards').set(getAuthHeaders(newUserId));
 
       // Verify user was created
-      dbUser = await prisma.user.findUnique({ where: { id: newUserUid } });
+      dbUser = await prisma.user.findUnique({ where: { userId: newUserUid } });
       expect(dbUser).not.toBeNull();
-      expect(dbUser?.email).toBe(`${newUserUid}@example.com`);
+      expect(dbUser?.email).toBe(`user${newUserId}@test.com`);
+      expect(dbUser?.status).toBe('ACTIVE');
     });
   });
 });

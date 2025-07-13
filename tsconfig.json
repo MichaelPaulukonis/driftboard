@@ -22,7 +22,6 @@
     "declarationMap": true,
     "sourceMap": true,
     "outDir": "./dist",
-    "rootDir": "./src",
     "resolveJsonModule": true,
     "baseUrl": ".",
     "paths": {
@@ -30,6 +29,7 @@
       "@/shared/*": ["./src/shared/*"],
       "@/backend/*": ["./src/backend/*"],
       "@/frontend/*": ["./src/frontend/*"],
+      "@/tests/*": ["./tests/*"],
       "~/*": ["./*"]
     },
     "types": ["node", "vitest/globals"]

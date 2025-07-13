@@ -5,6 +5,9 @@
 
 export interface User {
   id: string;
+  userId: string;
+  version: number;
+  status: 'ACTIVE' | 'INACTIVE' | 'ARCHIVED';
   email: string;
   name: string | null;
   createdAt: Date;
@@ -13,6 +16,9 @@ export interface User {
 
 export interface Board {
   id: string;
+  boardId: string;
+  version: number;
+  status: 'ACTIVE' | 'INACTIVE' | 'ARCHIVED';
   name: string;
   description: string | null;
   userId: string;
@@ -24,6 +30,9 @@ export interface Board {
 
 export interface List {
   id: string;
+  listId: string;
+  version: number;
+  status: 'ACTIVE' | 'INACTIVE' | 'ARCHIVED';
   name: string;
   boardId: string;
   position: number;
@@ -34,6 +43,9 @@ export interface List {
 
 export interface Card {
   id: string;
+  cardId: string;
+  version: number;
+  status: 'ACTIVE' | 'INACTIVE' | 'ARCHIVED';
   title: string;
   description: string | null;
   listId: string;

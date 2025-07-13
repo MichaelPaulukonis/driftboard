@@ -29,8 +29,8 @@ router.get('/:id', async (req: Request, res: Response, next: NextFunction): Prom
       return;
     }
 
-    const list = await prisma.list.findUnique({
-      where: { id },
+    const list = await prisma.list.findFirst({
+      where: { id, status: 'ACTIVE' },
       include: {
         cards: {
           orderBy: { position: 'asc' },
@@ -86,15 +86,36 @@ router.put('/:id', async (req: Request, res: Response, next: NextFunction): Prom
       return;
     }
 
-    const updatedList = await prisma.list.update({
-      where: { id },
-      data: { name: name.trim() },
-      include: {
-        cards: {
-          orderBy: { position: 'asc' },
-          include: { labels: true },
+    const existingList = await prisma.list.findFirst({
+      where: { id, status: 'ACTIVE' },
+    });
+
+    if (!existingList) {
+      res.status(404).json({ success: false, error: 'List not found' });
+      return;
+    }
+
+    const updatedList = await prisma.$transaction(async (tx) => {
+      await tx.list.update({
+        where: { id: existingList.id },
+        data: { status: 'INACTIVE' },
+      });
+
+      return tx.list.create({
+        data: {
+          listId: existingList.listId,
+          version: existingList.version + 1,
+          name: name.trim(),
+          boardId: existingList.boardId,
+          position: existingList.position,
         },
-      },
+        include: {
+          cards: {
+            orderBy: { position: 'asc' },
+            include: { labels: true },
+          },
+        },
+      });
     });
 
     const response: ApiResponse<List> = {
@@ -138,15 +159,36 @@ router.put('/:id/move', async (req: Request, res: Response, next: NextFunction):
       return;
     }
 
-    const movedList = await prisma.list.update({
-      where: { id },
-      data: { position },
-      include: {
-        cards: {
-          orderBy: { position: 'asc' },
-          include: { labels: true },
+    const existingList = await prisma.list.findFirst({
+      where: { id, status: 'ACTIVE' },
+    });
+
+    if (!existingList) {
+      res.status(404).json({ success: false, error: 'List not found' });
+      return;
+    }
+
+    const movedList = await prisma.$transaction(async (tx) => {
+      await tx.list.update({
+        where: { id: existingList.id },
+        data: { status: 'INACTIVE' },
+      });
+
+      return tx.list.create({
+        data: {
+          listId: existingList.listId,
+          version: existingList.version + 1,
+          name: existingList.name,
+          boardId: existingList.boardId,
+          position,
         },
-      },
+        include: {
+          cards: {
+            orderBy: { position: 'asc' },
+            include: { labels: true },
+          },
+        },
+      });
     });
 
     const response: ApiResponse<List> = {
@@ -182,21 +224,19 @@ router.delete('/:id', async (req: Request, res: Response, next: NextFunction): P
     }
 
     // Check if list exists
-    const existingList = await prisma.list.findUnique({
-      where: { id },
+    const existingList = await prisma.list.findFirst({
+      where: { id, status: 'ACTIVE' },
     });
 
     if (!existingList) {
-      res.status(404).json({
-        success: false,
-        error: 'List not found',
-      });
+      res.status(404).json({ success: false, error: 'List not found' });
       return;
     }
 
-    // Delete the list (cards will be deleted automatically due to cascade)
-    await prisma.list.delete({
+    // "Delete" the list by marking it as inactive
+    await prisma.list.update({
       where: { id },
+      data: { status: 'INACTIVE' },
     });
 
     // Reorder remaining lists to fill the gap
@@ -251,8 +291,8 @@ router.post('/:id/cards', async (req: Request, res: Response, next: NextFunction
     }
 
     // Check if list exists
-    const list = await prisma.list.findUnique({
-      where: { id: listId },
+    const list = await prisma.list.findFirst({
+      where: { id: listId, status: 'ACTIVE' },
     });
 
     if (!list) {
@@ -267,7 +307,7 @@ router.post('/:id/cards', async (req: Request, res: Response, next: NextFunction
     let cardPosition = position;
     if (cardPosition === undefined) {
       const maxPositionResult = await prisma.card.aggregate({
-        where: { listId },
+        where: { listId, status: 'ACTIVE' },
         _max: { position: true },
       });
       cardPosition = (maxPositionResult._max.position ?? 0) + 1000;

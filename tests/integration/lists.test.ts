@@ -1,29 +1,27 @@
 import { describe, it, expect, beforeAll, afterAll } from 'vitest';
-import request from 'supertest';
-import app from '../../src/backend/server.js';
 import { prisma } from '../../src/backend/services/database.js';
-
-const getAuthHeaders = () => ({
-  Authorization: 'Bearer valid-token-user-1',
-});
+import { setup, getAuthHeaders } from '../helpers';
 
 describe('Lists API Integration Tests', () => {
+  let request: any;
   let boardId: string;
   let listId: string;
   let user: any;
 
   beforeAll(async () => {
+    request = await setup();
     // Create a test user
     user = await prisma.user.create({
       data: {
         id: 'list-test-user-id',
+        userId: 'list-test-user-uid',
         email: 'list-test@example.com',
         name: 'List Test User',
       },
     });
 
     // Create a test board for our lists tests, associated with the user
-    const boardResponse = await request(app)
+    const boardResponse = await request
       .post('/api/boards')
       .set(getAuthHeaders())
       .send({
@@ -47,7 +45,7 @@ describe('Lists API Integration Tests', () => {
 
   describe('POST /api/boards/:id/lists', () => {
     it('should create a new list in a board', async () => {
-      const response = await request(app)
+      const response = await request
         .post(`/api/boards/${boardId}/lists`)
         .set(getAuthHeaders())
         .send({
@@ -69,7 +67,7 @@ describe('Lists API Integration Tests', () => {
     });
 
     it('should reject creation with empty name', async () => {
-      const response = await request(app)
+      const response = await request
         .post(`/api/boards/${boardId}/lists`)
         .set(getAuthHeaders())
         .send({
@@ -83,7 +81,7 @@ describe('Lists API Integration Tests', () => {
     });
 
     it('should reject creation for non-existent board', async () => {
-      const response = await request(app)
+      const response = await request
         .post('/api/boards/non-existent-id/lists')
         .set(getAuthHeaders())
         .send({
@@ -97,7 +95,7 @@ describe('Lists API Integration Tests', () => {
     });
 
     it('should auto-assign position when not provided', async () => {
-      const response = await request(app)
+      const response = await request
         .post(`/api/boards/${boardId}/lists`)
         .set(getAuthHeaders())
         .send({
@@ -114,7 +112,7 @@ describe('Lists API Integration Tests', () => {
 
   describe('GET /api/lists/:id', () => {
     it('should get a list with its cards', async () => {
-      const response = await request(app)
+      const response = await request
         .get(`/api/lists/${listId}`)
         .set(getAuthHeaders());
 
@@ -125,7 +123,7 @@ describe('Lists API Integration Tests', () => {
     });
 
     it('should return 404 for non-existent list', async () => {
-      const response = await request(app)
+      const response = await request
         .get('/api/lists/non-existent-id')
         .set(getAuthHeaders());
       
@@ -138,7 +136,7 @@ describe('Lists API Integration Tests', () => {
       const otherBoard = await prisma.board.create({ data: { name: 'Other Board', userId: otherUser.id } });
       const otherList = await prisma.list.create({ data: { name: 'Other List', boardId: otherBoard.id, position: 1 } });
 
-      const response = await request(app)
+      const response = await request
         .get(`/api/lists/${otherList.id}`)
         .set(getAuthHeaders()); // Authenticated as the main test user
 
@@ -154,7 +152,7 @@ describe('Lists API Integration Tests', () => {
   describe('PUT /api/lists/:id', () => {
     it('should update a list name', async () => {
       const newName = 'Updated Test List';
-      const response = await request(app)
+      const response = await request
         .put(`/api/lists/${listId}`)
         .set(getAuthHeaders())
         .send({ name: newName });
@@ -165,7 +163,7 @@ describe('Lists API Integration Tests', () => {
 
     it('should not update position directly', async () => {
       const originalList = await prisma.list.findUnique({ where: { id: listId } });
-      const response = await request(app)
+      const response = await request
         .put(`/api/lists/${listId}`)
         .set(getAuthHeaders())
         .send({ position: 9999 });
@@ -173,18 +171,45 @@ describe('Lists API Integration Tests', () => {
       expect(response.status).toBe(200);
       expect(response.body.data.position).toBe(originalList?.position);
     });
+
+    it('should return 404 if list does not exist', async () => {
+      const response = await request
+        .put('/api/lists/non-existent-id')
+        .set(getAuthHeaders())
+        .send({ name: 'Updated List Name' });
+      expect(response.status).toBe(404);
+    });
+
+    it('should not allow updating a list not owned by the user', async () => {
+      // Setup: Create a list for another user
+      const otherUser = await prisma.user.create({ data: { id: 'other-user', userId: 'other-user-uid', email: 'other@test.com' } });
+      const otherBoard = await prisma.board.create({ data: { name: 'Other Board', userId: otherUser.id } });
+      const otherList = await prisma.list.create({ data: { name: 'Other List', boardId: otherBoard.id, position: 1 } });
+
+      const response = await request
+        .put(`/api/lists/${otherList.id}`)
+        .set(getAuthHeaders())
+        .send({ name: 'Updated List Name' });
+
+      expect(response.status).toBe(404);
+
+      // Cleanup
+      await prisma.list.delete({ where: { id: otherList.id } });
+      await prisma.board.delete({ where: { id: otherBoard.id } });
+      await prisma.user.delete({ where: { id: otherUser.id } });
+    });
   });
 
   describe('PUT /api/lists/:id/move', () => {
     it('should move a list to a new position', async () => {
       // Create another list to move around
-      const secondListResponse = await request(app)
+      const secondListResponse = await request
         .post(`/api/boards/${boardId}/lists`)
         .set(getAuthHeaders())
         .send({ name: 'Second List' });
       const secondListId = secondListResponse.body.data.id;
 
-      const response = await request(app)
+      const response = await request
         .put(`/api/lists/${listId}/move`)
         .set(getAuthHeaders())
         .send({ newPosition: 0.5 }); // Move it before the second list
@@ -200,13 +225,13 @@ describe('Lists API Integration Tests', () => {
   describe('DELETE /api/lists/:id', () => {
     it('should delete a list', async () => {
       // Create a list to be deleted
-      const listToDeleteResponse = await request(app)
+      const listToDeleteResponse = await request
         .post(`/api/boards/${boardId}/lists`)
         .set(getAuthHeaders())
         .send({ name: 'To Be Deleted' });
       const listToDeleteId = listToDeleteResponse.body.data.id;
 
-      const response = await request(app)
+      const response = await request
         .delete(`/api/lists/${listToDeleteId}`)
         .set(getAuthHeaders());
 

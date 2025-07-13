@@ -1,5 +1,6 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, beforeAll } from 'vitest';
 import type { Board, List, Card } from '../../src/shared/types';
+import { setup, getAuthHeaders } from '../helpers';
 
 interface ApiResponse<T> {
   success: boolean;
@@ -7,14 +8,16 @@ interface ApiResponse<T> {
   message?: string;
 }
 
-const getAuthHeaders = () => ({
-  Authorization: 'Bearer valid-token-user-1',
-});
-
 describe('API Health Check', () => {
+  let request: any;
+
+  beforeAll(async () => {
+    request = await setup();
+  });
+
   it('should return OK status', async () => {
-    const response = await fetch('http://localhost:8002/api/health');
-    const data = (await response.json()) as ApiResponse<{ status: string }>;
+    const response = await request.get('/api/health');
+    const data = response.body as ApiResponse<{ status: string }>;
     
     expect(response.status).toBe(200);
     expect(data.success).toBe(true);
@@ -23,11 +26,17 @@ describe('API Health Check', () => {
 });
 
 describe('Boards API', () => {
+  let request: any;
+
+  beforeAll(async () => {
+    request = await setup();
+  });
+
   it('should return boards list for an authenticated user', async () => {
-    const response = await fetch('http://localhost:8002/api/boards', {
-      headers: getAuthHeaders(),
-    });
-    const data = (await response.json()) as ApiResponse<Board[]>;
+    const response = await request
+      .get('/api/boards')
+      .set(getAuthHeaders());
+    const data = response.body as ApiResponse<Board[]>;
     
     expect(response.status).toBe(200);
     expect(data.success).toBe(true);
@@ -36,22 +45,21 @@ describe('Boards API', () => {
 
   it('should return board with lists and cards for an authenticated user', async () => {
     // First get all boards to get an ID
-    const boardsResponse = await fetch('http://localhost:8002/api/boards', {
-      headers: getAuthHeaders(),
-    });
-    const boardsData = (await boardsResponse.json()) as ApiResponse<Board[]>;
+    const boardsResponse = await request
+      .get('/api/boards')
+      .set(getAuthHeaders());
+    const boardsData = boardsResponse.body as ApiResponse<Board[]>;
     
     let firstBoard: Board | undefined = boardsData.data[0];
 
     // Ensure there is at least one board to test with
     if (!firstBoard) {
       // If no boards, create one to proceed with the test
-      const createResponse = await fetch('http://localhost:8002/api/boards', {
-        method: 'POST',
-        headers: { ...getAuthHeaders(), 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name: 'Test Board for Details' }),
-      });
-      const createData = (await createResponse.json()) as ApiResponse<Board>;
+      const createResponse = await request
+        .post('/api/boards')
+        .set({ ...getAuthHeaders(), 'Content-Type': 'application/json' })
+        .send({ name: 'Test Board for Details' });
+      const createData = createResponse.body as ApiResponse<Board>;
       firstBoard = createData.data;
     }
     
@@ -59,10 +67,10 @@ describe('Boards API', () => {
     if (!firstBoard) return; // Guard for type safety
 
     // Then get the specific board
-    const response = await fetch(`http://localhost:8002/api/boards/${firstBoard.id}`, {
-      headers: getAuthHeaders(),
-    });
-    const data = (await response.json()) as ApiResponse<Board & { lists: (List & { cards: Card[] })[] }>;
+    const response = await request
+      .get(`/api/boards/${firstBoard.id}`)
+      .set(getAuthHeaders());
+    const data = response.body as ApiResponse<Board & { lists: (List & { cards: Card[] })[] }>;
     
     expect(response.status).toBe(200);
     expect(data.success).toBe(true);

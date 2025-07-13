@@ -1,30 +1,28 @@
 import { describe, it, expect, beforeAll, afterAll } from 'vitest';
-import request from 'supertest';
-import app from '../../src/backend/server.js';
 import { prisma } from '../../src/backend/services/database.js';
-
-const getAuthHeaders = () => ({
-  Authorization: 'Bearer valid-token-user-1',
-});
+import { setup, getAuthHeaders } from '../helpers';
 
 describe('Cards API Integration Tests', () => {
+  let request: any;
   let boardId: string;
   let listId: string;
   let cardId: string;
   let user: any;
 
   beforeAll(async () => {
+    request = await setup();
     // Create a test user
     user = await prisma.user.create({
       data: {
         id: 'card-test-user-id',
+        userId: 'card-test-user-uid',
         email: 'card-test@example.com',
         name: 'Card Test User',
       },
     });
 
     // Create a test board for our cards tests
-    const boardResponse = await request(app)
+    const boardResponse = await request
       .post('/api/boards')
       .set(getAuthHeaders())
       .send({
@@ -36,7 +34,7 @@ describe('Cards API Integration Tests', () => {
     boardId = boardResponse.body.data.id;
 
     // Create a test list for our cards
-    const listResponse = await request(app)
+    const listResponse = await request
       .post(`/api/boards/${boardId}/lists`)
       .set(getAuthHeaders())
       .send({
@@ -59,7 +57,7 @@ describe('Cards API Integration Tests', () => {
 
   describe('POST /api/lists/:id/cards', () => {
     it('should create a new card in a list', async () => {
-      const response = await request(app)
+      const response = await request
         .post(`/api/lists/${listId}/cards`)
         .set(getAuthHeaders())
         .send({
@@ -84,7 +82,7 @@ describe('Cards API Integration Tests', () => {
     });
 
     it('should reject creation with empty title', async () => {
-      const response = await request(app)
+      const response = await request
         .post(`/api/lists/${listId}/cards`)
         .set(getAuthHeaders())
         .send({
@@ -99,7 +97,7 @@ describe('Cards API Integration Tests', () => {
     });
 
     it('should reject creation for non-existent list', async () => {
-      const response = await request(app)
+      const response = await request
         .post('/api/lists/non-existent-id/cards')
         .set(getAuthHeaders())
         .send({
@@ -114,7 +112,7 @@ describe('Cards API Integration Tests', () => {
     });
 
     it('should create card with optional description', async () => {
-      const response = await request(app)
+      const response = await request
         .post(`/api/lists/${listId}/cards`)
         .set(getAuthHeaders())
         .send({
@@ -130,7 +128,7 @@ describe('Cards API Integration Tests', () => {
     });
 
     it('should auto-assign position when not provided', async () => {
-      const response = await request(app)
+      const response = await request
         .post(`/api/lists/${listId}/cards`)
         .set(getAuthHeaders())
         .send({
@@ -147,7 +145,7 @@ describe('Cards API Integration Tests', () => {
 
   describe('GET /api/cards/:id', () => {
     it('should get a card by its ID', async () => {
-      const response = await request(app)
+      const response = await request
         .get(`/api/cards/${cardId}`)
         .set(getAuthHeaders());
 
@@ -157,7 +155,7 @@ describe('Cards API Integration Tests', () => {
     });
 
     it('should return 404 for non-existent card', async () => {
-      const response = await request(app)
+      const response = await request
         .get('/api/cards/non-existent-id')
         .set(getAuthHeaders());
       
@@ -171,7 +169,7 @@ describe('Cards API Integration Tests', () => {
         title: 'Updated Test Card',
         description: 'This card has been updated'
       };
-      const response = await request(app)
+      const response = await request
         .put(`/api/cards/${cardId}`)
         .set(getAuthHeaders())
         .send(updates);
@@ -183,7 +181,7 @@ describe('Cards API Integration Tests', () => {
 
     it('should not update position directly', async () => {
       const originalCard = await prisma.card.findUnique({ where: { id: cardId } });
-      const response = await request(app)
+      const response = await request
         .put(`/api/cards/${cardId}`)
         .set(getAuthHeaders())
         .send({ position: 9999 });
@@ -198,7 +196,7 @@ describe('Cards API Integration Tests', () => {
 
     beforeAll(async () => {
       // Create another list to move cards to
-      const otherListResponse = await request(app)
+      const otherListResponse = await request
         .post(`/api/boards/${boardId}/lists`)
         .set(getAuthHeaders())
         .send({ name: 'Other List for Moving Cards' });
@@ -212,7 +210,7 @@ describe('Cards API Integration Tests', () => {
     });
 
     it('should move a card to a new list and position', async () => {
-      const response = await request(app)
+      const response = await request
         .put(`/api/cards/${cardId}/move`)
         .set(getAuthHeaders())
         .send({
@@ -229,13 +227,13 @@ describe('Cards API Integration Tests', () => {
   describe('DELETE /api/cards/:id', () => {
     it('should delete a card', async () => {
       // Create a card to be deleted
-      const cardToDeleteResponse = await request(app)
+      const cardToDeleteResponse = await request
         .post(`/api/lists/${listId}/cards`)
         .set(getAuthHeaders())
         .send({ title: 'To Be Deleted' });
       const cardToDeleteId = cardToDeleteResponse.body.data.id;
 
-      const response = await request(app)
+      const response = await request
         .delete(`/api/cards/${cardToDeleteId}`)
         .set(getAuthHeaders());
 

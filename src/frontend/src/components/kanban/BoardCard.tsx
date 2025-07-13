@@ -20,18 +20,18 @@ export const BoardCard: React.FC<BoardCardProps> = ({
   const navigate = useNavigate();
 
   const handleOpen = useCallback(() => {
-    navigate(`/boards/${board.id}`);
-  }, [board.id, navigate]);
+    navigate(`/boards/${board.boardId}`);
+  }, [board.boardId, navigate]);
 
   const handleEdit = useCallback((e: React.MouseEvent) => {
     e.stopPropagation();
-    onEdit?.(board.id);
-  }, [board.id, onEdit]);
+    onEdit?.(board.boardId);
+  }, [board.boardId, onEdit]);
 
   const handleDelete = useCallback((e: React.MouseEvent) => {
     e.stopPropagation();
-    onDelete?.(board.id);
-  }, [board.id, onDelete]);
+    onDelete?.(board.boardId);
+  }, [board.boardId, onDelete]);
 
   const listsCount = board.lists?.length || 0;
   const cardsCount = board.lists?.reduce((total, list) => total + (list.cards?.length || 0), 0) || 0;

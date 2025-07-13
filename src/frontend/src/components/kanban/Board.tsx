@@ -38,29 +38,29 @@ export const Board: React.FC<BoardProps> = ({
   const [editDescription, setEditDescription] = useState(board.description || '');
 
   const handleCreateList = useCallback((listData: any) => {
-    onCreateList?.(board.id, listData);
+    onCreateList?.(board.boardId, listData);
     setShowCreateList(false);
-  }, [board.id, onCreateList]);
+  }, [board.boardId, onCreateList]);
 
   const handleUpdateBoard = useCallback((updates: UpdateBoardDto) => {
-    onUpdateBoard?.(board.id, updates);
+    onUpdateBoard?.(board.boardId, updates);
     setShowEditForm(false);
-  }, [board.id, onUpdateBoard]);
+  }, [board.boardId, onUpdateBoard]);
 
   const handleSaveName = useCallback(() => {
     if (editName.trim() && editName !== board.name) {
-      onUpdateBoard?.(board.id, { name: editName.trim() });
+      onUpdateBoard?.(board.boardId, { name: editName.trim() });
     }
     setIsEditingName(false);
-  }, [editName, board.name, board.id, onUpdateBoard]);
+  }, [editName, board.name, board.boardId, onUpdateBoard]);
 
   const handleSaveDescription = useCallback(() => {
     const newDescription = editDescription.trim() || undefined;
     if (newDescription !== board.description) {
-      onUpdateBoard?.(board.id, { description: newDescription });
+      onUpdateBoard?.(board.boardId, { description: newDescription });
     }
     setIsEditingDescription(false);
-  }, [editDescription, board.description, board.id, onUpdateBoard]);
+  }, [editDescription, board.description, board.boardId, onUpdateBoard]);
 
   const handleKeyPress = useCallback((e: React.KeyboardEvent, field: 'name' | 'description') => {
     if (e.key === 'Enter' && !e.shiftKey) {
@@ -84,7 +84,7 @@ export const Board: React.FC<BoardProps> = ({
   // Sort lists by position and get their IDs for SortableContext
   const { sortedLists, listIds } = useMemo(() => {
     const sorted = board.lists ? [...board.lists].sort((a, b) => a.position - b.position) : [];
-    const ids = sorted.map(l => l.id);
+    const ids = sorted.map(l => l.listId);
     return { sortedLists: sorted, listIds: ids };
   }, [board.lists]);
 
@@ -186,11 +186,11 @@ export const Board: React.FC<BoardProps> = ({
           {/* Existing Lists */}
           {sortedLists.map((list) => (
             <List
-              key={list.id}
+              key={list.listId}
               list={list}
-              onUpdate={(updates: any) => onUpdateList?.(list.id, updates)}
-              onDelete={() => onDeleteList?.(list.id)}
-              onCreateCard={(cardData: any) => onCreateCard?.(list.id, cardData)}
+              onUpdate={(updates: any) => onUpdateList?.(list.listId, updates)}
+              onDelete={() => onDeleteList?.(list.listId)}
+              onCreateCard={(cardData: any) => onCreateCard?.(list.listId, cardData)}
               onUpdateCard={onUpdateCard}
               onDeleteCard={onDeleteCard}
               className="flex-shrink-0 w-80"

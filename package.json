@@ -26,6 +26,7 @@
     "db:migrate": "npx prisma migrate dev",
     "db:studio": "npx prisma studio",
     "db:seed": "npx prisma db seed",
+    "db:populate-versioning": "npx prisma generate && tsx prisma/populate-versioning-fields.ts",
     "script:associate-boards": "npx prisma generate && tsx scripts/associate-boards.ts",
     "docker:build": "docker build -t driftboard .",
     "docker:run": "docker run -p 8000:8000 -v ./data:/app/data driftboard",

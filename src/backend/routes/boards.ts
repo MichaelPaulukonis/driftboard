@@ -19,7 +19,7 @@ router.get('/', async (req: Request, res: Response, next: NextFunction) => {
     }
 
     const boards = await prisma.board.findMany({
-      where: { userId },
+      where: { userId, status: 'ACTIVE' },
       include: {
         lists: {
           orderBy: { position: 'asc' },
@@ -68,6 +68,7 @@ router.get('/:id', async (req: Request, res: Response, next: NextFunction) => {
       where: { 
         id: boardId,
         userId,
+        status: 'ACTIVE'
       },
       include: {
         lists: {
@@ -166,41 +167,46 @@ router.put('/:id', async (req: Request, res: Response, next: NextFunction) => {
       throw new AppError('Board ID is required', 400, 'INVALID_INPUT');
     }
 
-    // First, verify the board exists and belongs to the user
-    const existingBoard = await prisma.board.findUnique({
-      where: { id: boardId },
+    const existingBoard = await prisma.board.findFirst({
+      where: { id: boardId, userId, status: 'ACTIVE' },
     });
 
-    if (!existingBoard || existingBoard.userId !== userId) {
+    if (!existingBoard) {
       throw new AppError('Board not found or access denied', 404, 'BOARD_NOT_FOUND');
     }
 
-    const updateData: { name?: string; description?: string | null } = {};
-    if (name !== undefined) updateData.name = name;
-    if (description !== undefined) updateData.description = description;
+    const updatedBoard = await prisma.$transaction(async (tx) => {
+      await tx.board.update({
+        where: { id: existingBoard.id },
+        data: { status: 'INACTIVE' },
+      });
 
-    const board = await prisma.board.update({
-      where: {
-        id: boardId,
-        // No need for userId here as we've already verified ownership
-      },
-      data: updateData,
-      include: {
-        lists: {
-          include: {
-            cards: {
-              include: {
-                labels: true,
+      const newBoard = await tx.board.create({
+        data: {
+          boardId: existingBoard.boardId,
+          version: existingBoard.version + 1,
+          name: name ?? existingBoard.name,
+          description: description ?? existingBoard.description,
+          userId: existingBoard.userId,
+        },
+        include: {
+          lists: {
+            include: {
+              cards: {
+                include: {
+                  labels: true,
+                },
               },
             },
           },
         },
-      },
+      });
+      return newBoard;
     });
 
     const response: ApiResponse<BoardWithDetails> = {
       success: true,
-      data: board as BoardWithDetails,
+      data: updatedBoard as BoardWithDetails,
       message: 'Board updated successfully',
     };
 
@@ -227,19 +233,21 @@ router.delete('/:id', async (req: Request, res: Response, next: NextFunction) =>
       throw new AppError('Board ID is required', 400, 'INVALID_INPUT');
     }
 
-    // Verify board exists and belongs to user
-    const existingBoard = await prisma.board.findUnique({
+    const existingBoard = await prisma.board.findFirst({
       where: { 
         id: boardId,
+        userId,
+        status: 'ACTIVE',
       },
     });
 
-    if (!existingBoard || existingBoard.userId !== userId) {
+    if (!existingBoard) {
       throw new AppError('Board not found or access denied', 404, 'BOARD_NOT_FOUND');
     }
 
-    await prisma.board.delete({
+    await prisma.board.update({
       where: { id: boardId },
+      data: { status: 'INACTIVE' },
     });
 
     res.status(204).send();
@@ -276,6 +284,7 @@ router.post('/:id/lists', async (req: Request, res: Response, next: NextFunction
       where: { 
         id: boardId,
         userId,
+        status: 'ACTIVE'
       },
     });
 
@@ -287,7 +296,7 @@ router.post('/:id/lists', async (req: Request, res: Response, next: NextFunction
     let listPosition = position;
     if (listPosition === undefined) {
       const maxPosition = await prisma.list.aggregate({
-        where: { boardId },
+        where: { boardId, status: 'ACTIVE' },
         _max: { position: true },
       });
       listPosition = (maxPosition._max?.position ?? -1) + 1;
@@ -296,6 +305,7 @@ router.post('/:id/lists', async (req: Request, res: Response, next: NextFunction
       await prisma.list.updateMany({
         where: {
           boardId,
+          status: 'ACTIVE',
           position: {
             gte: listPosition,
           },

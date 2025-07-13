@@ -37,7 +37,7 @@ export const List: React.FC<ListProps> = ({
     transform,
     transition,
     isDragging,
-  } = useSortable({ id: list.id, data: { type: 'List', list } });
+  } = useSortable({ id: list.listId, data: { type: 'List', list } });
 
   const style = {
     transform: CSS.Transform.toString(transform),
@@ -71,7 +71,7 @@ export const List: React.FC<ListProps> = ({
     const sorted = (list.cards ? [...list.cards] : []).sort(
       (a: CardType, b: CardType) => a.position - b.position
     );
-    const ids = sorted.map((c) => c.id);
+    const ids = sorted.map((c) => c.cardId);
     return { sortedCards: sorted, cardIds: ids };
   }, [list.cards]);
 
@@ -121,12 +121,12 @@ export const List: React.FC<ListProps> = ({
             {/* Cards */}
             {sortedCards.map((card: CardType) => (
               <KanbanCard
-                key={card.id}
+                key={card.cardId}
                 card={card}
                 onUpdate={(updates: Partial<CardType>) =>
-                  onUpdateCard?.(card.id, updates)
+                  onUpdateCard?.(card.cardId, updates)
                 }
-                onDelete={() => onDeleteCard?.(card.id)}
+                onDelete={() => onDeleteCard?.(card.cardId)}
               />
             ))}
           </SortableContext>
