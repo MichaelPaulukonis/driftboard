@@ -2,6 +2,7 @@ import { Router, Request, Response, NextFunction } from 'express';
 import { ApiResponse, UpdateCardDto, Card, MoveCardDto } from '../../shared/types/index.js';
 import { prisma } from '../services/database.js';
 import { authMiddleware } from '../middleware/authMiddleware.js';
+import { AppError } from '../middleware/errorHandler.js';
 
 const router = Router();
 
@@ -15,6 +16,11 @@ router.use(authMiddleware);
 router.get('/:id', async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   try {
     const { id } = req.params;
+    const userId = req.user?.id;
+
+    if (!userId) {
+      throw new AppError('User not authenticated', 401, 'NOT_AUTHENTICATED');
+    }
 
     if (!id) {
       res.status(400).json({
@@ -25,7 +31,16 @@ router.get('/:id', async (req: Request, res: Response, next: NextFunction): Prom
     }
 
     const card = await prisma.card.findFirst({
-      where: { id, status: 'ACTIVE' },
+      where: {
+        cardId: id,
+        status: 'ACTIVE',
+        list: {
+          board: {
+            userId,
+            status: 'ACTIVE',
+          },
+        },
+      },
       include: {
         labels: true,
         activities: true,
@@ -59,6 +74,11 @@ router.put('/:id', async (req: Request, res: Response, next: NextFunction): Prom
   try {
     const { id } = req.params;
     const { title, description, dueDate }: UpdateCardDto = req.body;
+    const userId = req.user?.id;
+
+    if (!userId) {
+      throw new AppError('User not authenticated', 401, 'NOT_AUTHENTICATED');
+    }
 
     if (!id) {
       res.status(400).json({
@@ -83,7 +103,16 @@ router.put('/:id', async (req: Request, res: Response, next: NextFunction): Prom
     if (dueDate !== undefined) dataToUpdate.dueDate = dueDate;
 
     const existingCard = await prisma.card.findFirst({
-      where: { id, status: 'ACTIVE' },
+      where: {
+        cardId: id,
+        status: 'ACTIVE',
+        list: {
+          board: {
+            userId,
+            status: 'ACTIVE',
+          },
+        },
+      },
     });
 
     if (!existingCard) {
@@ -138,75 +167,91 @@ router.put('/:id', async (req: Request, res: Response, next: NextFunction): Prom
  */
 router.put('/:id/move', async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   try {
-    const { id } = req.params;
+    const cardId = req.params.id;
     const { listId, position }: MoveCardDto = req.body;
+    const userId = req.user?.id;
 
-    if (!id) {
-      res.status(400).json({ success: false, error: 'Card ID is required' });
-      return;
+    if (!userId) {
+      throw new AppError('User not authenticated', 401, 'NOT_AUTHENTICATED');
+    }
+
+    if (!cardId) {
+      throw new AppError('Card ID is required', 400, 'INVALID_INPUT');
     }
 
     if (!listId) {
-      res.status(400).json({ success: false, error: 'Target list ID is required' });
-      return;
+      throw new AppError('Target list ID is required', 400, 'INVALID_INPUT');
     }
 
     if (position === undefined || position === null) {
-      res.status(400).json({ success: false, error: 'Position is required' });
-      return;
+      throw new AppError('Position is required', 400, 'INVALID_INPUT');
     }
 
+    // 1. Find the existing card and verify ownership
     const existingCard = await prisma.card.findFirst({
-      where: { id, status: 'ACTIVE' },
+      where: {
+        cardId: cardId,
+        status: 'ACTIVE',
+        list: {
+          board: {
+            userId,
+            status: 'ACTIVE',
+          },
+        },
+      },
     });
 
     if (!existingCard) {
-      res.status(404).json({ success: false, error: 'Card not found' });
-      return;
+      throw new AppError('Card not found or access denied', 404, 'CARD_NOT_FOUND');
     }
 
-    // Verify the target list exists
+    // 2. Verify the target list exists and belongs to the user
     const targetList = await prisma.list.findFirst({
-      where: { id: listId, status: 'ACTIVE' },
+      where: {
+        listId: listId,
+        status: 'ACTIVE',
+        board: {
+          userId,
+          status: 'ACTIVE',
+        },
+      },
     });
 
     if (!targetList) {
-      res.status(404).json({ success: false, error: 'Target list not found' });
-      return;
+      throw new AppError('Target list not found or access denied', 404, 'LIST_NOT_FOUND');
     }
 
-    const updatedCard = await prisma.$transaction(async (tx) => {
+    // 3. Perform the move in a transaction
+    const movedCard = await prisma.$transaction(async (tx) => {
+      // Deactivate the old card version
       await tx.card.update({
         where: { id: existingCard.id },
         data: { status: 'INACTIVE' },
       });
 
-      return tx.card.create({
+      // Create the new card version with updated position/list
+      const { id: oldId, ...restOfCard } = existingCard;
+      const newCard = await tx.card.create({
         data: {
-          cardId: existingCard.cardId,
+          ...restOfCard,
           version: existingCard.version + 1,
-          title: existingCard.title,
-          description: existingCard.description,
-          dueDate: existingCard.dueDate,
-          listId,
-          position,
+          status: 'ACTIVE',
+          position: position,
+          listId: targetList.id, // Use the version-specific ID of the target list
         },
       });
+      return newCard;
     });
 
     const response: ApiResponse<Card> = {
       success: true,
-      data: updatedCard as Card,
+      data: movedCard,
       message: 'Card moved successfully',
     };
 
     res.json(response);
   } catch (error) {
-    if (error && typeof error === 'object' && 'code' in error && error.code === 'P2025') {
-      res.status(404).json({ success: false, error: 'Card not found' });
-    } else {
-      next(error);
-    }
+    next(error);
   }
 });
 
@@ -216,9 +261,9 @@ router.put('/:id/move', async (req: Request, res: Response, next: NextFunction):
  */
 router.delete('/:id', async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   try {
-    const { id } = req.params;
+    const cardId = req.params.id;
 
-    if (!id) {
+    if (!cardId) {
       res.status(400).json({
         success: false,
         error: 'Card ID is required',
@@ -228,7 +273,7 @@ router.delete('/:id', async (req: Request, res: Response, next: NextFunction): P
 
     // Check if card exists
     const existingCard = await prisma.card.findFirst({
-      where: { id, status: 'ACTIVE' },
+      where: { cardId: cardId, status: 'ACTIVE' },
     });
 
     if (!existingCard) {
@@ -238,32 +283,11 @@ router.delete('/:id', async (req: Request, res: Response, next: NextFunction): P
 
     // "Delete" the card by marking it as inactive
     await prisma.card.update({
-      where: { id },
+      where: { id: existingCard.id },
       data: { status: 'INACTIVE' },
     });
 
-    // Reorder remaining cards to fill the gap
-    await prisma.card.updateMany({
-      where: {
-        listId: existingCard.listId,
-        status: 'ACTIVE',
-        position: {
-          gt: existingCard.position,
-        },
-      },
-      data: {
-        position: {
-          decrement: 1,
-        },
-      },
-    });
-
-    const response: ApiResponse = {
-      success: true,
-      message: 'Card deleted successfully',
-    };
-
-    res.json(response);
+    res.status(204).send();
   } catch (error) {
     next(error);
   }

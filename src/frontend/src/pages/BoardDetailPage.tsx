@@ -59,71 +59,74 @@ export function BoardDetailPage() {
     const overId = over.id.toString();
     
     const activeType = active.data.current?.type;
-    const overType = over.data.current?.type;
-
+    
     // Handle List Reordering
-    if (activeType === 'List' && overType === 'List' && activeId !== overId) {
-      const sortedLists = [...board.lists].sort((a, b) => a.position - b.position);
-      const oldIndex = sortedLists.findIndex(l => l.id === activeId);
-      const newIndex = sortedLists.findIndex(l => l.id === overId);
-      
-      if (oldIndex === -1 || newIndex === -1) return;
+    if (activeType === 'List' && over) {
+      const oldIndex = board.lists.findIndex(l => l.listId === activeId);
+      const newIndex = board.lists.findIndex(l => l.listId === overId);
 
-      const reorderedLists = arrayMove(sortedLists, oldIndex, newIndex);
-      
+      if (oldIndex === -1 || newIndex === -1 || oldIndex === newIndex) {
+        return;
+      }
+
+      const reorderedLists = arrayMove(board.lists, oldIndex, newIndex);
+      const movedList = reorderedLists[newIndex];
       const listBefore = reorderedLists[newIndex - 1];
       const listAfter = reorderedLists[newIndex + 1];
       
       const newPosition = calculatePosition(listBefore?.position, listAfter?.position);
 
       moveList({
-        id: activeId,
-        updates: { position: newPosition },
-        boardId: board.id,
+        id: movedList.listId,
+        updates: { position: newPosition, boardId: board.boardId },
+        boardId: board.boardId,
       });
       return;
     }
 
     // Handle Card Dragging
-    if (activeType === 'Card') {
+    if (activeType === 'Card' && over) {
       const activeCard = active.data.current?.card as Card;
       if (!activeCard) return;
 
+      const overId = over.id.toString();
+      const overData = over.data.current;
+      
       let targetListId: string;
       let newPosition: number;
 
-      const allCards = board.lists.flatMap(l => l.cards);
+      const allCards = board.lists.flatMap(l => l.cards || []);
 
-      if (overType === 'List') {
+      if (overData?.type === 'List') {
         // Card dropped on a list
         targetListId = overId;
-        const targetList = board.lists.find(l => l.id === targetListId);
+        const targetList = board.lists.find(l => l.listId === targetListId);
         const cardsInList = [...(targetList?.cards ?? [])].sort((a, b) => a.position - b.position);
         const lastCard = cardsInList[cardsInList.length - 1];
         newPosition = calculatePosition(lastCard?.position);
-      } else if (overType === 'Card') {
+      } else if (overData?.type === 'Card') {
         // Card dropped on another card
-        const overCard = allCards.find(c => c.id === overId);
+        const overCard = allCards.find(c => c.cardId === overId);
         if (!overCard) return;
 
         targetListId = overCard.listId;
-        const cardsInTargetList = [...(board.lists.find(l => l.id === targetListId)?.cards ?? [])].sort((a, b) => a.position - b.position);
+        const cardsInTargetList = [...(board.lists.find(l => l.listId === targetListId)?.cards ?? [])].sort((a, b) => a.position - b.position);
 
         if (activeCard.listId === targetListId) {
           // Sorting in the same list
-          const oldIndex = cardsInTargetList.findIndex(c => c.id === activeId);
-          const newIndex = cardsInTargetList.findIndex(c => c.id === overId);
+          const oldIndex = cardsInTargetList.findIndex(c => c.cardId === activeId);
+          const newIndex = cardsInTargetList.findIndex(c => c.cardId === overId);
           if (oldIndex === newIndex) return;
 
           const reorderedCards = arrayMove(cardsInTargetList, oldIndex, newIndex);
-          const finalNewIndex = reorderedCards.findIndex(c => c.id === activeId);
+          const finalNewIndex = reorderedCards.findIndex(c => c.cardId === activeId);
 
           const cardBefore = reorderedCards[finalNewIndex - 1];
           const cardAfter = reorderedCards[finalNewIndex + 1];
           newPosition = calculatePosition(cardBefore?.position, cardAfter?.position);
         } else {
           // Moving to a new list
-          const overCardIndex = cardsInTargetList.findIndex(c => c.id === overId);
+          const overCardIndex = cardsInTargetList.findIndex(c => c.cardId === overId);
           const cardBefore = cardsInTargetList[overCardIndex - 1];
           newPosition = calculatePosition(cardBefore?.position, overCard.position);
         }
@@ -141,7 +144,7 @@ export function BoardDetailPage() {
           listId: targetListId,
           position: newPosition,
         },
-        boardId: board.id,
+        boardId: board.boardId,
       });
     }
   }, [board, moveCard, moveList]);
@@ -196,28 +199,28 @@ export function BoardDetailPage() {
         }}
         onDeleteList={async (listId) => {
           try {
-            await deleteList({ id: listId, boardId: board.id }).unwrap();
+            await deleteList({ id: listId, boardId: board.boardId }).unwrap();
           } catch (error) {
             console.error('Failed to delete list:', error);
           }
         }}
         onCreateCard={async (listId, cardData) => {
           try {
-            await createCard({ listId, cardData, boardId: board.id }).unwrap();
+            await createCard({ listId, cardData, boardId: board.boardId }).unwrap();
           } catch (error) {
             console.error('Failed to create card:', error);
           }
         }}
         onUpdateCard={async (cardId, updates) => {
           try {
-            await updateCard({ id: cardId, updates, boardId: board.id }).unwrap();
+            await updateCard({ id: cardId, updates, boardId: board.boardId }).unwrap();
           } catch (error) {
             console.error('Failed to update card:', error);
           }
         }}
         onDeleteCard={async (cardId) => {
           try {
-            await deleteCard({ id: cardId, boardId: board.id }).unwrap();
+            await deleteCard({ id: cardId, boardId: board.boardId }).unwrap();
           } catch (error) {
             console.error('Failed to delete card:', error);
           }

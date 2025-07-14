@@ -12,12 +12,7 @@ interface KanbanCardProps {
   className?: string;
 }
 
-export const KanbanCard: React.FC<KanbanCardProps> = ({
-  card,
-  onUpdate,
-  onDelete,
-  className,
-}) => {
+export const KanbanCard: React.FC<KanbanCardProps> = ({ card, onUpdate, onDelete, className }) => {
   const [isEditing, setIsEditing] = useState(false);
   const [editTitle, setEditTitle] = useState(card.title);
 

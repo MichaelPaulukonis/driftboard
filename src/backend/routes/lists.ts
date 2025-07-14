@@ -4,9 +4,11 @@ import {
   UpdateListDto,
   List,
   MoveListDto,
+  CreateCardDto,
 } from '../../shared/types/index.js';
 import { prisma } from '../services/database.js';
 import { authMiddleware } from '../middleware/authMiddleware.js';
+import { AppError } from '../middleware/errorHandler.js';
 
 const router = Router();
 
@@ -20,6 +22,11 @@ router.use(authMiddleware);
 router.get('/:id', async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   try {
     const { id } = req.params;
+    const userId = req.user?.id;
+
+    if (!userId) {
+      throw new AppError('User not authenticated', 401, 'NOT_AUTHENTICATED');
+    }
 
     if (!id) {
       res.status(400).json({
@@ -30,7 +37,14 @@ router.get('/:id', async (req: Request, res: Response, next: NextFunction): Prom
     }
 
     const list = await prisma.list.findFirst({
-      where: { id, status: 'ACTIVE' },
+      where: {
+        listId: id,
+        status: 'ACTIVE',
+        board: {
+          userId,
+          status: 'ACTIVE',
+        },
+      },
       include: {
         cards: {
           orderBy: { position: 'asc' },
@@ -87,7 +101,7 @@ router.put('/:id', async (req: Request, res: Response, next: NextFunction): Prom
     }
 
     const existingList = await prisma.list.findFirst({
-      where: { id, status: 'ACTIVE' },
+      where: { listId: id, status: 'ACTIVE' },
     });
 
     if (!existingList) {
@@ -138,125 +152,58 @@ router.put('/:id', async (req: Request, res: Response, next: NextFunction): Prom
  * PUT /api/lists/:id/move
  * Move a list to a new position
  */
-router.put('/:id/move', async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+router.put('/:id/move', async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const { id } = req.params;
-    const { position }: MoveListDto = req.body;
+    const listId = req.params.id;
+    const { position } = req.body as MoveListDto;
+    const userId = req.user?.id;
 
-    if (!id) {
-      res.status(400).json({
-        success: false,
-        error: 'List ID is required',
-      });
-      return;
+    if (!userId) {
+      throw new AppError('User not authenticated', 401, 'NOT_AUTHENTICATED');
     }
 
-    if (position === undefined || position <= 0) {
-      res.status(400).json({
-        success: false,
-        error: 'A valid new position is required',
-      });
-      return;
+    if (!listId) {
+      throw new AppError('List ID is required', 400, 'INVALID_INPUT');
     }
 
     const existingList = await prisma.list.findFirst({
-      where: { id, status: 'ACTIVE' },
+      where: {
+        listId: listId,
+        status: 'ACTIVE',
+        board: {
+          userId,
+          status: 'ACTIVE',
+        },
+      },
     });
 
     if (!existingList) {
-      res.status(404).json({ success: false, error: 'List not found' });
-      return;
+      throw new AppError('List not found or access denied', 404, 'LIST_NOT_FOUND');
     }
 
-    const movedList = await prisma.$transaction(async (tx) => {
+    const updatedList = await prisma.$transaction(async (tx) => {
       await tx.list.update({
         where: { id: existingList.id },
         data: { status: 'INACTIVE' },
       });
 
-      return tx.list.create({
+      const { id: oldId, ...restOfList } = existingList;
+
+      const newList = await tx.list.create({
         data: {
-          listId: existingList.listId,
+          ...restOfList,
           version: existingList.version + 1,
-          name: existingList.name,
-          boardId: existingList.boardId,
-          position,
-        },
-        include: {
-          cards: {
-            orderBy: { position: 'asc' },
-            include: { labels: true },
-          },
+          status: 'ACTIVE',
+          position: position,
         },
       });
+      return newList;
     });
 
     const response: ApiResponse<List> = {
       success: true,
-      data: movedList,
+      data: updatedList,
       message: 'List moved successfully',
-    };
-
-    res.json(response);
-  } catch (error) {
-    if (error && typeof error === 'object' && 'code' in error && error.code === 'P2025') {
-      res.status(404).json({ success: false, error: 'List not found' });
-    } else {
-      next(error);
-    }
-  }
-});
-
-/**
- * DELETE /api/lists/:id
- * Delete a list and all its cards
- */
-router.delete('/:id', async (req: Request, res: Response, next: NextFunction): Promise<void> => {
-  try {
-    const { id } = req.params;
-
-    if (!id) {
-      res.status(400).json({
-        success: false,
-        error: 'List ID is required',
-      });
-      return;
-    }
-
-    // Check if list exists
-    const existingList = await prisma.list.findFirst({
-      where: { id, status: 'ACTIVE' },
-    });
-
-    if (!existingList) {
-      res.status(404).json({ success: false, error: 'List not found' });
-      return;
-    }
-
-    // "Delete" the list by marking it as inactive
-    await prisma.list.update({
-      where: { id },
-      data: { status: 'INACTIVE' },
-    });
-
-    // Reorder remaining lists to fill the gap
-    await prisma.list.updateMany({
-      where: {
-        boardId: existingList.boardId,
-        position: {
-          gt: existingList.position,
-        },
-      },
-      data: {
-        position: {
-          decrement: 1,
-        },
-      },
-    });
-
-    const response: ApiResponse = {
-      success: true,
-      message: 'List deleted successfully',
     };
 
     res.json(response);
@@ -266,13 +213,12 @@ router.delete('/:id', async (req: Request, res: Response, next: NextFunction): P
 });
 
 /**
- * POST /api/lists/:id/cards
- * Create a new card in a list
+ * DELETE /api/lists/:id
+ * Delete a list and all its cards
  */
-router.post('/:id/cards', async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+router.delete('/:id', async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   try {
-    const { id: listId } = req.params;
-    const { title, description, position } = req.body;
+    const listId = req.params.id;
 
     if (!listId) {
       res.status(400).json({
@@ -282,43 +228,84 @@ router.post('/:id/cards', async (req: Request, res: Response, next: NextFunction
       return;
     }
 
-    if (!title || title.trim().length === 0) {
-      res.status(400).json({
-        success: false,
-        error: 'Card title is required',
-      });
+    // Check if list exists
+    const existingList = await prisma.list.findFirst({
+      where: { listId: listId, status: 'ACTIVE' },
+    });
+
+    if (!existingList) {
+      res.status(404).json({ success: false, error: 'List not found' });
       return;
     }
 
-    // Check if list exists
+    // "Delete" the list by marking it as inactive
+    await prisma.list.update({
+      where: { id: existingList.id },
+      data: { status: 'INACTIVE' },
+    });
+
+    res.status(204).send();
+  } catch (error) {
+    next(error);
+  }
+});
+
+/**
+ * POST /api/lists/:id/cards
+ * Create a new card in a list
+ */
+router.post('/:id/cards', async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const userId = req.user?.id;
+    const listId = req.params.id;
+
+    if (!userId) {
+      throw new AppError('User not authenticated', 401, 'NOT_AUTHENTICATED');
+    }
+
+    if (!listId) {
+      throw new AppError('List ID is required', 400, 'INVALID_INPUT');
+    }
+
+    const { title, description, position } = req.body as CreateCardDto;
+
+    if (!title) {
+      throw new AppError('Card title is required', 400, 'INVALID_INPUT');
+    }
+
+    // Verify list exists and belongs to the user (via the board)
     const list = await prisma.list.findFirst({
-      where: { id: listId, status: 'ACTIVE' },
+      where: {
+        listId: listId,
+        status: 'ACTIVE',
+        board: {
+          userId: userId,
+          status: 'ACTIVE',
+        },
+      },
     });
 
     if (!list) {
-      res.status(404).json({
-        success: false,
-        error: 'List not found',
-      });
-      return;
+      throw new AppError('List not found or access denied', 404, 'LIST_NOT_FOUND');
     }
 
-    // Calculate position if not provided
     let cardPosition = position;
     if (cardPosition === undefined) {
-      const maxPositionResult = await prisma.card.aggregate({
-        where: { listId, status: 'ACTIVE' },
+      const maxPosition = await prisma.card.aggregate({
+        where: { listId: list.id, status: 'ACTIVE' },
         _max: { position: true },
       });
-      cardPosition = (maxPositionResult._max.position ?? 0) + 1000;
+      cardPosition = (maxPosition._max.position ?? -1) + 1;
     }
 
     const card = await prisma.card.create({
       data: {
-        title: title.trim(),
-        description: description?.trim() || null,
-        listId,
+        title,
+        description: description ?? null,
         position: cardPosition,
+        listId: list.id,
+        version: 1,
+        status: 'ACTIVE',
       },
       include: {
         labels: true,

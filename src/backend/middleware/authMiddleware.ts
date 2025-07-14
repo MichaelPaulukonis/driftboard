@@ -1,5 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
 import admin from 'firebase-admin';
+import jwt from 'jsonwebtoken';
 import { AppError } from './errorHandler.js';
 import { prisma } from '../services/database.js';
 
@@ -7,10 +8,12 @@ import { prisma } from '../services/database.js';
 declare global {
   namespace Express {
     interface Request {
-      user?: admin.auth.DecodedIdToken & { id: string }; // Ensure id is available
+      user?: (admin.auth.DecodedIdToken | jwt.JwtPayload) & { id: string; uid: string };
     }
   }
 }
+
+const TEST_JWT_SECRET = process.env.TEST_JWT_SECRET || 'your-default-secret';
 
 /**
  * Middleware to verify Firebase ID token and handle user creation.
@@ -20,23 +23,6 @@ export const authMiddleware = async (
   _res: Response,
   next: NextFunction,
 ): Promise<void> => {
-  // In test environment, mock user from a special header
-  if (process.env.NODE_ENV === 'test') {
-    const testUserUid = req.headers['x-test-user-uid'] as string;
-
-    if (testUserUid) {
-      // This mock allows us to test authenticated routes
-      req.user = {
-        uid: testUserUid,
-        email: `${testUserUid}@example.com`,
-        name: 'Test User',
-        id: testUserUid, // For consistency
-      } as unknown as admin.auth.DecodedIdToken & { id: string };
-      return next();
-    }
-    // If no header, proceed as unauthenticated to test protected routes
-  }
-
   const authHeader = req.headers.authorization;
 
   if (!authHeader || !authHeader.startsWith('Bearer ')) {
@@ -49,20 +35,46 @@ export const authMiddleware = async (
     return next(new AppError('Unauthorized: Token is missing', 401, 'NO_TOKEN'));
   }
 
+  // In test environment, verify using the test secret
+  if (process.env.NODE_ENV === 'test') {
+    try {
+      const decoded = jwt.verify(idToken, TEST_JWT_SECRET) as jwt.JwtPayload;
+      
+      // Find or create a test user based on the token's uid
+      let user = await prisma.user.findUnique({ where: { userId: decoded.uid } });
+      if (!user) {
+        user = await prisma.user.create({
+          data: {
+            userId: decoded.uid,
+            email: decoded.email || `${decoded.uid}@example.com`,
+            name: decoded.name || 'Test User',
+          }
+        });
+      }
+
+      req.user = { ...decoded, id: user.id, uid: user.userId };
+      return next();
+    } catch (error) {
+      console.error('Test token verification failed:', error);
+      return next(new AppError('Forbidden: Invalid test token', 403, 'INVALID_TOKEN'));
+    }
+  }
+
+  // In production/development, verify using Firebase Admin
   try {
     const decodedToken = await admin.auth().verifyIdToken(idToken);
 
     // Check if user exists in our DB, if not, create them
-    let user = await prisma.user.findUnique({
-      where: { id: decodedToken.uid },
-    });
+    let user = await prisma.user.findUnique({ where: { userId: decodedToken.uid } });
 
     if (!user) {
       user = await prisma.user.create({
         data: {
-          id: decodedToken.uid,
+          userId: decodedToken.uid,
           email: decodedToken.email || '', // email is optional on firebase token
           name: decodedToken.name,
+          version: 1,
+          status: 'ACTIVE',
         },
       });
       console.log(`New user created: ${user.id} - ${user.email}`);

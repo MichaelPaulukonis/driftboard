@@ -1,12 +1,7 @@
-import { describe, it, expect, beforeAll } from 'vitest';
-import type { Board, List, Card } from '../../src/shared/types';
+import { describe, it, expect, beforeAll, afterAll } from 'vitest';
+import { ApiResponse, Board, List, Card } from '../../src/shared/types';
 import { setup, getAuthHeaders } from '../helpers';
-
-interface ApiResponse<T> {
-  success: boolean;
-  data: T;
-  message?: string;
-}
+import { prisma } from '../../src/backend/services/database';
 
 describe('API Health Check', () => {
   let request: any;
@@ -18,24 +13,33 @@ describe('API Health Check', () => {
   it('should return OK status', async () => {
     const response = await request.get('/api/health');
     const data = response.body as ApiResponse<{ status: string }>;
-    
     expect(response.status).toBe(200);
     expect(data.success).toBe(true);
-    expect(data.data.status).toBe('healthy');
+    expect(data.data?.status).toBe('healthy');
   });
 });
 
 describe('Boards API', () => {
   let request: any;
+  const testUser = { userId: `test-user-api-${Date.now()}` };
+  let createdBoard: Board;
 
   beforeAll(async () => {
     request = await setup();
+    const response = await request
+      .post('/api/boards')
+      .set(getAuthHeaders(testUser))
+      .send({ name: 'Test Board for Details' });
+    expect(response.status).toBe(201);
+    createdBoard = response.body.data;
+  });
+
+  afterAll(async () => {
+    await prisma.user.deleteMany({ where: { userId: testUser.userId } });
   });
 
   it('should return boards list for an authenticated user', async () => {
-    const response = await request
-      .get('/api/boards')
-      .set(getAuthHeaders());
+    const response = await request.get('/api/boards').set(getAuthHeaders(testUser));
     const data = response.body as ApiResponse<Board[]>;
     
     expect(response.status).toBe(200);
@@ -44,37 +48,18 @@ describe('Boards API', () => {
   });
 
   it('should return board with lists and cards for an authenticated user', async () => {
-    // First get all boards to get an ID
-    const boardsResponse = await request
-      .get('/api/boards')
-      .set(getAuthHeaders());
-    const boardsData = boardsResponse.body as ApiResponse<Board[]>;
-    
-    let firstBoard: Board | undefined = boardsData.data[0];
+    expect(createdBoard).toBeDefined();
+    if (!createdBoard) return;
 
-    // Ensure there is at least one board to test with
-    if (!firstBoard) {
-      // If no boards, create one to proceed with the test
-      const createResponse = await request
-        .post('/api/boards')
-        .set({ ...getAuthHeaders(), 'Content-Type': 'application/json' })
-        .send({ name: 'Test Board for Details' });
-      const createData = createResponse.body as ApiResponse<Board>;
-      firstBoard = createData.data;
-    }
-    
-    expect(firstBoard).toBeDefined();
-    if (!firstBoard) return; // Guard for type safety
-
-    // Then get the specific board
     const response = await request
-      .get(`/api/boards/${firstBoard.id}`)
-      .set(getAuthHeaders());
+      .get(`/api/boards/${createdBoard.boardId}`)
+      .set(getAuthHeaders(testUser));
+    
     const data = response.body as ApiResponse<Board & { lists: (List & { cards: Card[] })[] }>;
     
     expect(response.status).toBe(200);
     expect(data.success).toBe(true);
-    expect(data.data.id).toBe(firstBoard.id);
-    expect(Array.isArray(data.data.lists)).toBe(true);
+    expect(data.data?.boardId).toBe(createdBoard.boardId);
+    expect(Array.isArray(data.data?.lists)).toBe(true);
   });
 });

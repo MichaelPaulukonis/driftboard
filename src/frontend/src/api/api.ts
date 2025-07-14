@@ -33,7 +33,13 @@ export const api = createApi({
     getBoards: builder.query<BoardWithDetails[], void>({
       query: () => '/boards',
       transformResponse: (response: ApiResponse<BoardWithDetails[]>) => response.data || [],
-      providesTags: ['Board'],
+      providesTags: (result) =>
+        result
+          ? [
+              ...result.map(({ boardId }) => ({ type: 'Board' as const, id: boardId })),
+              { type: 'Board' as const, id: 'LIST' },
+            ]
+          : [{ type: 'Board' as const, id: 'LIST' }],
     }),
     getBoardById: builder.query<BoardWithDetails, string>({
       query: (id) => `/boards/${id}`,
@@ -56,14 +62,14 @@ export const api = createApi({
         body: updates,
       }),
       transformResponse: (response: ApiResponse<BoardWithDetails>) => response.data!,
-      invalidatesTags: (_result, _error, { id }) => [{ type: 'Board', id }, 'Board'],
+      invalidatesTags: (_result, _error, { id }) => [{ type: 'Board', id }, { type: 'Board', id: 'LIST' }],
     }),
     deleteBoard: builder.mutation<void, string>({
       query: (id) => ({
         url: `/boards/${id}`,
         method: 'DELETE',
       }),
-      invalidatesTags: ['Board'],
+      invalidatesTags: (_result, _error, id) => [{ type: 'Board', id }, { type: 'Board', id: 'LIST' }],
     }),
 
     // ===== LISTS =====
@@ -79,10 +85,7 @@ export const api = createApi({
         body: listData,
       }),
       transformResponse: (response: ApiResponse<List>) => response.data!,
-      invalidatesTags: (_result, _error, { boardId }) => [
-        { type: 'Board', id: boardId },
-        'Board',
-      ],
+      invalidatesTags: (_result, _error, { boardId }) => [{ type: 'Board', id: boardId }],
     }),
     updateList: builder.mutation<List, { id: string; updates: UpdateListDto }>({
       query: ({ id, updates }) => ({
@@ -94,7 +97,6 @@ export const api = createApi({
       invalidatesTags: (result, _error, { id }) => [
         { type: 'List', id },
         { type: 'Board', id: result?.boardId },
-        'Board',
       ],
     }),
     deleteList: builder.mutation<void, { id: string; boardId: string }>({
@@ -102,10 +104,7 @@ export const api = createApi({
         url: `/lists/${id}`,
         method: 'DELETE',
       }),
-      invalidatesTags: (_result, _error, { boardId }) => [
-        { type: 'Board', id: boardId },
-        'Board',
-      ],
+      invalidatesTags: (_result, _error, { boardId }) => [{ type: 'Board', id: boardId }],
     }),
     moveList: builder.mutation<List, { id: string; updates: MoveListDto, boardId: string }>({
       query: ({ id, updates }) => ({

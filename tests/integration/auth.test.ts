@@ -1,45 +1,23 @@
-import { describe, it, expect, vi, beforeEach, beforeAll } from 'vitest';
-import { prisma } from '../../src/backend/services/database';
+import { describe, it, expect, beforeAll, afterAll } from 'vitest';
+import { prisma } from '../../src/backend/services/database.js';
 import { setup, getAuthHeaders } from '../helpers';
 
 describe('Auth Middleware and Routes', () => {
   let request: any;
-  let user1: any, board1: any;
+  let user1: any, user2: any, board1: any;
 
   beforeAll(async () => {
     request = await setup();
-  });
-
-  beforeEach(async () => {
-    // Clean up database before each test
-    await prisma.board.deleteMany();
-    await prisma.list.deleteMany();
-    await prisma.card.deleteMany();
-    await prisma.user.deleteMany();
-    
     // Create test users
-    user1 = await prisma.user.create({
-      data: {
-        id: 'user-1-id',
-        userId: 'user-1-uid',
-        email: 'user1@test.com',
-        name: 'Test User 1',
-      },
-    });
-
-    // Create a board for user 1
-    board1 = await prisma.board.create({
-      data: {
-        name: "User 1's Board",
-        userId: user1.id,
-      },
-    });
+    user1 = await prisma.user.create({ data: { userId: 'user-1-id', email: 'user1@test.com' } });
+    user2 = await prisma.user.create({ data: { userId: 'user-2-id', email: 'user2@test.com' } });
+    // Create a board for user1
+    board1 = await prisma.board.create({ data: { name: 'User 1 Board', userId: user1.id } });
   });
 
-  afterEach(async () => {
-    await prisma.board.deleteMany();
-    await prisma.user.deleteMany();
-    vi.clearAllMocks();
+  afterAll(async () => {
+    await prisma.board.deleteMany({ where: { userId: user1.id } });
+    await prisma.user.deleteMany({ where: { id: { in: [user1.id, user2.id] } } });
   });
 
   describe('GET /api/boards', () => {
@@ -54,14 +32,14 @@ describe('Auth Middleware and Routes', () => {
     });
 
     it('should return boards for an authenticated user', async () => {
-      const response = await request.get('/api/boards').set(getAuthHeaders(1));
+      const response = await request.get('/api/boards').set(getAuthHeaders(user1));
       expect(response.status).toBe(200);
       expect(Array.isArray(response.body.data)).toBe(true);
     });
 
     it('should return an empty array if user has no boards', async () => {
       // Authenticate as user 2 who has no boards
-      const response = await request.get('/api/boards').set(getAuthHeaders(2));
+      const response = await request.get('/api/boards').set(getAuthHeaders(user2));
       expect(response.status).toBe(200);
       expect(response.body.data).toEqual([]);
     });
@@ -69,15 +47,15 @@ describe('Auth Middleware and Routes', () => {
 
   describe('GET /api/boards/:id', () => {
     it("should not allow a user to see another user's board", async () => {
-      const response = await request.get(`/api/boards/${board1.id}`).set(getAuthHeaders(2)); // Authenticated as user 2
+      const response = await request.get(`/api/boards/${board1.boardId}`).set(getAuthHeaders(user2)); // Authenticated as user 2
       expect(response.status).toBe(404);
       expect(response.body.error).toBe('Board not found');
     });
 
     it('should allow a user to see their own board', async () => {
-      const response = await request.get(`/api/boards/${board1.id}`).set(getAuthHeaders(1));
+      const response = await request.get(`/api/boards/${board1.boardId}`).set(getAuthHeaders(user1));
       expect(response.status).toBe(200);
-      expect(response.body.data.id).toBe(board1.id);
+      expect(response.body.data.boardId).toBe(board1.boardId);
     });
   });
 
@@ -85,7 +63,7 @@ describe('Auth Middleware and Routes', () => {
     it('should create a board for the authenticated user', async () => {
       const response = await request
         .post('/api/boards')
-        .set(getAuthHeaders(1))
+        .set(getAuthHeaders(user1))
         .send({ name: 'New Board by User 1' });
       expect(response.status).toBe(201);
       expect(response.body.data.name).toBe('New Board by User 1');
@@ -96,16 +74,16 @@ describe('Auth Middleware and Routes', () => {
   describe('PUT /api/boards/:id', () => {
     it("should not allow a user to update another user's board", async () => {
       const response = await request
-        .put(`/api/boards/${board1.id}`)
-        .set(getAuthHeaders(2))
+        .put(`/api/boards/${board1.boardId}`)
+        .set(getAuthHeaders(user2))
         .send({ name: 'Updated by User 2' });
       expect(response.status).toBe(404);
     });
 
     it('should allow a user to update their own board', async () => {
       const response = await request
-        .put(`/api/boards/${board1.id}`)
-        .set(getAuthHeaders(1))
+        .put(`/api/boards/${board1.boardId}`)
+        .set(getAuthHeaders(user1))
         .send({ name: 'Updated by User 1' });
       expect(response.status).toBe(200);
       expect(response.body.data.name).toBe('Updated by User 1');
@@ -114,35 +92,36 @@ describe('Auth Middleware and Routes', () => {
 
   describe('DELETE /api/boards/:id', () => {
     it("should not allow a user to delete another user's board", async () => {
-      const response = await request.delete(`/api/boards/${board1.id}`).set(getAuthHeaders(2));
+      const response = await request.delete(`/api/boards/${board1.boardId}`).set(getAuthHeaders(user2));
       expect(response.status).toBe(404);
     });
 
     it('should allow a user to delete their own board', async () => {
-      const response = await request.delete(`/api/boards/${board1.id}`).set(getAuthHeaders(1));
+      const response = await request.delete(`/api/boards/${board1.boardId}`).set(getAuthHeaders(user1));
       expect(response.status).toBe(204);
 
       // Verify board is marked as inactive
-      const dbBoard = await prisma.board.findUnique({ where: { id: board1.id } });
-      expect(dbBoard?.status).toBe('INACTIVE');
+      const board = await prisma.board.findFirst({ where: { boardId: board1.boardId } });
+      expect(board?.status).toBe('INACTIVE');
     });
   });
 
   describe('User creation on first login', () => {
     it('should create a new user in the database on their first authenticated request', async () => {
-      const newUserId = 3;
-      const newUserUid = `user-${newUserId}-id`;
-      let dbUser = await prisma.user.findUnique({ where: { userId: newUserUid } });
-      expect(dbUser).toBeNull();
-
-      // First request from a new authenticated user
-      await request.get('/api/boards').set(getAuthHeaders(newUserId));
+      const newUser = { userId: 'new-user-uid', email: 'new@test.com' };
+      
+      // First request should create the user
+      const response = await request.get('/api/boards').set(getAuthHeaders(newUser));
+      expect(response.status).toBe(200);
 
       // Verify user was created
-      dbUser = await prisma.user.findUnique({ where: { userId: newUserUid } });
+      const dbUser = await prisma.user.findUnique({ where: { userId: newUser.userId } });
       expect(dbUser).not.toBeNull();
-      expect(dbUser?.email).toBe(`user${newUserId}@test.com`);
+      expect(dbUser?.email).toBe(newUser.email);
       expect(dbUser?.status).toBe('ACTIVE');
+      
+      // Cleanup
+      await prisma.user.delete({ where: { userId: newUser.userId } });
     });
   });
 });

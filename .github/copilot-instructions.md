@@ -506,6 +506,10 @@ test('should create and delete a board', async ({ page }) => {
 });
 ```
 
+### 12.4. Integration Testing Best Practices
+
+For more detailed guidelines on writing robust and maintainable integration tests, please refer to the [Integration Testing Best Practices guide](docs/testing/integration-testing-best-practices.md). This document covers key lessons learned, including test setup, authentication mocking, and proper data handling.
+
 ## 13. Performance Optimization
 
 1. **Code Splitting**: Lazy load pages and large components:

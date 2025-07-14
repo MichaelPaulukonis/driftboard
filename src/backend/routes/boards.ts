@@ -13,7 +13,7 @@ router.use(authMiddleware);
  */
 router.get('/', async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const userId = req.user?.uid;
+    const userId = req.user?.id;
     if (!userId) {
       throw new AppError('User not authenticated', 401, 'NOT_AUTHENTICATED');
     }
@@ -51,10 +51,10 @@ router.get('/', async (req: Request, res: Response, next: NextFunction) => {
  * Get a specific board by ID
  * GET /api/boards/:id
  */
-router.get('/:id', async (req: Request, res: Response, next: NextFunction) => {
+router.get('/:boardId', async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const userId = req.user?.uid;
-    const boardId = req.params.id;
+    const userId = req.user?.id;
+    const { boardId } = req.params;
 
     if (!userId) {
       throw new AppError('User not authenticated', 401, 'NOT_AUTHENTICATED');
@@ -66,7 +66,7 @@ router.get('/:id', async (req: Request, res: Response, next: NextFunction) => {
 
     const board = await prisma.board.findFirst({
       where: { 
-        id: boardId,
+        boardId: boardId,
         userId,
         status: 'ACTIVE'
       },
@@ -107,7 +107,7 @@ router.get('/:id', async (req: Request, res: Response, next: NextFunction) => {
  */
 router.post('/', async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const userId = req.user?.uid;
+    const userId = req.user?.id;
     if (!userId) {
       throw new AppError('User not authenticated', 401, 'NOT_AUTHENTICATED');
     }
@@ -122,7 +122,13 @@ router.post('/', async (req: Request, res: Response, next: NextFunction) => {
       data: {
         name,
         description: description ?? null,
-        userId,
+        user: {
+          connect: {
+            id: userId,
+          }
+        },
+        version: 1,
+        status: 'ACTIVE',
       },
       include: {
         lists: {
@@ -153,10 +159,10 @@ router.post('/', async (req: Request, res: Response, next: NextFunction) => {
  * Update a board
  * PUT /api/boards/:id
  */
-router.put('/:id', async (req: Request, res: Response, next: NextFunction) => {
+router.put('/:boardId', async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const userId = req.user?.uid;
-    const boardId = req.params.id;
+    const userId = req.user?.id;
+    const { boardId } = req.params;
     const { name, description } = req.body as UpdateBoardDto;
 
     if (!userId) {
@@ -168,7 +174,7 @@ router.put('/:id', async (req: Request, res: Response, next: NextFunction) => {
     }
 
     const existingBoard = await prisma.board.findFirst({
-      where: { id: boardId, userId, status: 'ACTIVE' },
+      where: { boardId: boardId, userId, status: 'ACTIVE' },
     });
 
     if (!existingBoard) {
@@ -220,10 +226,10 @@ router.put('/:id', async (req: Request, res: Response, next: NextFunction) => {
  * Delete a board
  * DELETE /api/boards/:id
  */
-router.delete('/:id', async (req: Request, res: Response, next: NextFunction) => {
+router.delete('/:boardId', async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const userId = req.user?.uid;
-    const boardId = req.params.id;
+    const userId = req.user?.id;
+    const { boardId } = req.params;
 
     if (!userId) {
       throw new AppError('User not authenticated', 401, 'NOT_AUTHENTICATED');
@@ -235,7 +241,7 @@ router.delete('/:id', async (req: Request, res: Response, next: NextFunction) =>
 
     const existingBoard = await prisma.board.findFirst({
       where: { 
-        id: boardId,
+        boardId: boardId,
         userId,
         status: 'ACTIVE',
       },
@@ -246,7 +252,7 @@ router.delete('/:id', async (req: Request, res: Response, next: NextFunction) =>
     }
 
     await prisma.board.update({
-      where: { id: boardId },
+      where: { id: existingBoard.id },
       data: { status: 'INACTIVE' },
     });
 
@@ -260,10 +266,10 @@ router.delete('/:id', async (req: Request, res: Response, next: NextFunction) =>
  * Create a list in a board
  * POST /api/boards/:id/lists
  */
-router.post('/:id/lists', async (req: Request, res: Response, next: NextFunction) => {
+router.post('/:boardId/lists', async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const userId = req.user?.uid;
-    const boardId = req.params.id;
+    const userId = req.user?.id;
+    const { boardId } = req.params;
 
     if (!userId) {
       throw new AppError('User not authenticated', 401, 'NOT_AUTHENTICATED');
@@ -282,7 +288,7 @@ router.post('/:id/lists', async (req: Request, res: Response, next: NextFunction
     // Verify board exists and belongs to user
     const board = await prisma.board.findFirst({
       where: { 
-        id: boardId,
+        boardId: boardId,
         userId,
         status: 'ACTIVE'
       },
@@ -296,7 +302,7 @@ router.post('/:id/lists', async (req: Request, res: Response, next: NextFunction
     let listPosition = position;
     if (listPosition === undefined) {
       const maxPosition = await prisma.list.aggregate({
-        where: { boardId, status: 'ACTIVE' },
+        where: { boardId: board.id, status: 'ACTIVE' },
         _max: { position: true },
       });
       listPosition = (maxPosition._max?.position ?? -1) + 1;
@@ -304,7 +310,7 @@ router.post('/:id/lists', async (req: Request, res: Response, next: NextFunction
       // If position is specified, shift existing lists
       await prisma.list.updateMany({
         where: {
-          boardId,
+          boardId: board.id,
           status: 'ACTIVE',
           position: {
             gte: listPosition,
@@ -321,8 +327,10 @@ router.post('/:id/lists', async (req: Request, res: Response, next: NextFunction
     const list = await prisma.list.create({
       data: {
         name: name.trim(),
-        boardId,
+        boardId: board.id,
         position: listPosition,
+        version: 1,
+        status: 'ACTIVE',
       },
       include: {
         cards: {
