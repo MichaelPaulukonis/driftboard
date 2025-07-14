@@ -17,22 +17,33 @@ describe('Cards API Integration Tests', () => {
     authHeaders = auth.headers;
 
     board = await prisma.board.create({
-      data: { name: 'Test Board for Cards', userId: testUser.userId },
+      data: { 
+        name: 'Test Board for Cards', 
+        authorId: testUser.id
+      },
     });
 
     list1 = await prisma.list.create({
-      data: { name: 'Test List for Cards', boardId: board.boardId, position: 100 },
+      data: { 
+        name: 'Test List for Cards', 
+        boardId: board.id, 
+        position: 100 
+      },
     });
 
     card1 = await prisma.card.create({
-      data: { title: 'Initial Card', listId: list1.listId, position: 100 },
+      data: { 
+        title: 'Initial Card', 
+        listId: list1.id, 
+        position: 100 
+      },
     });
   });
 
   afterAll(async () => {
     if (testUser) {
-      await prisma.board.deleteMany({ where: { userId: testUser.userId } });
-      await prisma.user.delete({ where: { userId: testUser.userId } });
+      await prisma.board.deleteMany({ where: { authorId: testUser.id } });
+      await prisma.user.delete({ where: { id: testUser.id } });
     }
   });
 
@@ -94,7 +105,7 @@ describe('Cards API Integration Tests', () => {
   describe('PUT /api/cards/:id/move', () => {
     it('should move a card and create a new version', async () => {
       const list2 = await prisma.list.create({
-        data: { name: 'List for Moving', boardId: board.boardId, position: 200 },
+        data: { name: 'List for Moving', boardId: board.id, position: 200 },
       });
 
       const response = await request
@@ -114,7 +125,7 @@ describe('Cards API Integration Tests', () => {
   describe('DELETE /api/cards/:id', () => {
     it('should mark a card as inactive', async () => {
       const cardToDelete = await prisma.card.create({
-        data: { title: 'To Be Deleted', listId: list1.listId, position: 200 },
+        data: { title: 'To Be Deleted', listId: list1.id, position: 200 },
       });
 
       const response = await request

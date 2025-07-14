@@ -10,8 +10,6 @@ async function main() {
     where: { email: 'test@example.com' },
     update: {},
     create: {
-      id: 'test-user-id',
-      userId: 'test-user-id', // Add the missing userId
       email: 'test@example.com',
       name: 'Test User',
     },
@@ -24,7 +22,7 @@ async function main() {
     data: {
       name: 'My First Board',
       description: 'A sample board for testing.',
-      userId: testUser.userId, // Use the persistent userId for the relation
+      authorId: testUser.id, // Use the user's primary key for the relation
       lists: {
         create: [
           {

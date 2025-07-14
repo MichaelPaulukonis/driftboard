@@ -12,7 +12,7 @@ export const getAuthHeaders = async (user: { userId?: string; email?: string; na
   // Ensure the user exists in the database before generating a token
   const dbUser = await prisma.user.upsert({
     where: { userId: testUserId },
-    update: { name: testName },
+    update: { name: testName, email: testEmail },
     create: {
       userId: testUserId,
       email: testEmail,
@@ -23,6 +23,7 @@ export const getAuthHeaders = async (user: { userId?: string; email?: string; na
   const token = jwt.sign(
     {
       uid: dbUser.userId,
+      id: dbUser.id, // Include the database ID in the token
       email: dbUser.email,
       name: dbUser.name,
     },

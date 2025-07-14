@@ -138,7 +138,7 @@ exports.Prisma.BoardScalarFieldEnum = {
   createdAt: 'createdAt',
   updatedAt: 'updatedAt',
   archivedAt: 'archivedAt',
-  userId: 'userId'
+  authorId: 'authorId'
 };
 
 exports.Prisma.ListScalarFieldEnum = {
@@ -147,10 +147,10 @@ exports.Prisma.ListScalarFieldEnum = {
   version: 'version',
   status: 'status',
   name: 'name',
-  boardId: 'boardId',
   position: 'position',
   createdAt: 'createdAt',
-  updatedAt: 'updatedAt'
+  updatedAt: 'updatedAt',
+  boardId: 'boardId'
 };
 
 exports.Prisma.CardScalarFieldEnum = {
@@ -160,11 +160,11 @@ exports.Prisma.CardScalarFieldEnum = {
   status: 'status',
   title: 'title',
   description: 'description',
-  listId: 'listId',
   position: 'position',
   dueDate: 'dueDate',
   createdAt: 'createdAt',
-  updatedAt: 'updatedAt'
+  updatedAt: 'updatedAt',
+  listId: 'listId'
 };
 
 exports.Prisma.LabelScalarFieldEnum = {

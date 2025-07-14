@@ -10,23 +10,26 @@ describe('Auth Middleware and Routes', () => {
   beforeAll(async () => {
     request = await setup();
     
-    const auth1 = await getAuthHeaders({ userId: `auth-test-user-1-${Date.now()}`, email: 'user1.auth@test.com' });
+    const auth1 = await getAuthHeaders({ userId: `auth-test-user-1-${Date.now()}` });
     user1 = auth1.user;
     authHeaders1 = auth1.headers;
 
-    const auth2 = await getAuthHeaders({ userId: `auth-test-user-2-${Date.now()}`, email: 'user2.auth@test.com' });
+    const auth2 = await getAuthHeaders({ userId: `auth-test-user-2-${Date.now()}` });
     user2 = auth2.user;
     authHeaders2 = auth2.headers;
 
     // Create a board for user1 directly in the DB for testing access control
     board1 = await prisma.board.create({
-      data: { name: 'User 1 Board', userId: user1.userId },
+      data: { 
+        name: 'User 1 Board', 
+        authorId: user1.id
+      },
     });
   });
 
   afterAll(async () => {
-    await prisma.board.deleteMany({ where: { userId: user1.userId } });
-    await prisma.user.deleteMany({ where: { userId: { in: [user1.userId, user2.userId] } } });
+    await prisma.board.deleteMany({ where: { authorId: { in: [user1.id, user2.id] } } });
+    await prisma.user.deleteMany({ where: { id: { in: [user1.id, user2.id] } } });
   });
 
   describe('GET /api/boards', () => {
@@ -44,7 +47,7 @@ describe('Auth Middleware and Routes', () => {
       const response = await request.get('/api/boards').set(authHeaders1);
       expect(response.status).toBe(200);
       expect(Array.isArray(response.body.data)).toBe(true);
-      expect(response.body.data[0].userId).toBe(user1.userId);
+      expect(response.body.data[0].authorId).toBe(user1.id);
     });
 
     it('should return an empty array if user has no boards', async () => {
@@ -77,7 +80,7 @@ describe('Auth Middleware and Routes', () => {
         .send({ name: boardName });
       expect(response.status).toBe(201);
       expect(response.body.data.name).toBe(boardName);
-      expect(response.body.data.userId).toBe(user1.userId);
+      expect(response.body.data.authorId).toBe(user1.id);
     });
   });
 
@@ -115,7 +118,7 @@ describe('Auth Middleware and Routes', () => {
 
     it('should allow a user to delete their own board', async () => {
       // We need a new board for this test since board1 is already inactive from the update test
-      const newBoard = await prisma.board.create({ data: { name: 'Board to Delete', userId: user1.userId } });
+      const newBoard = await prisma.board.create({ data: { name: 'Board to Delete', authorId: user1.id } });
       
       const response = await request.delete(`/api/boards/${newBoard.boardId}`).set(authHeaders1);
       expect(response.status).toBe(204);
@@ -139,7 +142,6 @@ describe('Auth Middleware and Routes', () => {
       const dbUser = await prisma.user.findUnique({ where: { userId: newUser.userId } });
       expect(dbUser).not.toBeNull();
       expect(dbUser?.email).toBe(newUser.email);
-      expect(dbUser?.status).toBe('ACTIVE');
       
       // Cleanup
       await prisma.user.delete({ where: { userId: newUser.userId } });

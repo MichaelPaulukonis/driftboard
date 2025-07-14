@@ -30,19 +30,12 @@ describe('Boards API', () => {
     const auth = await getAuthHeaders({ userId: `test-user-boards-api-${Date.now()}` });
     authHeaders = auth.headers;
     testUser = auth.user;
-
-    const response = await request
-      .post('/api/boards')
-      .set(authHeaders)
-      .send({ name: 'Test Board for Details' });
-    
-    expect(response.status).toBe(201);
-    createdBoard = response.body.data;
   });
 
   afterAll(async () => {
     if (testUser) {
-      await prisma.user.delete({ where: { userId: testUser.userId } });
+      await prisma.board.deleteMany({ where: { authorId: testUser.id } });
+      await prisma.user.delete({ where: { id: testUser.id } });
     }
   });
 
@@ -56,6 +49,14 @@ describe('Boards API', () => {
   });
 
   it('should return board with only ACTIVE lists and cards', async () => {
+    const response = await request
+      .post('/api/boards')
+      .set(authHeaders)
+      .send({ name: 'Test Board for Details' });
+    
+    expect(response.status).toBe(201);
+    createdBoard = response.body.data;
+
     expect(createdBoard).toBeDefined();
     if (!createdBoard) {
       // If board creation failed, we can't run this test.
@@ -68,7 +69,7 @@ describe('Boards API', () => {
     const inactiveList = await prisma.list.create({
       data: {
         name: 'Inactive List',
-        boardId: createdBoard.boardId, // Use persistent boardId
+        boardId: createdBoard.id, // Use persistent boardId
         position: 999,
         status: 'INACTIVE',
       },
@@ -76,19 +77,19 @@ describe('Boards API', () => {
     await prisma.card.create({
       data: {
         title: 'Inactive Card',
-        listId: inactiveList.listId,
+        listId: inactiveList.id,
         position: 0,
         status: 'INACTIVE',
       },
     });
 
-    const response = await request
+    const detailResponse = await request
       .get(`/api/boards/${createdBoard.boardId}`)
       .set(authHeaders);
     
-    const data = response.body as ApiResponse<Board & { lists: (List & { cards: Card[] })[] }>;
+    const data = detailResponse.body as ApiResponse<Board & { lists: (List & { cards: Card[] })[] }>;
     
-    expect(response.status).toBe(200);
+    expect(detailResponse.status).toBe(200);
     expect(data.success).toBe(true);
     expect(data.data?.boardId).toBe(createdBoard.boardId);
     expect(Array.isArray(data.data?.lists)).toBe(true);

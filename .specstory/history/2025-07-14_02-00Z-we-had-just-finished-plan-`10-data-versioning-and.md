@@ -2358,3 +2358,15 @@ I agree completely that we should take this summary and start fresh in a new cha
 
 ---
 
+_**User**_
+
+Before we go to the new context, please commit what we have, noting any WIP issues.
+
+---
+
+_**Assistant**_
+
+Of course. I will now commit the changes we've made. The commit message will reflect that the test suite has been repaired and that the backend logic is still a work in progress. 
+
+---
+

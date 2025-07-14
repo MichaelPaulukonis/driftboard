@@ -16,9 +16,9 @@ router.use(authMiddleware);
 router.get('/:id', async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   try {
     const { id } = req.params;
-    const userId = req.user?.id;
+    const authorId = req.user?.id;
 
-    if (!userId) {
+    if (!authorId) {
       throw new AppError('User not authenticated', 401, 'NOT_AUTHENTICATED');
     }
 
@@ -36,7 +36,7 @@ router.get('/:id', async (req: Request, res: Response, next: NextFunction): Prom
         status: 'ACTIVE',
         list: {
           board: {
-            userId,
+            authorId,
             status: 'ACTIVE',
           },
         },
@@ -74,9 +74,9 @@ router.put('/:id', async (req: Request, res: Response, next: NextFunction): Prom
   try {
     const { id } = req.params;
     const { title, description, dueDate }: UpdateCardDto = req.body;
-    const userId = req.user?.id;
+    const authorId = req.user?.id;
 
-    if (!userId) {
+    if (!authorId) {
       throw new AppError('User not authenticated', 401, 'NOT_AUTHENTICATED');
     }
 
@@ -108,7 +108,7 @@ router.put('/:id', async (req: Request, res: Response, next: NextFunction): Prom
         status: 'ACTIVE',
         list: {
           board: {
-            userId,
+            authorId,
             status: 'ACTIVE',
           },
         },
@@ -133,7 +133,9 @@ router.put('/:id', async (req: Request, res: Response, next: NextFunction): Prom
           title: title?.trim() ?? existingCard.title,
           description: description ?? existingCard.description,
           dueDate: dueDate ?? existingCard.dueDate,
-          listId: existingCard.listId,
+          list: {
+            connect: { id: existingCard.listId },
+          },
           position: existingCard.position,
           status: 'ACTIVE',
         },
@@ -170,9 +172,9 @@ router.put('/:id/move', async (req: Request, res: Response, next: NextFunction):
   try {
     const cardId = req.params.id;
     const { listId, position }: MoveCardDto = req.body;
-    const userId = req.user?.id;
+    const authorId = req.user?.id;
 
-    if (!userId) {
+    if (!authorId) {
       throw new AppError('User not authenticated', 401, 'NOT_AUTHENTICATED');
     }
 
@@ -195,7 +197,7 @@ router.put('/:id/move', async (req: Request, res: Response, next: NextFunction):
         status: 'ACTIVE',
         list: {
           board: {
-            userId,
+            authorId,
             status: 'ACTIVE',
           },
         },
@@ -213,7 +215,7 @@ router.put('/:id/move', async (req: Request, res: Response, next: NextFunction):
         status: 'ACTIVE',
         board: {
           user: {
-            id: userId,
+            id: authorId,
           },
           status: 'ACTIVE',
         },
@@ -233,14 +235,16 @@ router.put('/:id/move', async (req: Request, res: Response, next: NextFunction):
       });
 
       // Create the new card version with updated position/list
-      const { id: oldId, ...restOfCard } = existingCard;
+      const { id: oldId, listId: oldListId, ...restOfCard } = existingCard;
       const newCard = await tx.card.create({
         data: {
           ...restOfCard,
           version: existingCard.version + 1,
           status: 'ACTIVE',
           position: position,
-          listId: targetList.id, // Use the version-specific id for the relation
+          list: {
+            connect: { id: targetList.id },
+          },
         },
       });
       return newCard;
@@ -265,6 +269,11 @@ router.put('/:id/move', async (req: Request, res: Response, next: NextFunction):
 router.delete('/:id', async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   try {
     const cardId = req.params.id;
+    const authorId = req.user?.id;
+
+    if (!authorId) {
+      throw new AppError('User not authenticated', 401, 'NOT_AUTHENTICATED');
+    }
 
     if (!cardId) {
       res.status(400).json({
@@ -276,7 +285,16 @@ router.delete('/:id', async (req: Request, res: Response, next: NextFunction): P
 
     // Check if card exists
     const existingCard = await prisma.card.findFirst({
-      where: { cardId: cardId, status: 'ACTIVE' },
+      where: { 
+        cardId: cardId, 
+        status: 'ACTIVE',
+        list: {
+          board: {
+            authorId,
+            status: 'ACTIVE'
+          }
+        }
+      },
     });
 
     if (!existingCard) {

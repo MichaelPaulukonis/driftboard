@@ -18,14 +18,14 @@ describe('Lists API Integration Tests', () => {
     board = await prisma.board.create({
       data: {
         name: 'Test Board for Lists',
-        userId: testUser.userId,
+        authorId: testUser.id,
       },
     });
 
     list1 = await prisma.list.create({
       data: {
         name: 'Test List 1',
-        boardId: board.boardId,
+        boardId: board.id,
         position: 100,
       },
     });
@@ -33,8 +33,8 @@ describe('Lists API Integration Tests', () => {
 
   afterAll(async () => {
     if (testUser) {
-      await prisma.board.deleteMany({ where: { userId: testUser.userId } });
-      await prisma.user.delete({ where: { userId: testUser.userId } });
+      await prisma.board.deleteMany({ where: { authorId: testUser.id } });
+      await prisma.user.delete({ where: { id: testUser.id } });
     }
   });
 
@@ -109,7 +109,7 @@ describe('Lists API Integration Tests', () => {
   describe('PUT /api/lists/:id/move', () => {
     it('should move a list and create a new version', async () => {
       const list2 = await prisma.list.create({
-        data: { name: 'List B', boardId: board.boardId, position: 200 },
+        data: { name: 'List B', boardId: board.id, position: 200 },
       });
 
       const moveResponse = await request
@@ -130,7 +130,7 @@ describe('Lists API Integration Tests', () => {
   describe('DELETE /api/lists/:id', () => {
     it('should mark a list as inactive', async () => {
       const listToDelete = await prisma.list.create({
-        data: { name: 'To Be Deleted', boardId: board.boardId, position: 300 },
+        data: { name: 'To Be Deleted', boardId: board.id, position: 300 },
       });
       
       const response = await request

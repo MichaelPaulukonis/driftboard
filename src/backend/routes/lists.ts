@@ -22,9 +22,9 @@ router.use(authMiddleware);
 router.get('/:id', async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   try {
     const { id } = req.params;
-    const userId = req.user?.id;
+    const authorId = req.user?.id;
 
-    if (!userId) {
+    if (!authorId) {
       throw new AppError('User not authenticated', 401, 'NOT_AUTHENTICATED');
     }
 
@@ -41,7 +41,7 @@ router.get('/:id', async (req: Request, res: Response, next: NextFunction): Prom
         listId: id,
         status: 'ACTIVE',
         board: {
-          userId,
+          authorId,
           status: 'ACTIVE',
         },
       },
@@ -82,6 +82,11 @@ router.put('/:id', async (req: Request, res: Response, next: NextFunction): Prom
   try {
     const { id } = req.params;
     const { name }: UpdateListDto = req.body;
+    const authorId = req.user?.id;
+
+    if (!authorId) {
+      throw new AppError('User not authenticated', 401, 'NOT_AUTHENTICATED');
+    }
 
     if (!id) {
       res.status(400).json({
@@ -101,7 +106,14 @@ router.put('/:id', async (req: Request, res: Response, next: NextFunction): Prom
     }
 
     const existingList = await prisma.list.findFirst({
-      where: { listId: id, status: 'ACTIVE' },
+      where: { 
+        listId: id, 
+        status: 'ACTIVE',
+        board: {
+          authorId,
+          status: 'ACTIVE'
+        }
+      },
     });
 
     if (!existingList) {
@@ -120,7 +132,9 @@ router.put('/:id', async (req: Request, res: Response, next: NextFunction): Prom
           listId: existingList.listId, // Copy the persistent ID
           version: existingList.version + 1,
           name: name.trim(),
-          boardId: existingList.boardId,
+          board: {
+            connect: { id: existingList.boardId },
+          },
           position: existingList.position,
           status: 'ACTIVE',
         },
@@ -165,9 +179,9 @@ router.put('/:id/move', async (req: Request, res: Response, next: NextFunction) 
   try {
     const listId = req.params.id;
     const { position } = req.body as MoveListDto;
-    const userId = req.user?.id;
+    const authorId = req.user?.id;
 
-    if (!userId) {
+    if (!authorId) {
       throw new AppError('User not authenticated', 401, 'NOT_AUTHENTICATED');
     }
 
@@ -180,7 +194,7 @@ router.put('/:id/move', async (req: Request, res: Response, next: NextFunction) 
         listId: listId,
         status: 'ACTIVE',
         board: {
-          userId,
+          authorId,
           status: 'ACTIVE',
         },
       },
@@ -235,6 +249,11 @@ router.put('/:id/move', async (req: Request, res: Response, next: NextFunction) 
 router.delete('/:id', async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   try {
     const listId = req.params.id;
+    const authorId = req.user?.id;
+
+    if (!authorId) {
+      throw new AppError('User not authenticated', 401, 'NOT_AUTHENTICATED');
+    }
 
     if (!listId) {
       res.status(400).json({
@@ -246,7 +265,14 @@ router.delete('/:id', async (req: Request, res: Response, next: NextFunction): P
 
     // Check if list exists
     const existingList = await prisma.list.findFirst({
-      where: { listId: listId, status: 'ACTIVE' },
+      where: { 
+        listId: listId, 
+        status: 'ACTIVE',
+        board: {
+          authorId,
+          status: 'ACTIVE'
+        }
+      },
     });
 
     if (!existingList) {
@@ -272,10 +298,10 @@ router.delete('/:id', async (req: Request, res: Response, next: NextFunction): P
  */
 router.post('/:id/cards', async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const userId = req.user?.id;
+    const authorId = req.user?.id;
     const listId = req.params.id;
 
-    if (!userId) {
+    if (!authorId) {
       throw new AppError('User not authenticated', 401, 'NOT_AUTHENTICATED');
     }
 
@@ -295,7 +321,7 @@ router.post('/:id/cards', async (req: Request, res: Response, next: NextFunction
         listId: listId,
         status: 'ACTIVE',
         board: {
-          userId: userId,
+          authorId,
           status: 'ACTIVE',
         },
       },
@@ -308,7 +334,7 @@ router.post('/:id/cards', async (req: Request, res: Response, next: NextFunction
     let cardPosition = position;
     if (cardPosition === undefined) {
       const maxPosition = await prisma.card.aggregate({
-        where: { listId: list.listId, status: 'ACTIVE' },
+        where: { listId: list.id, status: 'ACTIVE' },
         _max: { position: true },
       });
       cardPosition = (maxPosition._max.position ?? -1) + 1;
@@ -319,7 +345,9 @@ router.post('/:id/cards', async (req: Request, res: Response, next: NextFunction
         title,
         description: description ?? null,
         position: cardPosition,
-        listId: list.listId, // Direct assignment
+        list: {
+          connect: { id: list.id },
+        },
         version: 1,
         status: 'ACTIVE',
       },

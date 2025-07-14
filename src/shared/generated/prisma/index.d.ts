@@ -2645,7 +2645,7 @@ export namespace Prisma {
     createdAt: Date | null
     updatedAt: Date | null
     archivedAt: Date | null
-    userId: string | null
+    authorId: string | null
   }
 
   export type BoardMaxAggregateOutputType = {
@@ -2658,7 +2658,7 @@ export namespace Prisma {
     createdAt: Date | null
     updatedAt: Date | null
     archivedAt: Date | null
-    userId: string | null
+    authorId: string | null
   }
 
   export type BoardCountAggregateOutputType = {
@@ -2671,7 +2671,7 @@ export namespace Prisma {
     createdAt: number
     updatedAt: number
     archivedAt: number
-    userId: number
+    authorId: number
     _all: number
   }
 
@@ -2694,7 +2694,7 @@ export namespace Prisma {
     createdAt?: true
     updatedAt?: true
     archivedAt?: true
-    userId?: true
+    authorId?: true
   }
 
   export type BoardMaxAggregateInputType = {
@@ -2707,7 +2707,7 @@ export namespace Prisma {
     createdAt?: true
     updatedAt?: true
     archivedAt?: true
-    userId?: true
+    authorId?: true
   }
 
   export type BoardCountAggregateInputType = {
@@ -2720,7 +2720,7 @@ export namespace Prisma {
     createdAt?: true
     updatedAt?: true
     archivedAt?: true
-    userId?: true
+    authorId?: true
     _all?: true
   }
 
@@ -2820,7 +2820,7 @@ export namespace Prisma {
     createdAt: Date
     updatedAt: Date
     archivedAt: Date | null
-    userId: string
+    authorId: string
     _count: BoardCountAggregateOutputType | null
     _avg: BoardAvgAggregateOutputType | null
     _sum: BoardSumAggregateOutputType | null
@@ -2852,7 +2852,7 @@ export namespace Prisma {
     createdAt?: boolean
     updatedAt?: boolean
     archivedAt?: boolean
-    userId?: boolean
+    authorId?: boolean
     lists?: boolean | Board$listsArgs<ExtArgs>
     user?: boolean | UserDefaultArgs<ExtArgs>
     _count?: boolean | BoardCountOutputTypeDefaultArgs<ExtArgs>
@@ -2868,7 +2868,7 @@ export namespace Prisma {
     createdAt?: boolean
     updatedAt?: boolean
     archivedAt?: boolean
-    userId?: boolean
+    authorId?: boolean
     user?: boolean | UserDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["board"]>
 
@@ -2882,7 +2882,7 @@ export namespace Prisma {
     createdAt?: boolean
     updatedAt?: boolean
     archivedAt?: boolean
-    userId?: boolean
+    authorId?: boolean
     user?: boolean | UserDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["board"]>
 
@@ -2896,10 +2896,10 @@ export namespace Prisma {
     createdAt?: boolean
     updatedAt?: boolean
     archivedAt?: boolean
-    userId?: boolean
+    authorId?: boolean
   }
 
-  export type BoardOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "boardId" | "version" | "status" | "name" | "description" | "createdAt" | "updatedAt" | "archivedAt" | "userId", ExtArgs["result"]["board"]>
+  export type BoardOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "boardId" | "version" | "status" | "name" | "description" | "createdAt" | "updatedAt" | "archivedAt" | "authorId", ExtArgs["result"]["board"]>
   export type BoardInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     lists?: boolean | Board$listsArgs<ExtArgs>
     user?: boolean | UserDefaultArgs<ExtArgs>
@@ -2928,7 +2928,7 @@ export namespace Prisma {
       createdAt: Date
       updatedAt: Date
       archivedAt: Date | null
-      userId: string
+      authorId: string
     }, ExtArgs["result"]["board"]>
     composites: {}
   }
@@ -3363,7 +3363,7 @@ export namespace Prisma {
     readonly createdAt: FieldRef<"Board", 'DateTime'>
     readonly updatedAt: FieldRef<"Board", 'DateTime'>
     readonly archivedAt: FieldRef<"Board", 'DateTime'>
-    readonly userId: FieldRef<"Board", 'String'>
+    readonly authorId: FieldRef<"Board", 'String'>
   }
     
 
@@ -3828,10 +3828,10 @@ export namespace Prisma {
     version: number | null
     status: $Enums.Status | null
     name: string | null
-    boardId: string | null
     position: number | null
     createdAt: Date | null
     updatedAt: Date | null
+    boardId: string | null
   }
 
   export type ListMaxAggregateOutputType = {
@@ -3840,10 +3840,10 @@ export namespace Prisma {
     version: number | null
     status: $Enums.Status | null
     name: string | null
-    boardId: string | null
     position: number | null
     createdAt: Date | null
     updatedAt: Date | null
+    boardId: string | null
   }
 
   export type ListCountAggregateOutputType = {
@@ -3852,10 +3852,10 @@ export namespace Prisma {
     version: number
     status: number
     name: number
-    boardId: number
     position: number
     createdAt: number
     updatedAt: number
+    boardId: number
     _all: number
   }
 
@@ -3876,10 +3876,10 @@ export namespace Prisma {
     version?: true
     status?: true
     name?: true
-    boardId?: true
     position?: true
     createdAt?: true
     updatedAt?: true
+    boardId?: true
   }
 
   export type ListMaxAggregateInputType = {
@@ -3888,10 +3888,10 @@ export namespace Prisma {
     version?: true
     status?: true
     name?: true
-    boardId?: true
     position?: true
     createdAt?: true
     updatedAt?: true
+    boardId?: true
   }
 
   export type ListCountAggregateInputType = {
@@ -3900,10 +3900,10 @@ export namespace Prisma {
     version?: true
     status?: true
     name?: true
-    boardId?: true
     position?: true
     createdAt?: true
     updatedAt?: true
+    boardId?: true
     _all?: true
   }
 
@@ -3999,10 +3999,10 @@ export namespace Prisma {
     version: number
     status: $Enums.Status
     name: string
-    boardId: string
     position: number
     createdAt: Date
     updatedAt: Date
+    boardId: string
     _count: ListCountAggregateOutputType | null
     _avg: ListAvgAggregateOutputType | null
     _sum: ListSumAggregateOutputType | null
@@ -4030,10 +4030,10 @@ export namespace Prisma {
     version?: boolean
     status?: boolean
     name?: boolean
-    boardId?: boolean
     position?: boolean
     createdAt?: boolean
     updatedAt?: boolean
+    boardId?: boolean
     board?: boolean | BoardDefaultArgs<ExtArgs>
     cards?: boolean | List$cardsArgs<ExtArgs>
     _count?: boolean | ListCountOutputTypeDefaultArgs<ExtArgs>
@@ -4045,10 +4045,10 @@ export namespace Prisma {
     version?: boolean
     status?: boolean
     name?: boolean
-    boardId?: boolean
     position?: boolean
     createdAt?: boolean
     updatedAt?: boolean
+    boardId?: boolean
     board?: boolean | BoardDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["list"]>
 
@@ -4058,10 +4058,10 @@ export namespace Prisma {
     version?: boolean
     status?: boolean
     name?: boolean
-    boardId?: boolean
     position?: boolean
     createdAt?: boolean
     updatedAt?: boolean
+    boardId?: boolean
     board?: boolean | BoardDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["list"]>
 
@@ -4071,13 +4071,13 @@ export namespace Prisma {
     version?: boolean
     status?: boolean
     name?: boolean
-    boardId?: boolean
     position?: boolean
     createdAt?: boolean
     updatedAt?: boolean
+    boardId?: boolean
   }
 
-  export type ListOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "listId" | "version" | "status" | "name" | "boardId" | "position" | "createdAt" | "updatedAt", ExtArgs["result"]["list"]>
+  export type ListOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "listId" | "version" | "status" | "name" | "position" | "createdAt" | "updatedAt" | "boardId", ExtArgs["result"]["list"]>
   export type ListInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     board?: boolean | BoardDefaultArgs<ExtArgs>
     cards?: boolean | List$cardsArgs<ExtArgs>
@@ -4102,10 +4102,10 @@ export namespace Prisma {
       version: number
       status: $Enums.Status
       name: string
-      boardId: string
       position: number
       createdAt: Date
       updatedAt: Date
+      boardId: string
     }, ExtArgs["result"]["list"]>
     composites: {}
   }
@@ -4536,10 +4536,10 @@ export namespace Prisma {
     readonly version: FieldRef<"List", 'Int'>
     readonly status: FieldRef<"List", 'Status'>
     readonly name: FieldRef<"List", 'String'>
-    readonly boardId: FieldRef<"List", 'String'>
     readonly position: FieldRef<"List", 'Float'>
     readonly createdAt: FieldRef<"List", 'DateTime'>
     readonly updatedAt: FieldRef<"List", 'DateTime'>
+    readonly boardId: FieldRef<"List", 'String'>
   }
     
 
@@ -5005,11 +5005,11 @@ export namespace Prisma {
     status: $Enums.Status | null
     title: string | null
     description: string | null
-    listId: string | null
     position: number | null
     dueDate: Date | null
     createdAt: Date | null
     updatedAt: Date | null
+    listId: string | null
   }
 
   export type CardMaxAggregateOutputType = {
@@ -5019,11 +5019,11 @@ export namespace Prisma {
     status: $Enums.Status | null
     title: string | null
     description: string | null
-    listId: string | null
     position: number | null
     dueDate: Date | null
     createdAt: Date | null
     updatedAt: Date | null
+    listId: string | null
   }
 
   export type CardCountAggregateOutputType = {
@@ -5033,11 +5033,11 @@ export namespace Prisma {
     status: number
     title: number
     description: number
-    listId: number
     position: number
     dueDate: number
     createdAt: number
     updatedAt: number
+    listId: number
     _all: number
   }
 
@@ -5059,11 +5059,11 @@ export namespace Prisma {
     status?: true
     title?: true
     description?: true
-    listId?: true
     position?: true
     dueDate?: true
     createdAt?: true
     updatedAt?: true
+    listId?: true
   }
 
   export type CardMaxAggregateInputType = {
@@ -5073,11 +5073,11 @@ export namespace Prisma {
     status?: true
     title?: true
     description?: true
-    listId?: true
     position?: true
     dueDate?: true
     createdAt?: true
     updatedAt?: true
+    listId?: true
   }
 
   export type CardCountAggregateInputType = {
@@ -5087,11 +5087,11 @@ export namespace Prisma {
     status?: true
     title?: true
     description?: true
-    listId?: true
     position?: true
     dueDate?: true
     createdAt?: true
     updatedAt?: true
+    listId?: true
     _all?: true
   }
 
@@ -5188,11 +5188,11 @@ export namespace Prisma {
     status: $Enums.Status
     title: string
     description: string | null
-    listId: string
     position: number
     dueDate: Date | null
     createdAt: Date
     updatedAt: Date
+    listId: string
     _count: CardCountAggregateOutputType | null
     _avg: CardAvgAggregateOutputType | null
     _sum: CardSumAggregateOutputType | null
@@ -5221,11 +5221,11 @@ export namespace Prisma {
     status?: boolean
     title?: boolean
     description?: boolean
-    listId?: boolean
     position?: boolean
     dueDate?: boolean
     createdAt?: boolean
     updatedAt?: boolean
+    listId?: boolean
     list?: boolean | ListDefaultArgs<ExtArgs>
     labels?: boolean | Card$labelsArgs<ExtArgs>
     activities?: boolean | Card$activitiesArgs<ExtArgs>
@@ -5239,11 +5239,11 @@ export namespace Prisma {
     status?: boolean
     title?: boolean
     description?: boolean
-    listId?: boolean
     position?: boolean
     dueDate?: boolean
     createdAt?: boolean
     updatedAt?: boolean
+    listId?: boolean
     list?: boolean | ListDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["card"]>
 
@@ -5254,11 +5254,11 @@ export namespace Prisma {
     status?: boolean
     title?: boolean
     description?: boolean
-    listId?: boolean
     position?: boolean
     dueDate?: boolean
     createdAt?: boolean
     updatedAt?: boolean
+    listId?: boolean
     list?: boolean | ListDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["card"]>
 
@@ -5269,14 +5269,14 @@ export namespace Prisma {
     status?: boolean
     title?: boolean
     description?: boolean
-    listId?: boolean
     position?: boolean
     dueDate?: boolean
     createdAt?: boolean
     updatedAt?: boolean
+    listId?: boolean
   }
 
-  export type CardOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "cardId" | "version" | "status" | "title" | "description" | "listId" | "position" | "dueDate" | "createdAt" | "updatedAt", ExtArgs["result"]["card"]>
+  export type CardOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "cardId" | "version" | "status" | "title" | "description" | "position" | "dueDate" | "createdAt" | "updatedAt" | "listId", ExtArgs["result"]["card"]>
   export type CardInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     list?: boolean | ListDefaultArgs<ExtArgs>
     labels?: boolean | Card$labelsArgs<ExtArgs>
@@ -5304,11 +5304,11 @@ export namespace Prisma {
       status: $Enums.Status
       title: string
       description: string | null
-      listId: string
       position: number
       dueDate: Date | null
       createdAt: Date
       updatedAt: Date
+      listId: string
     }, ExtArgs["result"]["card"]>
     composites: {}
   }
@@ -5741,11 +5741,11 @@ export namespace Prisma {
     readonly status: FieldRef<"Card", 'Status'>
     readonly title: FieldRef<"Card", 'String'>
     readonly description: FieldRef<"Card", 'String'>
-    readonly listId: FieldRef<"Card", 'String'>
     readonly position: FieldRef<"Card", 'Float'>
     readonly dueDate: FieldRef<"Card", 'DateTime'>
     readonly createdAt: FieldRef<"Card", 'DateTime'>
     readonly updatedAt: FieldRef<"Card", 'DateTime'>
+    readonly listId: FieldRef<"Card", 'String'>
   }
     
 
@@ -8353,7 +8353,7 @@ export namespace Prisma {
     createdAt: 'createdAt',
     updatedAt: 'updatedAt',
     archivedAt: 'archivedAt',
-    userId: 'userId'
+    authorId: 'authorId'
   };
 
   export type BoardScalarFieldEnum = (typeof BoardScalarFieldEnum)[keyof typeof BoardScalarFieldEnum]
@@ -8365,10 +8365,10 @@ export namespace Prisma {
     version: 'version',
     status: 'status',
     name: 'name',
-    boardId: 'boardId',
     position: 'position',
     createdAt: 'createdAt',
-    updatedAt: 'updatedAt'
+    updatedAt: 'updatedAt',
+    boardId: 'boardId'
   };
 
   export type ListScalarFieldEnum = (typeof ListScalarFieldEnum)[keyof typeof ListScalarFieldEnum]
@@ -8381,11 +8381,11 @@ export namespace Prisma {
     status: 'status',
     title: 'title',
     description: 'description',
-    listId: 'listId',
     position: 'position',
     dueDate: 'dueDate',
     createdAt: 'createdAt',
-    updatedAt: 'updatedAt'
+    updatedAt: 'updatedAt',
+    listId: 'listId'
   };
 
   export type CardScalarFieldEnum = (typeof CardScalarFieldEnum)[keyof typeof CardScalarFieldEnum]
@@ -8557,7 +8557,7 @@ export namespace Prisma {
     createdAt?: DateTimeFilter<"Board"> | Date | string
     updatedAt?: DateTimeFilter<"Board"> | Date | string
     archivedAt?: DateTimeNullableFilter<"Board"> | Date | string | null
-    userId?: StringFilter<"Board"> | string
+    authorId?: StringFilter<"Board"> | string
     lists?: ListListRelationFilter
     user?: XOR<UserScalarRelationFilter, UserWhereInput>
   }
@@ -8572,18 +8572,18 @@ export namespace Prisma {
     createdAt?: SortOrder
     updatedAt?: SortOrder
     archivedAt?: SortOrderInput | SortOrder
-    userId?: SortOrder
+    authorId?: SortOrder
     lists?: ListOrderByRelationAggregateInput
     user?: UserOrderByWithRelationInput
   }
 
   export type BoardWhereUniqueInput = Prisma.AtLeast<{
     id?: string
-    boardId?: string
     boardId_version?: BoardBoardIdVersionCompoundUniqueInput
     AND?: BoardWhereInput | BoardWhereInput[]
     OR?: BoardWhereInput[]
     NOT?: BoardWhereInput | BoardWhereInput[]
+    boardId?: StringFilter<"Board"> | string
     version?: IntFilter<"Board"> | number
     status?: EnumStatusFilter<"Board"> | $Enums.Status
     name?: StringFilter<"Board"> | string
@@ -8591,10 +8591,10 @@ export namespace Prisma {
     createdAt?: DateTimeFilter<"Board"> | Date | string
     updatedAt?: DateTimeFilter<"Board"> | Date | string
     archivedAt?: DateTimeNullableFilter<"Board"> | Date | string | null
-    userId?: StringFilter<"Board"> | string
+    authorId?: StringFilter<"Board"> | string
     lists?: ListListRelationFilter
     user?: XOR<UserScalarRelationFilter, UserWhereInput>
-  }, "id" | "boardId" | "boardId_version">
+  }, "id" | "boardId_version">
 
   export type BoardOrderByWithAggregationInput = {
     id?: SortOrder
@@ -8606,7 +8606,7 @@ export namespace Prisma {
     createdAt?: SortOrder
     updatedAt?: SortOrder
     archivedAt?: SortOrderInput | SortOrder
-    userId?: SortOrder
+    authorId?: SortOrder
     _count?: BoardCountOrderByAggregateInput
     _avg?: BoardAvgOrderByAggregateInput
     _max?: BoardMaxOrderByAggregateInput
@@ -8627,7 +8627,7 @@ export namespace Prisma {
     createdAt?: DateTimeWithAggregatesFilter<"Board"> | Date | string
     updatedAt?: DateTimeWithAggregatesFilter<"Board"> | Date | string
     archivedAt?: DateTimeNullableWithAggregatesFilter<"Board"> | Date | string | null
-    userId?: StringWithAggregatesFilter<"Board"> | string
+    authorId?: StringWithAggregatesFilter<"Board"> | string
   }
 
   export type ListWhereInput = {
@@ -8639,10 +8639,10 @@ export namespace Prisma {
     version?: IntFilter<"List"> | number
     status?: EnumStatusFilter<"List"> | $Enums.Status
     name?: StringFilter<"List"> | string
-    boardId?: StringFilter<"List"> | string
     position?: FloatFilter<"List"> | number
     createdAt?: DateTimeFilter<"List"> | Date | string
     updatedAt?: DateTimeFilter<"List"> | Date | string
+    boardId?: StringFilter<"List"> | string
     board?: XOR<BoardScalarRelationFilter, BoardWhereInput>
     cards?: CardListRelationFilter
   }
@@ -8653,31 +8653,31 @@ export namespace Prisma {
     version?: SortOrder
     status?: SortOrder
     name?: SortOrder
-    boardId?: SortOrder
     position?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
+    boardId?: SortOrder
     board?: BoardOrderByWithRelationInput
     cards?: CardOrderByRelationAggregateInput
   }
 
   export type ListWhereUniqueInput = Prisma.AtLeast<{
     id?: string
-    listId?: string
     listId_version?: ListListIdVersionCompoundUniqueInput
     AND?: ListWhereInput | ListWhereInput[]
     OR?: ListWhereInput[]
     NOT?: ListWhereInput | ListWhereInput[]
+    listId?: StringFilter<"List"> | string
     version?: IntFilter<"List"> | number
     status?: EnumStatusFilter<"List"> | $Enums.Status
     name?: StringFilter<"List"> | string
-    boardId?: StringFilter<"List"> | string
     position?: FloatFilter<"List"> | number
     createdAt?: DateTimeFilter<"List"> | Date | string
     updatedAt?: DateTimeFilter<"List"> | Date | string
+    boardId?: StringFilter<"List"> | string
     board?: XOR<BoardScalarRelationFilter, BoardWhereInput>
     cards?: CardListRelationFilter
-  }, "id" | "listId" | "listId_version">
+  }, "id" | "listId_version">
 
   export type ListOrderByWithAggregationInput = {
     id?: SortOrder
@@ -8685,10 +8685,10 @@ export namespace Prisma {
     version?: SortOrder
     status?: SortOrder
     name?: SortOrder
-    boardId?: SortOrder
     position?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
+    boardId?: SortOrder
     _count?: ListCountOrderByAggregateInput
     _avg?: ListAvgOrderByAggregateInput
     _max?: ListMaxOrderByAggregateInput
@@ -8705,10 +8705,10 @@ export namespace Prisma {
     version?: IntWithAggregatesFilter<"List"> | number
     status?: EnumStatusWithAggregatesFilter<"List"> | $Enums.Status
     name?: StringWithAggregatesFilter<"List"> | string
-    boardId?: StringWithAggregatesFilter<"List"> | string
     position?: FloatWithAggregatesFilter<"List"> | number
     createdAt?: DateTimeWithAggregatesFilter<"List"> | Date | string
     updatedAt?: DateTimeWithAggregatesFilter<"List"> | Date | string
+    boardId?: StringWithAggregatesFilter<"List"> | string
   }
 
   export type CardWhereInput = {
@@ -8721,11 +8721,11 @@ export namespace Prisma {
     status?: EnumStatusFilter<"Card"> | $Enums.Status
     title?: StringFilter<"Card"> | string
     description?: StringNullableFilter<"Card"> | string | null
-    listId?: StringFilter<"Card"> | string
     position?: FloatFilter<"Card"> | number
     dueDate?: DateTimeNullableFilter<"Card"> | Date | string | null
     createdAt?: DateTimeFilter<"Card"> | Date | string
     updatedAt?: DateTimeFilter<"Card"> | Date | string
+    listId?: StringFilter<"Card"> | string
     list?: XOR<ListScalarRelationFilter, ListWhereInput>
     labels?: LabelListRelationFilter
     activities?: ActivityListRelationFilter
@@ -8738,11 +8738,11 @@ export namespace Prisma {
     status?: SortOrder
     title?: SortOrder
     description?: SortOrderInput | SortOrder
-    listId?: SortOrder
     position?: SortOrder
     dueDate?: SortOrderInput | SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
+    listId?: SortOrder
     list?: ListOrderByWithRelationInput
     labels?: LabelOrderByRelationAggregateInput
     activities?: ActivityOrderByRelationAggregateInput
@@ -8759,11 +8759,11 @@ export namespace Prisma {
     status?: EnumStatusFilter<"Card"> | $Enums.Status
     title?: StringFilter<"Card"> | string
     description?: StringNullableFilter<"Card"> | string | null
-    listId?: StringFilter<"Card"> | string
     position?: FloatFilter<"Card"> | number
     dueDate?: DateTimeNullableFilter<"Card"> | Date | string | null
     createdAt?: DateTimeFilter<"Card"> | Date | string
     updatedAt?: DateTimeFilter<"Card"> | Date | string
+    listId?: StringFilter<"Card"> | string
     list?: XOR<ListScalarRelationFilter, ListWhereInput>
     labels?: LabelListRelationFilter
     activities?: ActivityListRelationFilter
@@ -8776,11 +8776,11 @@ export namespace Prisma {
     status?: SortOrder
     title?: SortOrder
     description?: SortOrderInput | SortOrder
-    listId?: SortOrder
     position?: SortOrder
     dueDate?: SortOrderInput | SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
+    listId?: SortOrder
     _count?: CardCountOrderByAggregateInput
     _avg?: CardAvgOrderByAggregateInput
     _max?: CardMaxOrderByAggregateInput
@@ -8798,11 +8798,11 @@ export namespace Prisma {
     status?: EnumStatusWithAggregatesFilter<"Card"> | $Enums.Status
     title?: StringWithAggregatesFilter<"Card"> | string
     description?: StringNullableWithAggregatesFilter<"Card"> | string | null
-    listId?: StringWithAggregatesFilter<"Card"> | string
     position?: FloatWithAggregatesFilter<"Card"> | number
     dueDate?: DateTimeNullableWithAggregatesFilter<"Card"> | Date | string | null
     createdAt?: DateTimeWithAggregatesFilter<"Card"> | Date | string
     updatedAt?: DateTimeWithAggregatesFilter<"Card"> | Date | string
+    listId?: StringWithAggregatesFilter<"Card"> | string
   }
 
   export type LabelWhereInput = {
@@ -9020,7 +9020,7 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string
     archivedAt?: Date | string | null
-    userId: string
+    authorId: string
     lists?: ListUncheckedCreateNestedManyWithoutBoardInput
   }
 
@@ -9048,7 +9048,7 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     archivedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    userId?: StringFieldUpdateOperationsInput | string
+    authorId?: StringFieldUpdateOperationsInput | string
     lists?: ListUncheckedUpdateManyWithoutBoardNestedInput
   }
 
@@ -9062,7 +9062,7 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string
     archivedAt?: Date | string | null
-    userId: string
+    authorId: string
   }
 
   export type BoardUpdateManyMutationInput = {
@@ -9087,7 +9087,7 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     archivedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    userId?: StringFieldUpdateOperationsInput | string
+    authorId?: StringFieldUpdateOperationsInput | string
   }
 
   export type ListCreateInput = {
@@ -9109,10 +9109,10 @@ export namespace Prisma {
     version?: number
     status?: $Enums.Status
     name: string
-    boardId: string
     position: number
     createdAt?: Date | string
     updatedAt?: Date | string
+    boardId: string
     cards?: CardUncheckedCreateNestedManyWithoutListInput
   }
 
@@ -9135,10 +9135,10 @@ export namespace Prisma {
     version?: IntFieldUpdateOperationsInput | number
     status?: EnumStatusFieldUpdateOperationsInput | $Enums.Status
     name?: StringFieldUpdateOperationsInput | string
-    boardId?: StringFieldUpdateOperationsInput | string
     position?: FloatFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    boardId?: StringFieldUpdateOperationsInput | string
     cards?: CardUncheckedUpdateManyWithoutListNestedInput
   }
 
@@ -9148,10 +9148,10 @@ export namespace Prisma {
     version?: number
     status?: $Enums.Status
     name: string
-    boardId: string
     position: number
     createdAt?: Date | string
     updatedAt?: Date | string
+    boardId: string
   }
 
   export type ListUpdateManyMutationInput = {
@@ -9171,10 +9171,10 @@ export namespace Prisma {
     version?: IntFieldUpdateOperationsInput | number
     status?: EnumStatusFieldUpdateOperationsInput | $Enums.Status
     name?: StringFieldUpdateOperationsInput | string
-    boardId?: StringFieldUpdateOperationsInput | string
     position?: FloatFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    boardId?: StringFieldUpdateOperationsInput | string
   }
 
   export type CardCreateInput = {
@@ -9200,11 +9200,11 @@ export namespace Prisma {
     status?: $Enums.Status
     title: string
     description?: string | null
-    listId: string
     position: number
     dueDate?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
+    listId: string
     labels?: LabelUncheckedCreateNestedManyWithoutCardInput
     activities?: ActivityUncheckedCreateNestedManyWithoutCardInput
   }
@@ -9232,11 +9232,11 @@ export namespace Prisma {
     status?: EnumStatusFieldUpdateOperationsInput | $Enums.Status
     title?: StringFieldUpdateOperationsInput | string
     description?: NullableStringFieldUpdateOperationsInput | string | null
-    listId?: StringFieldUpdateOperationsInput | string
     position?: FloatFieldUpdateOperationsInput | number
     dueDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    listId?: StringFieldUpdateOperationsInput | string
     labels?: LabelUncheckedUpdateManyWithoutCardNestedInput
     activities?: ActivityUncheckedUpdateManyWithoutCardNestedInput
   }
@@ -9248,11 +9248,11 @@ export namespace Prisma {
     status?: $Enums.Status
     title: string
     description?: string | null
-    listId: string
     position: number
     dueDate?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
+    listId: string
   }
 
   export type CardUpdateManyMutationInput = {
@@ -9275,11 +9275,11 @@ export namespace Prisma {
     status?: EnumStatusFieldUpdateOperationsInput | $Enums.Status
     title?: StringFieldUpdateOperationsInput | string
     description?: NullableStringFieldUpdateOperationsInput | string | null
-    listId?: StringFieldUpdateOperationsInput | string
     position?: FloatFieldUpdateOperationsInput | number
     dueDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    listId?: StringFieldUpdateOperationsInput | string
   }
 
   export type LabelCreateInput = {
@@ -9620,7 +9620,7 @@ export namespace Prisma {
     createdAt?: SortOrder
     updatedAt?: SortOrder
     archivedAt?: SortOrder
-    userId?: SortOrder
+    authorId?: SortOrder
   }
 
   export type BoardAvgOrderByAggregateInput = {
@@ -9637,7 +9637,7 @@ export namespace Prisma {
     createdAt?: SortOrder
     updatedAt?: SortOrder
     archivedAt?: SortOrder
-    userId?: SortOrder
+    authorId?: SortOrder
   }
 
   export type BoardMinOrderByAggregateInput = {
@@ -9650,7 +9650,7 @@ export namespace Prisma {
     createdAt?: SortOrder
     updatedAt?: SortOrder
     archivedAt?: SortOrder
-    userId?: SortOrder
+    authorId?: SortOrder
   }
 
   export type BoardSumOrderByAggregateInput = {
@@ -9708,10 +9708,10 @@ export namespace Prisma {
     version?: SortOrder
     status?: SortOrder
     name?: SortOrder
-    boardId?: SortOrder
     position?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
+    boardId?: SortOrder
   }
 
   export type ListAvgOrderByAggregateInput = {
@@ -9725,10 +9725,10 @@ export namespace Prisma {
     version?: SortOrder
     status?: SortOrder
     name?: SortOrder
-    boardId?: SortOrder
     position?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
+    boardId?: SortOrder
   }
 
   export type ListMinOrderByAggregateInput = {
@@ -9737,10 +9737,10 @@ export namespace Prisma {
     version?: SortOrder
     status?: SortOrder
     name?: SortOrder
-    boardId?: SortOrder
     position?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
+    boardId?: SortOrder
   }
 
   export type ListSumOrderByAggregateInput = {
@@ -9801,11 +9801,11 @@ export namespace Prisma {
     status?: SortOrder
     title?: SortOrder
     description?: SortOrder
-    listId?: SortOrder
     position?: SortOrder
     dueDate?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
+    listId?: SortOrder
   }
 
   export type CardAvgOrderByAggregateInput = {
@@ -9820,11 +9820,11 @@ export namespace Prisma {
     status?: SortOrder
     title?: SortOrder
     description?: SortOrder
-    listId?: SortOrder
     position?: SortOrder
     dueDate?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
+    listId?: SortOrder
   }
 
   export type CardMinOrderByAggregateInput = {
@@ -9834,11 +9834,11 @@ export namespace Prisma {
     status?: SortOrder
     title?: SortOrder
     description?: SortOrder
-    listId?: SortOrder
     position?: SortOrder
     dueDate?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
+    listId?: SortOrder
   }
 
   export type CardSumOrderByAggregateInput = {
@@ -10473,7 +10473,7 @@ export namespace Prisma {
     createdAt?: DateTimeFilter<"Board"> | Date | string
     updatedAt?: DateTimeFilter<"Board"> | Date | string
     archivedAt?: DateTimeNullableFilter<"Board"> | Date | string | null
-    userId?: StringFilter<"Board"> | string
+    authorId?: StringFilter<"Board"> | string
   }
 
   export type ListCreateWithoutBoardInput = {
@@ -10561,10 +10561,10 @@ export namespace Prisma {
     version?: IntFilter<"List"> | number
     status?: EnumStatusFilter<"List"> | $Enums.Status
     name?: StringFilter<"List"> | string
-    boardId?: StringFilter<"List"> | string
     position?: FloatFilter<"List"> | number
     createdAt?: DateTimeFilter<"List"> | Date | string
     updatedAt?: DateTimeFilter<"List"> | Date | string
+    boardId?: StringFilter<"List"> | string
   }
 
   export type UserUpsertWithoutBoardsInput = {
@@ -10623,7 +10623,7 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string
     archivedAt?: Date | string | null
-    userId: string
+    authorId: string
   }
 
   export type BoardCreateOrConnectWithoutListsInput = {
@@ -10704,7 +10704,7 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     archivedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    userId?: StringFieldUpdateOperationsInput | string
+    authorId?: StringFieldUpdateOperationsInput | string
   }
 
   export type CardUpsertWithWhereUniqueWithoutListInput = {
@@ -10733,11 +10733,11 @@ export namespace Prisma {
     status?: EnumStatusFilter<"Card"> | $Enums.Status
     title?: StringFilter<"Card"> | string
     description?: StringNullableFilter<"Card"> | string | null
-    listId?: StringFilter<"Card"> | string
     position?: FloatFilter<"Card"> | number
     dueDate?: DateTimeNullableFilter<"Card"> | Date | string | null
     createdAt?: DateTimeFilter<"Card"> | Date | string
     updatedAt?: DateTimeFilter<"Card"> | Date | string
+    listId?: StringFilter<"Card"> | string
   }
 
   export type ListCreateWithoutCardsInput = {
@@ -10758,10 +10758,10 @@ export namespace Prisma {
     version?: number
     status?: $Enums.Status
     name: string
-    boardId: string
     position: number
     createdAt?: Date | string
     updatedAt?: Date | string
+    boardId: string
   }
 
   export type ListCreateOrConnectWithoutCardsInput = {
@@ -10844,10 +10844,10 @@ export namespace Prisma {
     version?: IntFieldUpdateOperationsInput | number
     status?: EnumStatusFieldUpdateOperationsInput | $Enums.Status
     name?: StringFieldUpdateOperationsInput | string
-    boardId?: StringFieldUpdateOperationsInput | string
     position?: FloatFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    boardId?: StringFieldUpdateOperationsInput | string
   }
 
   export type LabelUpsertWithWhereUniqueWithoutCardInput = {
@@ -10926,11 +10926,11 @@ export namespace Prisma {
     status?: $Enums.Status
     title: string
     description?: string | null
-    listId: string
     position: number
     dueDate?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
+    listId: string
     activities?: ActivityUncheckedCreateNestedManyWithoutCardInput
   }
 
@@ -10972,11 +10972,11 @@ export namespace Prisma {
     status?: EnumStatusFieldUpdateOperationsInput | $Enums.Status
     title?: StringFieldUpdateOperationsInput | string
     description?: NullableStringFieldUpdateOperationsInput | string | null
-    listId?: StringFieldUpdateOperationsInput | string
     position?: FloatFieldUpdateOperationsInput | number
     dueDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    listId?: StringFieldUpdateOperationsInput | string
     activities?: ActivityUncheckedUpdateManyWithoutCardNestedInput
   }
 
@@ -11002,11 +11002,11 @@ export namespace Prisma {
     status?: $Enums.Status
     title: string
     description?: string | null
-    listId: string
     position: number
     dueDate?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
+    listId: string
     labels?: LabelUncheckedCreateNestedManyWithoutCardInput
   }
 
@@ -11048,11 +11048,11 @@ export namespace Prisma {
     status?: EnumStatusFieldUpdateOperationsInput | $Enums.Status
     title?: StringFieldUpdateOperationsInput | string
     description?: NullableStringFieldUpdateOperationsInput | string | null
-    listId?: StringFieldUpdateOperationsInput | string
     position?: FloatFieldUpdateOperationsInput | number
     dueDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    listId?: StringFieldUpdateOperationsInput | string
     labels?: LabelUncheckedUpdateManyWithoutCardNestedInput
   }
 
