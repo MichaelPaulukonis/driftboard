@@ -1,7 +1,7 @@
 import { Router, Request, Response, NextFunction } from 'express';
 import { prisma } from '../services/database.js';
 import { AppError } from '../middleware/errorHandler.js';
-import { ApiResponse, CreateBoardDto, UpdateBoardDto, BoardWithDetails } from '../../shared/types/index.js';
+import { ApiResponse, CreateBoardDto, UpdateBoardDto, BoardWithDetails, CreateListDto } from '../../shared/types/index.js';
 import { authMiddleware } from '../middleware/authMiddleware.js';
 
 const router = Router();
@@ -22,9 +22,11 @@ router.get('/', async (req: Request, res: Response, next: NextFunction) => {
       where: { userId, status: 'ACTIVE' },
       include: {
         lists: {
+          where: { status: 'ACTIVE' }, // Filter for active lists
           orderBy: { position: 'asc' },
           include: {
             cards: {
+              where: { status: 'ACTIVE' }, // Filter for active cards
               orderBy: { position: 'asc' },
               include: {
                 labels: true,
@@ -72,9 +74,11 @@ router.get('/:boardId', async (req: Request, res: Response, next: NextFunction) 
       },
       include: {
         lists: {
+          where: { status: 'ACTIVE' }, // Filter for active lists
           orderBy: { position: 'asc' },
           include: {
             cards: {
+              where: { status: 'ACTIVE' }, // Filter for active cards
               orderBy: { position: 'asc' },
               include: {
                 labels: true,
@@ -107,7 +111,7 @@ router.get('/:boardId', async (req: Request, res: Response, next: NextFunction) 
  */
 router.post('/', async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const userId = req.user?.id;
+    const userId = req.user?.uid; // Use the persistent uid from the auth middleware
     if (!userId) {
       throw new AppError('User not authenticated', 401, 'NOT_AUTHENTICATED');
     }
@@ -122,13 +126,7 @@ router.post('/', async (req: Request, res: Response, next: NextFunction) => {
       data: {
         name,
         description: description ?? null,
-        user: {
-          connect: {
-            id: userId,
-          }
-        },
-        version: 1,
-        status: 'ACTIVE',
+        userId: userId, // Direct assignment of the foreign key
       },
       include: {
         lists: {
@@ -189,22 +187,12 @@ router.put('/:boardId', async (req: Request, res: Response, next: NextFunction) 
 
       const newBoard = await tx.board.create({
         data: {
-          boardId: existingBoard.boardId,
+          boardId: existingBoard.boardId, // Copy the persistent ID
           version: existingBoard.version + 1,
           name: name ?? existingBoard.name,
           description: description ?? existingBoard.description,
           userId: existingBoard.userId,
-        },
-        include: {
-          lists: {
-            include: {
-              cards: {
-                include: {
-                  labels: true,
-                },
-              },
-            },
-          },
+          status: 'ACTIVE',
         },
       });
       return newBoard;
@@ -263,35 +251,28 @@ router.delete('/:boardId', async (req: Request, res: Response, next: NextFunctio
 });
 
 /**
- * Create a list in a board
- * POST /api/boards/:id/lists
+ * Create a new list in a board
+ * POST /api/boards/:boardId/lists
  */
 router.post('/:boardId/lists', async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const userId = req.user?.id;
+    const userId = req.user?.uid;
     const { boardId } = req.params;
+    const { name, position } = req.body as CreateListDto;
 
     if (!userId) {
       throw new AppError('User not authenticated', 401, 'NOT_AUTHENTICATED');
     }
-
+    if (!name) {
+      throw new AppError('List name is required', 400, 'INVALID_INPUT');
+    }
     if (!boardId) {
       throw new AppError('Board ID is required', 400, 'INVALID_INPUT');
     }
 
-    const { name, position }: { name: string; position?: number } = req.body;
-
-    if (!name || name.trim().length === 0) {
-      throw new AppError('List name is required', 400, 'MISSING_LIST_NAME');
-    }
-
-    // Verify board exists and belongs to user
+    // Verify board exists and belongs to the user
     const board = await prisma.board.findFirst({
-      where: { 
-        boardId: boardId,
-        userId,
-        status: 'ACTIVE'
-      },
+      where: { boardId, userId, status: 'ACTIVE' },
     });
 
     if (!board) {
@@ -302,32 +283,16 @@ router.post('/:boardId/lists', async (req: Request, res: Response, next: NextFun
     let listPosition = position;
     if (listPosition === undefined) {
       const maxPosition = await prisma.list.aggregate({
-        where: { boardId: board.id, status: 'ACTIVE' },
+        where: { boardId: board.boardId, status: 'ACTIVE' },
         _max: { position: true },
       });
       listPosition = (maxPosition._max?.position ?? -1) + 1;
-    } else {
-      // If position is specified, shift existing lists
-      await prisma.list.updateMany({
-        where: {
-          boardId: board.id,
-          status: 'ACTIVE',
-          position: {
-            gte: listPosition,
-          },
-        },
-        data: {
-          position: {
-            increment: 1,
-          },
-        },
-      });
     }
 
     const list = await prisma.list.create({
       data: {
         name: name.trim(),
-        boardId: board.id,
+        boardId: board.boardId, // Direct assignment
         position: listPosition,
         version: 1,
         status: 'ACTIVE',
@@ -353,5 +318,6 @@ router.post('/:boardId/lists', async (req: Request, res: Response, next: NextFun
     next(error);
   }
 });
+
 
 export { router as boardsRouter };

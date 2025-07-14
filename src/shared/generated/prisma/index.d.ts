@@ -8579,11 +8579,11 @@ export namespace Prisma {
 
   export type BoardWhereUniqueInput = Prisma.AtLeast<{
     id?: string
+    boardId?: string
     boardId_version?: BoardBoardIdVersionCompoundUniqueInput
     AND?: BoardWhereInput | BoardWhereInput[]
     OR?: BoardWhereInput[]
     NOT?: BoardWhereInput | BoardWhereInput[]
-    boardId?: StringFilter<"Board"> | string
     version?: IntFilter<"Board"> | number
     status?: EnumStatusFilter<"Board"> | $Enums.Status
     name?: StringFilter<"Board"> | string
@@ -8594,7 +8594,7 @@ export namespace Prisma {
     userId?: StringFilter<"Board"> | string
     lists?: ListListRelationFilter
     user?: XOR<UserScalarRelationFilter, UserWhereInput>
-  }, "id" | "boardId_version">
+  }, "id" | "boardId" | "boardId_version">
 
   export type BoardOrderByWithAggregationInput = {
     id?: SortOrder
@@ -8663,11 +8663,11 @@ export namespace Prisma {
 
   export type ListWhereUniqueInput = Prisma.AtLeast<{
     id?: string
+    listId?: string
     listId_version?: ListListIdVersionCompoundUniqueInput
     AND?: ListWhereInput | ListWhereInput[]
     OR?: ListWhereInput[]
     NOT?: ListWhereInput | ListWhereInput[]
-    listId?: StringFilter<"List"> | string
     version?: IntFilter<"List"> | number
     status?: EnumStatusFilter<"List"> | $Enums.Status
     name?: StringFilter<"List"> | string
@@ -8677,7 +8677,7 @@ export namespace Prisma {
     updatedAt?: DateTimeFilter<"List"> | Date | string
     board?: XOR<BoardScalarRelationFilter, BoardWhereInput>
     cards?: CardListRelationFilter
-  }, "id" | "listId_version">
+  }, "id" | "listId" | "listId_version">
 
   export type ListOrderByWithAggregationInput = {
     id?: SortOrder
@@ -8917,7 +8917,7 @@ export namespace Prisma {
 
   export type UserCreateInput = {
     id?: string
-    userId: string
+    userId?: string
     version?: number
     status?: $Enums.Status
     email: string
@@ -8929,7 +8929,7 @@ export namespace Prisma {
 
   export type UserUncheckedCreateInput = {
     id?: string
-    userId: string
+    userId?: string
     version?: number
     status?: $Enums.Status
     email: string
@@ -8965,7 +8965,7 @@ export namespace Prisma {
 
   export type UserCreateManyInput = {
     id?: string
-    userId: string
+    userId?: string
     version?: number
     status?: $Enums.Status
     email: string
@@ -10511,7 +10511,7 @@ export namespace Prisma {
 
   export type UserCreateWithoutBoardsInput = {
     id?: string
-    userId: string
+    userId?: string
     version?: number
     status?: $Enums.Status
     email: string
@@ -10522,7 +10522,7 @@ export namespace Prisma {
 
   export type UserUncheckedCreateWithoutBoardsInput = {
     id?: string
-    userId: string
+    userId?: string
     version?: number
     status?: $Enums.Status
     email: string

@@ -135,6 +135,7 @@ router.put('/:id', async (req: Request, res: Response, next: NextFunction): Prom
           dueDate: dueDate ?? existingCard.dueDate,
           listId: existingCard.listId,
           position: existingCard.position,
+          status: 'ACTIVE',
         },
         include: {
           labels: true,
@@ -208,10 +209,12 @@ router.put('/:id/move', async (req: Request, res: Response, next: NextFunction):
     // 2. Verify the target list exists and belongs to the user
     const targetList = await prisma.list.findFirst({
       where: {
-        listId: listId,
+        listId: listId, // Find target list by its persistent listId
         status: 'ACTIVE',
         board: {
-          userId,
+          user: {
+            id: userId,
+          },
           status: 'ACTIVE',
         },
       },
@@ -237,7 +240,7 @@ router.put('/:id/move', async (req: Request, res: Response, next: NextFunction):
           version: existingCard.version + 1,
           status: 'ACTIVE',
           position: position,
-          listId: targetList.id, // Use the version-specific ID of the target list
+          listId: targetList.id, // Use the version-specific id for the relation
         },
       });
       return newCard;

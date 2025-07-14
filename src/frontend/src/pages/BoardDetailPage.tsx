@@ -1,5 +1,5 @@
 import { useParams } from 'react-router-dom';
-import { useCallback } from 'react';
+import { useState, useCallback } from 'react';
 import { 
   DndContext, 
   closestCenter, 
@@ -7,8 +7,9 @@ import {
   useSensor, 
   useSensors,
   DragEndEvent,
+  DragStartEvent,
+  DragOverlay,
 } from '@dnd-kit/core';
-import { arrayMove } from '@dnd-kit/sortable';
 import { 
   useGetBoardByIdQuery, 
   useUpdateBoardMutation,
@@ -23,7 +24,9 @@ import {
 } from '../api/api';
 import { Board as KanbanBoard } from '@/components/kanban/Board';
 import { calculatePosition } from '@/utils/position';
-import { Card } from '@/shared/types';
+import { Card, List } from '@/shared/types';
+import { KanbanCard } from '@/components/kanban/KanbanCard';
+import { List as KanbanList } from '@/components/kanban/List';
 
 export function BoardDetailPage() {
   const { id } = useParams<{ id: string }>();
@@ -41,6 +44,7 @@ export function BoardDetailPage() {
   const [deleteCard] = useDeleteCardMutation();
   const [moveCard] = useMoveCardMutation();
   const [moveList] = useMoveListMutation();
+  const [activeItem, setActiveItem] = useState<Card | List | null>(null);
 
   const sensors = useSensors(
     useSensor(PointerSensor, {
@@ -50,10 +54,23 @@ export function BoardDetailPage() {
     })
   );
 
+  const handleDragStart = useCallback((event: DragStartEvent) => {
+    const { active } = event;
+    if (active.data.current?.type === 'Card') {
+      setActiveItem(active.data.current.card);
+    }
+    if (active.data.current?.type === 'List') {
+      setActiveItem(active.data.current.list);
+    }
+  }, []);
+
   const handleDragEnd = useCallback((event: DragEndEvent) => {
     const { active, over } = event;
 
-    if (!over || !board) return;
+    if (!over || !board) {
+      setActiveItem(null);
+      return;
+    }
 
     const activeId = active.id.toString();
     const overId = over.id.toString();
@@ -62,19 +79,22 @@ export function BoardDetailPage() {
     
     // Handle List Reordering
     if (activeType === 'List' && over) {
-      const oldIndex = board.lists.findIndex(l => l.listId === activeId);
-      const newIndex = board.lists.findIndex(l => l.listId === overId);
+      if (activeId === overId) return;
 
-      if (oldIndex === -1 || newIndex === -1 || oldIndex === newIndex) {
-        return;
-      }
+      const sortedLists = [...board.lists].sort((a, b) => a.position - b.position);
+      const oldIndex = sortedLists.findIndex(l => l.id === activeId);
+      const newIndex = sortedLists.findIndex(l => l.id === overId);
 
-      const reorderedLists = arrayMove(board.lists, oldIndex, newIndex);
-      const movedList = reorderedLists[newIndex];
-      const listBefore = reorderedLists[newIndex - 1];
-      const listAfter = reorderedLists[newIndex + 1];
+      if (oldIndex === -1 || newIndex === -1) return;
       
-      const newPosition = calculatePosition(listBefore?.position, listAfter?.position);
+      const movedList = sortedLists[oldIndex];
+      const itemBefore = newIndex === 0 ? undefined : sortedLists[newIndex - 1];
+      const itemAfter = sortedLists[newIndex];
+
+      // Adjust if moving downwards
+      const newPosition = oldIndex < newIndex 
+        ? calculatePosition(itemAfter?.position, sortedLists[newIndex + 1]?.position)
+        : calculatePosition(itemBefore?.position, itemAfter?.position);
 
       moveList({
         id: movedList.listId,
@@ -89,7 +109,6 @@ export function BoardDetailPage() {
       const activeCard = active.data.current?.card as Card;
       if (!activeCard) return;
 
-      const overId = over.id.toString();
       const overData = over.data.current;
       
       let targetListId: string;
@@ -98,37 +117,38 @@ export function BoardDetailPage() {
       const allCards = board.lists.flatMap(l => l.cards || []);
 
       if (overData?.type === 'List') {
-        // Card dropped on a list
-        targetListId = overId;
-        const targetList = board.lists.find(l => l.listId === targetListId);
-        const cardsInList = [...(targetList?.cards ?? [])].sort((a, b) => a.position - b.position);
+        // Card dropped on an empty list
+        const overList = board.lists.find(l => l.id === over.id);
+        if (!overList) return;
+        targetListId = overList.listId; // Use the persistent listId
+
+        const cardsInList = [...(overList.cards ?? [])].sort((a, b) => a.position - b.position);
         const lastCard = cardsInList[cardsInList.length - 1];
         newPosition = calculatePosition(lastCard?.position);
       } else if (overData?.type === 'Card') {
         // Card dropped on another card
-        const overCard = allCards.find(c => c.cardId === overId);
+        const overCard = allCards.find(c => c.id === over.id);
         if (!overCard) return;
 
-        targetListId = overCard.listId;
-        const cardsInTargetList = [...(board.lists.find(l => l.listId === targetListId)?.cards ?? [])].sort((a, b) => a.position - b.position);
+        targetListId = overCard.listId; // This is the persistent listId from the card's data
+        const cardsInTargetList = board.lists.find(l => l.listId === targetListId)?.cards ?? [];
+        const sortedCardsInTargetList = [...cardsInTargetList].sort((a, b) => a.position - b.position);
+
+        const oldIndex = sortedCardsInTargetList.findIndex(c => c.id === activeId);
+        const newIndex = sortedCardsInTargetList.findIndex(c => c.id === over.id);
 
         if (activeCard.listId === targetListId) {
           // Sorting in the same list
-          const oldIndex = cardsInTargetList.findIndex(c => c.cardId === activeId);
-          const newIndex = cardsInTargetList.findIndex(c => c.cardId === overId);
-          if (oldIndex === newIndex) return;
-
-          const reorderedCards = arrayMove(cardsInTargetList, oldIndex, newIndex);
-          const finalNewIndex = reorderedCards.findIndex(c => c.cardId === activeId);
-
-          const cardBefore = reorderedCards[finalNewIndex - 1];
-          const cardAfter = reorderedCards[finalNewIndex + 1];
-          newPosition = calculatePosition(cardBefore?.position, cardAfter?.position);
+          const itemBefore = newIndex === 0 ? undefined : sortedCardsInTargetList[newIndex - 1];
+          const itemAfter = sortedCardsInTargetList[newIndex];
+          newPosition = oldIndex < newIndex
+            ? calculatePosition(itemAfter?.position, sortedCardsInTargetList[newIndex + 1]?.position)
+            : calculatePosition(itemBefore?.position, itemAfter?.position);
         } else {
           // Moving to a new list
-          const overCardIndex = cardsInTargetList.findIndex(c => c.cardId === overId);
-          const cardBefore = cardsInTargetList[overCardIndex - 1];
-          newPosition = calculatePosition(cardBefore?.position, overCard.position);
+          const itemBefore = newIndex === 0 ? undefined : sortedCardsInTargetList[newIndex - 1];
+          const itemAfter = sortedCardsInTargetList[newIndex];
+          newPosition = calculatePosition(itemBefore?.position, itemAfter?.position);
         }
       } else {
         return; // Invalid drop target
@@ -139,7 +159,7 @@ export function BoardDetailPage() {
       }
 
       moveCard({
-        id: activeId,
+        id: activeCard.cardId,
         updates: {
           listId: targetListId,
           position: newPosition,
@@ -147,6 +167,7 @@ export function BoardDetailPage() {
         boardId: board.boardId,
       });
     }
+    setActiveItem(null);
   }, [board, moveCard, moveList]);
 
   if (isLoading) {
@@ -172,6 +193,7 @@ export function BoardDetailPage() {
     <DndContext 
       sensors={sensors}
       collisionDetection={closestCenter}
+      onDragStart={handleDragStart}
       onDragEnd={handleDragEnd}
     >
       <KanbanBoard
@@ -226,6 +248,14 @@ export function BoardDetailPage() {
           }
         }}
       />
+      <DragOverlay>
+        {activeItem && activeItem.hasOwnProperty('listId') ? (
+          <KanbanCard card={activeItem as Card} />
+        ) : null}
+        {activeItem && activeItem.hasOwnProperty('boardId') ? (
+          <KanbanList list={activeItem as List} />
+        ) : null}
+      </DragOverlay>
     </DndContext>
   );
 }

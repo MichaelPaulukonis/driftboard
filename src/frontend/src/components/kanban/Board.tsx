@@ -84,7 +84,7 @@ export const Board: React.FC<BoardProps> = ({
   // Sort lists by position and get their IDs for SortableContext
   const { sortedLists, listIds } = useMemo(() => {
     const sorted = board.lists ? [...board.lists].sort((a, b) => a.position - b.position) : [];
-    const ids = sorted.map(l => l.listId);
+    const ids = sorted.map(l => l.id); // Use the version-specific 'id' for dnd-kit keys
     return { sortedLists: sorted, listIds: ids };
   }, [board.lists]);
 
@@ -182,44 +182,46 @@ export const Board: React.FC<BoardProps> = ({
 
       {/* Board Content */}
       <div className="flex gap-6 overflow-x-auto pb-6">
-        <SortableContext items={listIds} strategy={horizontalListSortingStrategy}>
-          {/* Existing Lists */}
-          {sortedLists.map((list) => (
-            <List
-              key={list.listId}
-              list={list}
-              onUpdate={(updates: any) => onUpdateList?.(list.listId, updates)}
-              onDelete={() => onDeleteList?.(list.listId)}
-              onCreateCard={(cardData: any) => onCreateCard?.(list.listId, cardData)}
-              onUpdateCard={onUpdateCard}
-              onDeleteCard={onDeleteCard}
-              className="flex-shrink-0 w-80"
-            />
-          ))}
-        </SortableContext>
+        <div className="flex-1 overflow-x-auto pb-4">
+          <div className="inline-flex h-full items-start gap-6">
+            <SortableContext items={listIds} strategy={horizontalListSortingStrategy}>
+              {sortedLists.map((list) => (
+                <List
+                  key={list.id} // Use the version-specific 'id' for React keys
+                  list={list}
+                  onUpdate={(updates) => onUpdateList?.(list.listId, updates)}
+                  onDelete={() => onDeleteList?.(list.listId)}
+                  onCreateCard={(cardData) => onCreateCard?.(list.listId, cardData)}
+                  onUpdateCard={onUpdateCard}
+                  onDeleteCard={onDeleteCard}
+                />
+              ))}
+            </SortableContext>
 
-        {/* Create List Form */}
-        {showCreateList && (
-          <div className="flex-shrink-0 w-80">
-            <CreateListForm
-              onSubmit={handleCreateList}
-              onCancel={() => setShowCreateList(false)}
-            />
-          </div>
-        )}
+            {/* Create List Form */}
+            {showCreateList && (
+              <div className="flex-shrink-0 w-80">
+                <CreateListForm
+                  onSubmit={handleCreateList}
+                  onCancel={() => setShowCreateList(false)}
+                />
+              </div>
+            )}
 
-        {/* Add List Button (when not showing form) */}
-        {!showCreateList && (
-          <div className="flex-shrink-0 w-80">
-            <Button
-              onClick={() => setShowCreateList(true)}
-              variant="outline"
-              className="w-full h-24 border-dashed border-2 text-gray-500 hover:text-gray-700 hover:border-gray-400"
-            >
-              + Add a list
-            </Button>
+            {/* Add List Button (when not showing form) */}
+            {!showCreateList && (
+              <div className="flex-shrink-0 w-80">
+                <Button
+                  onClick={() => setShowCreateList(true)}
+                  variant="outline"
+                  className="w-full h-24 border-dashed border-2 text-gray-500 hover:text-gray-700 hover:border-gray-400"
+                >
+                  + Add a list
+                </Button>
+              </div>
+            )}
           </div>
-        )}
+        </div>
       </div>
     </div>
   );

@@ -11,6 +11,7 @@ async function main() {
     update: {},
     create: {
       id: 'test-user-id',
+      userId: 'test-user-id', // Add the missing userId
       email: 'test@example.com',
       name: 'Test User',
     },
@@ -22,9 +23,8 @@ async function main() {
   const sampleBoard = await prisma.board.create({
     data: {
       name: 'My First Board',
-      description: 'A sample board to get started',
-      userId: testUser.id,
-      position: 0,
+      description: 'A sample board for testing.',
+      userId: testUser.userId, // Use the persistent userId for the relation
       lists: {
         create: [
           {

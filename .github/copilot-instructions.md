@@ -437,6 +437,8 @@ Follow a **testing-first** approach when practical, but strict Test-Driven Devel
 
 > **Constraint**: Backend logic must be tested before implementing any dependent frontend components.
 
+> **Constraint**: Tests must be passing before committing code, unless spcific user override is given.
+
 ### 12.1 Unit Tests
 
 * Use **Vitest** to test pure functions, utilities, and backend logic.

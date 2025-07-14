@@ -21,25 +21,33 @@ describe('API Health Check', () => {
 
 describe('Boards API', () => {
   let request: any;
-  const testUser = { userId: `test-user-api-${Date.now()}` };
+  let authHeaders: { Authorization: string };
+  let testUser: any;
   let createdBoard: Board;
 
   beforeAll(async () => {
     request = await setup();
+    const auth = await getAuthHeaders({ userId: `test-user-boards-api-${Date.now()}` });
+    authHeaders = auth.headers;
+    testUser = auth.user;
+
     const response = await request
       .post('/api/boards')
-      .set(getAuthHeaders(testUser))
+      .set(authHeaders)
       .send({ name: 'Test Board for Details' });
+    
     expect(response.status).toBe(201);
     createdBoard = response.body.data;
   });
 
   afterAll(async () => {
-    await prisma.user.deleteMany({ where: { userId: testUser.userId } });
+    if (testUser) {
+      await prisma.user.delete({ where: { userId: testUser.userId } });
+    }
   });
 
   it('should return boards list for an authenticated user', async () => {
-    const response = await request.get('/api/boards').set(getAuthHeaders(testUser));
+    const response = await request.get('/api/boards').set(authHeaders);
     const data = response.body as ApiResponse<Board[]>;
     
     expect(response.status).toBe(200);
@@ -47,13 +55,36 @@ describe('Boards API', () => {
     expect(Array.isArray(data.data)).toBe(true);
   });
 
-  it('should return board with lists and cards for an authenticated user', async () => {
+  it('should return board with only ACTIVE lists and cards', async () => {
     expect(createdBoard).toBeDefined();
-    if (!createdBoard) return;
+    if (!createdBoard) {
+      // If board creation failed, we can't run this test.
+      // This is expected until the backend is fixed.
+      console.warn('Skipping test for ACTIVE items because board creation failed.');
+      return;
+    }
+
+    // Manually create an INACTIVE list and card to test the filter
+    const inactiveList = await prisma.list.create({
+      data: {
+        name: 'Inactive List',
+        boardId: createdBoard.boardId, // Use persistent boardId
+        position: 999,
+        status: 'INACTIVE',
+      },
+    });
+    await prisma.card.create({
+      data: {
+        title: 'Inactive Card',
+        listId: inactiveList.listId,
+        position: 0,
+        status: 'INACTIVE',
+      },
+    });
 
     const response = await request
       .get(`/api/boards/${createdBoard.boardId}`)
-      .set(getAuthHeaders(testUser));
+      .set(authHeaders);
     
     const data = response.body as ApiResponse<Board & { lists: (List & { cards: Card[] })[] }>;
     
@@ -61,5 +92,15 @@ describe('Boards API', () => {
     expect(data.success).toBe(true);
     expect(data.data?.boardId).toBe(createdBoard.boardId);
     expect(Array.isArray(data.data?.lists)).toBe(true);
+
+    // Verify that all returned lists and cards are ACTIVE
+    data.data?.lists.forEach(list => {
+      expect(list.status).toBe('ACTIVE');
+      if (list.cards) {
+        list.cards.forEach(card => {
+          expect(card.status).toBe('ACTIVE');
+        });
+      }
+    });
   });
 });

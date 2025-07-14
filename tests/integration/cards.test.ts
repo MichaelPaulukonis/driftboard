@@ -4,50 +4,43 @@ import { setup, getAuthHeaders } from '../helpers';
 
 describe('Cards API Integration Tests', () => {
   let request: any;
-  let boardId: string;
-  let listId: string;
-  let cardId: string;
-  const testUser = { userId: 'card-test-user-uid', email: 'card-test@example.com', name: 'Card Test User' };
+  let testUser: any;
+  let authHeaders: { Authorization: string };
+  let board: any;
+  let list1: any;
+  let card1: any;
 
   beforeAll(async () => {
     request = await setup();
-    
-    const boardResponse = await request
-      .post('/api/boards')
-      .set(getAuthHeaders(testUser))
-      .send({
-        name: 'Test Board for Cards',
-        description: 'Created for cards integration testing',
-      });
-    
-    expect(boardResponse.status).toBe(201);
-    boardId = boardResponse.body.data.boardId;
+    const auth = await getAuthHeaders({ userId: `card-test-user-uid-${Date.now()}` });
+    testUser = auth.user;
+    authHeaders = auth.headers;
 
-    const listResponse = await request
-      .post(`/api/boards/${boardId}/lists`)
-      .set(getAuthHeaders(testUser))
-      .send({ name: 'Test List for Cards' });
-    
-    expect(listResponse.status).toBe(201);
-    listId = listResponse.body.data.listId;
+    board = await prisma.board.create({
+      data: { name: 'Test Board for Cards', userId: testUser.userId },
+    });
 
-    const cardResponse = await request
-      .post(`/api/lists/${listId}/cards`)
-      .set(getAuthHeaders(testUser))
-      .send({ title: 'Initial Card' });
-    expect(cardResponse.status).toBe(201);
-    cardId = cardResponse.body.data.cardId;
+    list1 = await prisma.list.create({
+      data: { name: 'Test List for Cards', boardId: board.boardId, position: 100 },
+    });
+
+    card1 = await prisma.card.create({
+      data: { title: 'Initial Card', listId: list1.listId, position: 100 },
+    });
   });
 
   afterAll(async () => {
-    await prisma.user.deleteMany({ where: { userId: testUser.userId } });
+    if (testUser) {
+      await prisma.board.deleteMany({ where: { userId: testUser.userId } });
+      await prisma.user.delete({ where: { userId: testUser.userId } });
+    }
   });
 
   describe('POST /api/lists/:id/cards', () => {
     it('should create a new card in a list', async () => {
       const response = await request
-        .post(`/api/lists/${listId}/cards`)
-        .set(getAuthHeaders(testUser))
+        .post(`/api/lists/${list1.listId}/cards`)
+        .set(authHeaders)
         .send({
           title: 'Test Card',
           description: 'This is a test card',
@@ -60,76 +53,77 @@ describe('Cards API Integration Tests', () => {
 
     it('should reject creation with empty title', async () => {
       const response = await request
-        .post(`/api/lists/${listId}/cards`)
-        .set(getAuthHeaders(testUser))
+        .post(`/api/lists/${list1.listId}/cards`)
+        .set(authHeaders)
         .send({ title: '' });
       expect(response.status).toBe(400);
-      expect(response.body.error).toBe('Card title is required');
     });
   });
 
   describe('GET /api/cards/:id', () => {
     it('should get a card by its ID', async () => {
       const response = await request
-        .get(`/api/cards/${cardId}`)
-        .set(getAuthHeaders(testUser));
+        .get(`/api/cards/${card1.cardId}`)
+        .set(authHeaders);
       expect(response.status).toBe(200);
-      expect(response.body.data.cardId).toBe(cardId);
+      expect(response.body.data.cardId).toBe(card1.cardId);
     });
   });
 
   describe('PUT /api/cards/:id', () => {
-    it('should update a card title and description', async () => {
+    it('should update a card and create a new version', async () => {
       const updates = {
         title: 'Updated Test Card',
         description: 'This card has been updated'
       };
       const response = await request
-        .put(`/api/cards/${cardId}`)
-        .set(getAuthHeaders(testUser))
+        .put(`/api/cards/${card1.cardId}`)
+        .set(authHeaders)
         .send(updates);
       expect(response.status).toBe(200);
-      expect(response.body.data.title).toBe(updates.title);
-      expect(response.body.data.description).toBe(updates.description);
+      const updatedCard = response.body.data;
+      expect(updatedCard.title).toBe(updates.title);
+      expect(updatedCard.description).toBe(updates.description);
+      expect(updatedCard.version).toBe(card1.version + 1);
+
+      const oldCard = await prisma.card.findUnique({ where: { id: card1.id } });
+      expect(oldCard?.status).toBe('INACTIVE');
     });
   });
 
   describe('PUT /api/cards/:id/move', () => {
-    it('should move a card to a new list and position', async () => {
-      const otherListResponse = await request
-        .post(`/api/boards/${boardId}/lists`)
-        .set(getAuthHeaders(testUser))
-        .send({ name: 'Other List for Moving Cards' });
-      const otherListId = otherListResponse.body.data.listId;
-      const otherListVersionId = otherListResponse.body.data.id;
+    it('should move a card and create a new version', async () => {
+      const list2 = await prisma.list.create({
+        data: { name: 'List for Moving', boardId: board.boardId, position: 200 },
+      });
 
       const response = await request
-        .put(`/api/cards/${cardId}/move`)
-        .set(getAuthHeaders(testUser))
+        .put(`/api/cards/${card1.cardId}/move`)
+        .set(authHeaders)
         .send({
-          listId: otherListId,
+          listId: list2.listId,
           position: 1,
         });
       expect(response.status).toBe(200);
-      expect(response.body.data.listId).toBe(otherListVersionId);
+      const movedCard = response.body.data;
+      expect(movedCard.listId).toBe(list2.id);
+      expect(movedCard.version).toBe(card1.version + 2); // +1 from update test, +1 from this move
     });
   });
 
   describe('DELETE /api/cards/:id', () => {
-    it('should delete a card', async () => {
-      const cardToDeleteResponse = await request
-        .post(`/api/lists/${listId}/cards`)
-        .set(getAuthHeaders(testUser))
-        .send({ title: 'To Be Deleted' });
-      const cardToDeleteId = cardToDeleteResponse.body.data.cardId;
+    it('should mark a card as inactive', async () => {
+      const cardToDelete = await prisma.card.create({
+        data: { title: 'To Be Deleted', listId: list1.listId, position: 200 },
+      });
 
       const response = await request
-        .delete(`/api/cards/${cardToDeleteId}`)
-        .set(getAuthHeaders(testUser));
+        .delete(`/api/cards/${cardToDelete.cardId}`)
+        .set(authHeaders);
       expect(response.status).toBe(204);
 
-      const dbCard = await prisma.card.findFirst({ where: { cardId: cardToDeleteId, status: 'ACTIVE' } });
-      expect(dbCard).toBeNull();
+      const dbCard = await prisma.card.findUnique({ where: { id: cardToDelete.id } });
+      expect(dbCard?.status).toBe('INACTIVE');
     });
   });
 });

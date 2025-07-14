@@ -1,25 +1,38 @@
 import supertest from 'supertest';
 import jwt from 'jsonwebtoken';
+import { prisma } from '../src/backend/services/database.js';
 
 const TEST_JWT_SECRET = process.env.TEST_JWT_SECRET || 'your-default-secret';
 
-export const getAuthHeaders = (user: { userId?: string; email?: string; name?: string } = {}) => {
+export const getAuthHeaders = async (user: { userId?: string; email?: string; name?: string } = {}) => {
   const testUserId = user.userId || `test-user-uid-${Date.now()}-${Math.random()}`;
   const testEmail = user.email || `test-${Date.now()}-${Math.random()}@example.com`;
   const testName = user.name || 'Test User';
 
-  const token = jwt.sign(
-    {
-      uid: testUserId,
+  // Ensure the user exists in the database before generating a token
+  const dbUser = await prisma.user.upsert({
+    where: { userId: testUserId },
+    update: { name: testName },
+    create: {
+      userId: testUserId,
       email: testEmail,
       name: testName,
+    },
+  });
+
+  const token = jwt.sign(
+    {
+      uid: dbUser.userId,
+      email: dbUser.email,
+      name: dbUser.name,
     },
     TEST_JWT_SECRET,
     { expiresIn: '1h' }
   );
 
   return {
-    Authorization: `Bearer ${token}`,
+    headers: { Authorization: `Bearer ${token}` },
+    user: dbUser,
   };
 };
 

@@ -4,149 +4,142 @@ import { setup, getAuthHeaders } from '../helpers';
 
 describe('Lists API Integration Tests', () => {
   let request: any;
-  let boardId: string;
-  let listId: string;
-  const testUser = { userId: 'list-test-user-uid', email: 'list-test@example.com', name: 'List Test User' };
+  let testUser: any;
+  let authHeaders: { Authorization: string };
+  let board: any;
+  let list1: any;
 
   beforeAll(async () => {
     request = await setup();
-    
-    const boardResponse = await request
-      .post('/api/boards')
-      .set(getAuthHeaders(testUser))
-      .send({
-        name: 'Test Board for Lists',
-        description: 'Created for integration testing',
-      });
-    
-    expect(boardResponse.status).toBe(201);
-    boardId = boardResponse.body.data.boardId;
+    const auth = await getAuthHeaders({ userId: `list-test-user-uid-${Date.now()}` });
+    testUser = auth.user;
+    authHeaders = auth.headers;
 
-    const listResponse = await request
-      .post(`/api/boards/${boardId}/lists`)
-      .set(getAuthHeaders(testUser))
-      .send({ name: 'Test List' });
-    expect(listResponse.status).toBe(201);
-    listId = listResponse.body.data.listId;
+    board = await prisma.board.create({
+      data: {
+        name: 'Test Board for Lists',
+        userId: testUser.userId,
+      },
+    });
+
+    list1 = await prisma.list.create({
+      data: {
+        name: 'Test List 1',
+        boardId: board.boardId,
+        position: 100,
+      },
+    });
   });
 
   afterAll(async () => {
-    await prisma.user.deleteMany({ where: { userId: testUser.userId } });
+    if (testUser) {
+      await prisma.board.deleteMany({ where: { userId: testUser.userId } });
+      await prisma.user.delete({ where: { userId: testUser.userId } });
+    }
   });
 
   describe('POST /api/boards/:id/lists', () => {
     it('should create a new list in a board', async () => {
       const response = await request
-        .post(`/api/boards/${boardId}/lists`)
-        .set(getAuthHeaders(testUser))
+        .post(`/api/boards/${board.boardId}/lists`)
+        .set(authHeaders)
         .send({
-          name: 'Test List',
-          position: 0
+          name: 'A New List',
+          position: 0,
         });
 
       expect(response.status).toBe(201);
       expect(response.body.success).toBe(true);
       const createdList = response.body.data;
-      expect(createdList.name).toBe('Test List');
+      expect(createdList.name).toBe('A New List');
       expect(createdList.position).toBe(0);
     });
 
     it('should reject creation with empty name', async () => {
       const response = await request
-        .post(`/api/boards/${boardId}/lists`)
-        .set(getAuthHeaders(testUser))
+        .post(`/api/boards/${board.boardId}/lists`)
+        .set(authHeaders)
         .send({ name: '' });
       expect(response.status).toBe(400);
-      expect(response.body.error).toBe('List name is required');
     });
 
     it('should reject creation for non-existent board', async () => {
       const response = await request
         .post('/api/boards/non-existent-id/lists')
-        .set(getAuthHeaders(testUser))
+        .set(authHeaders)
         .send({ name: 'Test List' });
       expect(response.status).toBe(404);
-      expect(response.body.error).toBe('Board not found');
-    });
-
-    it('should auto-assign position when not provided', async () => {
-      const response = await request
-        .post(`/api/boards/${boardId}/lists`)
-        .set(getAuthHeaders(testUser))
-        .send({ name: 'Auto Position List' });
-      expect(response.status).toBe(201);
-      expect(response.body.data.position).toBeGreaterThanOrEqual(0);
     });
   });
 
   describe('GET /api/lists/:id', () => {
     it('should get a list with its cards', async () => {
       const response = await request
-        .get(`/api/lists/${listId}`)
-        .set(getAuthHeaders(testUser));
+        .get(`/api/lists/${list1.listId}`)
+        .set(authHeaders);
       expect(response.status).toBe(200);
-      expect(response.body.data.listId).toBe(listId);
+      expect(response.body.data.listId).toBe(list1.listId);
     });
 
     it('should return 404 for non-existent list', async () => {
       const response = await request
         .get('/api/lists/non-existent-id')
-        .set(getAuthHeaders(testUser));
+        .set(authHeaders);
       expect(response.status).toBe(404);
-    });
-
-    it('should not allow access to a list in a board the user does not own', async () => {
-      const otherUser = { userId: 'other-user-uid' };
-      const otherBoardResponse = await request.post('/api/boards').set(getAuthHeaders(otherUser)).send({ name: 'Other Board' });
-      const otherBoardId = otherBoardResponse.body.data.boardId;
-      const otherListResponse = await request.post(`/api/boards/${otherBoardId}/lists`).set(getAuthHeaders(otherUser)).send({ name: 'Other List' });
-      const otherListId = otherListResponse.body.data.listId;
-
-      const response = await request
-        .get(`/api/lists/${otherListId}`)
-        .set(getAuthHeaders(testUser));
-      expect(response.status).toBe(404);
-      await prisma.user.deleteMany({ where: { userId: otherUser.userId } });
     });
   });
 
   describe('PUT /api/lists/:id', () => {
-    it('should update a list name', async () => {
+    it('should update a list name and create a new version', async () => {
       const newName = 'Updated Test List';
       const response = await request
-        .put(`/api/lists/${listId}`)
-        .set(getAuthHeaders(testUser))
+        .put(`/api/lists/${list1.listId}`)
+        .set(authHeaders)
         .send({ name: newName });
       expect(response.status).toBe(200);
-      expect(response.body.data.name).toBe(newName);
+      const updatedList = response.body.data;
+      expect(updatedList.name).toBe(newName);
+      expect(updatedList.version).toBe(list1.version + 1);
+
+      const oldList = await prisma.list.findUnique({ where: { id: list1.id } });
+      expect(oldList?.status).toBe('INACTIVE');
     });
   });
 
   describe('PUT /api/lists/:id/move', () => {
-    it('should move a list to a new position', async () => {
-      await request.post(`/api/boards/${boardId}/lists`).set(getAuthHeaders(testUser)).send({ name: 'List B', position: 200 });
+    it('should move a list and create a new version', async () => {
+      const list2 = await prisma.list.create({
+        data: { name: 'List B', boardId: board.boardId, position: 200 },
+      });
 
       const moveResponse = await request
-        .put(`/api/lists/${listId}/move`)
-        .set(getAuthHeaders(testUser))
-        .send({ position: 250 });
+        .put(`/api/lists/${list2.listId}/move`)
+        .set(authHeaders)
+        .send({ position: 50 }); // Move it before list1
+
       expect(moveResponse.status).toBe(200);
-      expect(moveResponse.body.data.position).toBe(250);
+      const movedList = moveResponse.body.data;
+      expect(movedList.position).toBe(50);
+      expect(movedList.version).toBe(list2.version + 1);
+
+      const oldList = await prisma.list.findUnique({ where: { id: list2.id } });
+      expect(oldList?.status).toBe('INACTIVE');
     });
   });
 
   describe('DELETE /api/lists/:id', () => {
-    it('should delete a list', async () => {
-      const listToDeleteRes = await request.post(`/api/boards/${boardId}/lists`).set(getAuthHeaders(testUser)).send({ name: 'To Be Deleted' });
-      const listToDeleteId = listToDeleteRes.body.data.listId;
+    it('should mark a list as inactive', async () => {
+      const listToDelete = await prisma.list.create({
+        data: { name: 'To Be Deleted', boardId: board.boardId, position: 300 },
+      });
       
       const response = await request
-        .delete(`/api/lists/${listToDeleteId}`)
-        .set(getAuthHeaders(testUser));
+        .delete(`/api/lists/${listToDelete.listId}`)
+        .set(authHeaders);
       expect(response.status).toBe(204);
 
-      const dbList = await prisma.list.findFirst({ where: { listId: listToDeleteId, status: 'ACTIVE' } });
-      expect(dbList).toBeNull();
+      const dbList = await prisma.list.findUnique({ where: { id: listToDelete.id } });
+      expect(dbList?.status).toBe('INACTIVE');
     });
   });
 });

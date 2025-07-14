@@ -19,7 +19,7 @@ enum Status {
 
 model User {
   id         String   @id @default(cuid()) // Unique ID for this version
-  userId     String   @unique // This will be the Firebase UID
+  userId     String   @unique @default(cuid()) // This will be the Firebase UID
   version    Int      @default(1)
   status     Status   @default(ACTIVE)
   email      String   @unique
@@ -33,7 +33,7 @@ model User {
 
 model Board {
   id          String    @id @default(cuid())
-  boardId     String    @default(cuid())
+  boardId     String    @unique @default(cuid())
   version     Int       @default(1)
   status      Status    @default(ACTIVE)
   name        String
@@ -44,7 +44,7 @@ model Board {
 
   lists List[]
 
-  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user   User   @relation(fields: [userId], references: [userId], onDelete: Cascade)
   userId String
 
   @@unique([boardId, version])
@@ -54,7 +54,7 @@ model Board {
 
 model List {
   id        String   @id @default(cuid())
-  listId    String   @default(cuid())
+  listId    String   @unique @default(cuid())
   version   Int      @default(1)
   status    Status   @default(ACTIVE)
   name      String
@@ -62,7 +62,7 @@ model List {
   position  Float
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-  board     Board    @relation(fields: [boardId], references: [id], onDelete: Cascade)
+  board     Board    @relation(fields: [boardId], references: [boardId], onDelete: Cascade)
   cards     Card[]
 
   @@unique([listId, version])
@@ -82,7 +82,7 @@ model Card {
   dueDate     DateTime?
   createdAt   DateTime   @default(now())
   updatedAt   DateTime   @updatedAt
-  list        List       @relation(fields: [listId], references: [id], onDelete: Cascade)
+  list        List       @relation(fields: [listId], references: [listId], onDelete: Cascade)
   labels      Label[]
   activities  Activity[]
 

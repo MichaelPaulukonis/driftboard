@@ -115,13 +115,14 @@ router.put('/:id', async (req: Request, res: Response, next: NextFunction): Prom
         data: { status: 'INACTIVE' },
       });
 
-      return tx.list.create({
+      const newList = await tx.list.create({
         data: {
-          listId: existingList.listId,
+          listId: existingList.listId, // Copy the persistent ID
           version: existingList.version + 1,
           name: name.trim(),
           boardId: existingList.boardId,
           position: existingList.position,
+          status: 'ACTIVE',
         },
         include: {
           cards: {
@@ -130,6 +131,14 @@ router.put('/:id', async (req: Request, res: Response, next: NextFunction): Prom
           },
         },
       });
+
+      // Update cards to point to the new list version
+      await tx.card.updateMany({
+        where: { listId: existingList.id },
+        data: { listId: newList.id },
+      });
+
+      return newList;
     });
 
     const response: ApiResponse<List> = {
@@ -197,6 +206,13 @@ router.put('/:id/move', async (req: Request, res: Response, next: NextFunction) 
           position: position,
         },
       });
+
+      // Update cards to point to the new list version
+      await tx.card.updateMany({
+        where: { listId: existingList.id },
+        data: { listId: newList.id },
+      });
+      
       return newList;
     });
 
@@ -292,7 +308,7 @@ router.post('/:id/cards', async (req: Request, res: Response, next: NextFunction
     let cardPosition = position;
     if (cardPosition === undefined) {
       const maxPosition = await prisma.card.aggregate({
-        where: { listId: list.id, status: 'ACTIVE' },
+        where: { listId: list.listId, status: 'ACTIVE' },
         _max: { position: true },
       });
       cardPosition = (maxPosition._max.position ?? -1) + 1;
@@ -303,7 +319,7 @@ router.post('/:id/cards', async (req: Request, res: Response, next: NextFunction
         title,
         description: description ?? null,
         position: cardPosition,
-        listId: list.id,
+        listId: list.listId, // Direct assignment
         version: 1,
         status: 'ACTIVE',
       },

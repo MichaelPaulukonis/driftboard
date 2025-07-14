@@ -112,7 +112,49 @@ export const api = createApi({
         method: 'PUT',
         body: updates,
       }),
-      invalidatesTags: (_result, _error, { boardId }) => [{ type: 'Board', id: boardId }],
+      async onQueryStarted({ id, updates, boardId }, { dispatch, queryFulfilled }) {
+        const patchResult = dispatch(
+          api.util.updateQueryData('getBoardById', boardId, (draft) => {
+            const { position } = updates;
+            const listIndex = draft.lists.findIndex((l) => l.listId === id);
+            if (listIndex > -1) {
+              const [movedList] = draft.lists.splice(listIndex, 1);
+              if (movedList) {
+                movedList.position = position;
+                draft.lists.push(movedList);
+                draft.lists.sort((a, b) => a.position - b.position);
+              }
+            }
+          })
+        );
+        try {
+          const { data: movedList } = await queryFulfilled;
+          // After the API call is successful, patch the data again with the final
+          // state from the server (which includes the new version number).
+          dispatch(
+            api.util.updateQueryData('getBoardById', boardId, (draft) => {
+              const listIndex = draft.lists.findIndex(l => l.listId === movedList.listId);
+              if (listIndex !== -1) {
+                // Ensure the list and its cards conform to the cache's stricter type
+                const listForCache = {
+                  ...movedList,
+                  cards: (movedList.cards ?? []).map(card => ({
+                    ...card,
+                    labels: card.labels ?? [],
+                  })),
+                };
+                draft.lists[listIndex] = listForCache;
+              }
+            })
+          );
+        } catch {
+          patchResult.undo();
+        }
+      },
+      invalidatesTags: (result, _error, { boardId }) => [
+        { type: 'Board', id: boardId },
+        { type: 'List', id: result?.listId },
+      ],
     }),
 
     // ===== CARDS =====
@@ -155,27 +197,79 @@ export const api = createApi({
         method: 'PUT',
         body: updates,
       }),
-      invalidatesTags: (_result, _error, { boardId }) => [{ type: 'Board', id: boardId }],
+      async onQueryStarted({ id, updates, boardId }, { dispatch, queryFulfilled }) {
+        const patchResult = dispatch(
+          api.util.updateQueryData('getBoardById', boardId, (draft) => {
+            const { listId: newListId, position } = updates;
+            let cardToMove: Card | undefined;
+
+            // Find the card and remove it from its original list
+            for (const list of draft.lists) {
+              const cardIndex = list.cards.findIndex((c) => c.cardId === id);
+              if (cardIndex > -1) {
+                [cardToMove] = list.cards.splice(cardIndex, 1);
+                break;
+              }
+            }
+
+            // Add the card to the new list and update its position
+            if (cardToMove) {
+              cardToMove.position = position;
+              const targetList = draft.lists.find((l) => l.listId === newListId);
+              if (targetList) {
+                targetList.cards.push(cardToMove);
+                targetList.cards.sort((a, b) => a.position - b.position);
+              }
+            }
+          })
+        );
+
+        try {
+          const { data: movedCard } = await queryFulfilled;
+          // After the API call is successful, we patch the data again with the final
+          // state from the server (which includes the new version number).
+          dispatch(
+            api.util.updateQueryData('getBoardById', boardId, (draft) => {
+              const list = draft.lists.find(l => l.listId === movedCard.listId);
+              if (list) {
+                const cardIndex = list.cards.findIndex(c => c.cardId === movedCard.cardId);
+                if (cardIndex !== -1) {
+                  // Ensure the moved card has the expected shape, especially the 'labels' array.
+                  const cardForCache = {
+                    ...movedCard,
+                    labels: movedCard.labels ?? [],
+                  };
+                  // Replace the optimistically moved card with the final version from the server
+                  list.cards[cardIndex] = cardForCache;
+                }
+              }
+            })
+          );
+        } catch {
+          patchResult.undo();
+        }
+      },
+      // We can keep invalidatesTags as a fallback and to ensure related data is fresh,
+      // though the optimistic update should handle the immediate UI change.
+      invalidatesTags: (result, _error, { boardId }) => [
+        { type: 'Board', id: boardId },
+        { type: 'Card', id: result?.cardId },
+      ],
     }),
   }),
 });
 
 export const {
-  // Board hooks
   useGetBoardsQuery,
   useGetBoardByIdQuery,
   useCreateBoardMutation,
   useUpdateBoardMutation,
   useDeleteBoardMutation,
-  
-  // List hooks
   useGetListByIdQuery,
   useCreateListMutation,
   useUpdateListMutation,
   useDeleteListMutation,
   useMoveListMutation,
-  
-  // Card hooks
   useGetCardByIdQuery,
   useCreateCardMutation,
   useUpdateCardMutation,

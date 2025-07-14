@@ -80,7 +80,7 @@ export const authMiddleware = async (
       console.log(`New user created: ${user.id} - ${user.email}`);
     }
 
-    req.user = { ...decodedToken, id: user.id }; // Attach user to request
+    req.user = { ...decodedToken, id: user.id, uid: user.userId }; // Attach user to request
     next();
   } catch (error) {
     console.error('Error verifying Firebase ID token:', error);
