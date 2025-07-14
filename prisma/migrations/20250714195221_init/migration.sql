@@ -1,6 +1,9 @@
 -- CreateTable
 CREATE TABLE "users" (
     "id" TEXT NOT NULL PRIMARY KEY,
+    "userId" TEXT NOT NULL,
+    "version" INTEGER NOT NULL DEFAULT 1,
+    "status" TEXT NOT NULL DEFAULT 'ACTIVE',
     "email" TEXT NOT NULL,
     "name" TEXT,
     "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -10,38 +13,46 @@ CREATE TABLE "users" (
 -- CreateTable
 CREATE TABLE "boards" (
     "id" TEXT NOT NULL PRIMARY KEY,
+    "boardId" TEXT NOT NULL,
+    "version" INTEGER NOT NULL DEFAULT 1,
+    "status" TEXT NOT NULL DEFAULT 'ACTIVE',
     "name" TEXT NOT NULL,
     "description" TEXT,
-    "userId" TEXT NOT NULL,
-    "position" INTEGER NOT NULL,
-    "archivedAt" DATETIME,
     "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" DATETIME NOT NULL,
-    CONSTRAINT "boards_userId_fkey" FOREIGN KEY ("userId") REFERENCES "users" ("id") ON DELETE CASCADE ON UPDATE CASCADE
+    "archivedAt" DATETIME,
+    "userId" TEXT NOT NULL,
+    CONSTRAINT "boards_userId_fkey" FOREIGN KEY ("userId") REFERENCES "users" ("userId") ON DELETE CASCADE ON UPDATE CASCADE
 );
 
 -- CreateTable
 CREATE TABLE "lists" (
     "id" TEXT NOT NULL PRIMARY KEY,
+    "listId" TEXT NOT NULL,
+    "version" INTEGER NOT NULL DEFAULT 1,
+    "status" TEXT NOT NULL DEFAULT 'ACTIVE',
     "name" TEXT NOT NULL,
     "boardId" TEXT NOT NULL,
-    "position" INTEGER NOT NULL,
+    "position" REAL NOT NULL,
     "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" DATETIME NOT NULL,
-    CONSTRAINT "lists_boardId_fkey" FOREIGN KEY ("boardId") REFERENCES "boards" ("id") ON DELETE CASCADE ON UPDATE CASCADE
+    CONSTRAINT "lists_boardId_fkey" FOREIGN KEY ("boardId") REFERENCES "boards" ("boardId") ON DELETE CASCADE ON UPDATE CASCADE
 );
 
 -- CreateTable
 CREATE TABLE "cards" (
     "id" TEXT NOT NULL PRIMARY KEY,
+    "cardId" TEXT NOT NULL,
+    "version" INTEGER NOT NULL DEFAULT 1,
+    "status" TEXT NOT NULL DEFAULT 'ACTIVE',
     "title" TEXT NOT NULL,
     "description" TEXT,
     "listId" TEXT NOT NULL,
-    "position" INTEGER NOT NULL,
+    "position" REAL NOT NULL,
     "dueDate" DATETIME,
     "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" DATETIME NOT NULL,
-    CONSTRAINT "cards_listId_fkey" FOREIGN KEY ("listId") REFERENCES "lists" ("id") ON DELETE CASCADE ON UPDATE CASCADE
+    CONSTRAINT "cards_listId_fkey" FOREIGN KEY ("listId") REFERENCES "lists" ("listId") ON DELETE CASCADE ON UPDATE CASCADE
 );
 
 -- CreateTable
@@ -65,16 +76,34 @@ CREATE TABLE "activities" (
 );
 
 -- CreateIndex
+CREATE UNIQUE INDEX "users_userId_key" ON "users"("userId");
+
+-- CreateIndex
 CREATE UNIQUE INDEX "users_email_key" ON "users"("email");
 
 -- CreateIndex
-CREATE INDEX "boards_userId_idx" ON "boards"("userId");
+CREATE UNIQUE INDEX "boards_boardId_key" ON "boards"("boardId");
 
 -- CreateIndex
-CREATE INDEX "lists_boardId_idx" ON "lists"("boardId");
+CREATE INDEX "boards_userId_status_idx" ON "boards"("userId", "status");
 
 -- CreateIndex
-CREATE INDEX "cards_listId_idx" ON "cards"("listId");
+CREATE UNIQUE INDEX "boards_boardId_version_key" ON "boards"("boardId", "version");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "lists_listId_key" ON "lists"("listId");
+
+-- CreateIndex
+CREATE INDEX "lists_boardId_status_idx" ON "lists"("boardId", "status");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "lists_listId_version_key" ON "lists"("listId", "version");
+
+-- CreateIndex
+CREATE INDEX "cards_listId_status_idx" ON "cards"("listId", "status");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "cards_cardId_version_key" ON "cards"("cardId", "version");
 
 -- CreateIndex
 CREATE INDEX "labels_cardId_idx" ON "labels"("cardId");

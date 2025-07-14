@@ -33,7 +33,7 @@ model User {
 
 model Board {
   id          String    @id @default(cuid())
-  boardId     String    @default(cuid()) // Persistent ID for the conceptual board
+  boardId     String    @unique @default(cuid())
   version     Int       @default(1)
   status      Status    @default(ACTIVE)
   name        String
@@ -44,30 +44,26 @@ model Board {
 
   lists List[]
 
-  // Relation to the User who owns this board version
-  user     User   @relation(fields: [authorId], references: [id])
-  authorId String
+  user   User   @relation(fields: [userId], references: [userId], onDelete: Cascade)
+  userId String
 
   @@unique([boardId, version])
-  @@index([authorId, status])
+  @@index([userId, status])
   @@map("boards")
 }
 
 model List {
   id        String   @id @default(cuid())
-  listId    String   @default(cuid()) // Persistent ID for the conceptual list
+  listId    String   @unique @default(cuid())
   version   Int      @default(1)
   status    Status   @default(ACTIVE)
   name      String
+  boardId   String
   position  Float
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-
-  // Relation to the Board version this list belongs to
-  board   Board  @relation(fields: [boardId], references: [id], onDelete: Cascade)
-  boardId String
-
-  cards Card[]
+  board     Board    @relation(fields: [boardId], references: [boardId], onDelete: Cascade)
+  cards     Card[]
 
   @@unique([listId, version])
   @@index([boardId, status])
@@ -75,23 +71,20 @@ model List {
 }
 
 model Card {
-  id          String    @id @default(cuid())
-  cardId      String    @default(cuid()) // Persistent ID for the conceptual card
-  version     Int       @default(1)
-  status      Status    @default(ACTIVE)
+  id          String     @id @default(cuid())
+  cardId      String     @default(cuid())
+  version     Int        @default(1)
+  status      Status     @default(ACTIVE)
   title       String
   description String?
+  listId      String
   position    Float
   dueDate     DateTime?
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
-
-  // Relation to the List version this card belongs to
-  list   List   @relation(fields: [listId], references: [id], onDelete: Cascade)
-  listId String
-
-  labels     Label[]
-  activities Activity[]
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+  list        List       @relation(fields: [listId], references: [listId], onDelete: Cascade)
+  labels      Label[]
+  activities  Activity[]
 
   @@unique([cardId, version])
   @@index([listId, status])

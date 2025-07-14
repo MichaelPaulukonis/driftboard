@@ -22,7 +22,11 @@ async function main() {
     data: {
       name: 'My First Board',
       description: 'A sample board for testing.',
-      authorId: testUser.id, // Use the user's primary key for the relation
+      user: {
+        connect: {
+          userId: testUser.userId,
+        },
+      },
       lists: {
         create: [
           {
