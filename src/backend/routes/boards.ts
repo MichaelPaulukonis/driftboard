@@ -13,13 +13,13 @@ router.use(authMiddleware);
  */
 router.get('/', async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const authorId = req.user?.id;
-    if (!authorId) {
+    const userId = req.user?.uid;
+    if (!userId) {
       throw new AppError('User not authenticated', 401, 'NOT_AUTHENTICATED');
     }
 
     const boards = await prisma.board.findMany({
-      where: { authorId, status: 'ACTIVE' },
+      where: { userId, status: 'ACTIVE' },
       include: {
         lists: {
           where: { status: 'ACTIVE' },
@@ -55,10 +55,10 @@ router.get('/', async (req: Request, res: Response, next: NextFunction) => {
  */
 router.get('/:boardId', async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const authorId = req.user?.id;
+    const userId = req.user?.uid;
     const { boardId } = req.params;
 
-    if (!authorId) {
+    if (!userId) {
       throw new AppError('User not authenticated', 401, 'NOT_AUTHENTICATED');
     }
 
@@ -69,7 +69,7 @@ router.get('/:boardId', async (req: Request, res: Response, next: NextFunction) 
     const board = await prisma.board.findFirst({
       where: { 
         boardId: boardId,
-        authorId,
+        userId,
         status: 'ACTIVE'
       },
       include: {
@@ -111,8 +111,8 @@ router.get('/:boardId', async (req: Request, res: Response, next: NextFunction) 
  */
 router.post('/', async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const authorId = req.user?.id;
-    if (!authorId) {
+    const userId = req.user?.uid;
+    if (!userId) {
       throw new AppError('User not authenticated', 401, 'NOT_AUTHENTICATED');
     }
 
@@ -126,7 +126,7 @@ router.post('/', async (req: Request, res: Response, next: NextFunction) => {
       data: {
         name,
         description: description ?? null,
-        authorId: authorId,
+        userId: userId,
       },
       include: {
         lists: true,
@@ -151,11 +151,11 @@ router.post('/', async (req: Request, res: Response, next: NextFunction) => {
  */
 router.put('/:boardId', async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const authorId = req.user?.id;
+    const userId = req.user?.uid;
     const { boardId } = req.params;
     const { name, description } = req.body as UpdateBoardDto;
 
-    if (!authorId) {
+    if (!userId) {
       throw new AppError('User not authenticated', 401, 'NOT_AUTHENTICATED');
     }
 
@@ -164,7 +164,7 @@ router.put('/:boardId', async (req: Request, res: Response, next: NextFunction) 
     }
 
     const existingBoard = await prisma.board.findFirst({
-      where: { boardId: boardId, authorId, status: 'ACTIVE' },
+      where: { boardId: boardId, userId, status: 'ACTIVE' },
     });
 
     if (!existingBoard) {
@@ -181,19 +181,18 @@ router.put('/:boardId', async (req: Request, res: Response, next: NextFunction) 
       // 2. Create the new board version
       const newBoard = await tx.board.create({
         data: {
-          boardId: existingBoard.boardId,
           version: existingBoard.version + 1,
           name: name ?? existingBoard.name,
           description: description ?? existingBoard.description,
-          authorId: existingBoard.authorId,
+          userId: existingBoard.userId,
           status: 'ACTIVE',
         },
       });
 
       // 3. Re-parent the lists to the new board version
       await tx.list.updateMany({
-        where: { boardId: existingBoard.id },
-        data: { boardId: newBoard.id },
+        where: { boardId: existingBoard.boardId },
+        data: { boardId: newBoard.boardId },
       });
 
       return newBoard;
@@ -217,10 +216,10 @@ router.put('/:boardId', async (req: Request, res: Response, next: NextFunction) 
  */
 router.delete('/:boardId', async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const authorId = req.user?.id;
+    const userId = req.user?.uid;
     const { boardId } = req.params;
 
-    if (!authorId) {
+    if (!userId) {
       throw new AppError('User not authenticated', 401, 'NOT_AUTHENTICATED');
     }
 
@@ -231,7 +230,7 @@ router.delete('/:boardId', async (req: Request, res: Response, next: NextFunctio
     const existingBoard = await prisma.board.findFirst({
       where: { 
         boardId: boardId,
-        authorId,
+        userId,
         status: 'ACTIVE',
       },
       include: {
@@ -283,11 +282,11 @@ router.delete('/:boardId', async (req: Request, res: Response, next: NextFunctio
  */
 router.post('/:boardId/lists', async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const authorId = req.user?.id;
+    const userId = req.user?.uid;
     const { boardId } = req.params;
     const { name, position } = req.body as CreateListDto;
 
-    if (!authorId) {
+    if (!userId) {
       throw new AppError('User not authenticated', 401, 'NOT_AUTHENTICATED');
     }
     if (!name) {
@@ -299,7 +298,7 @@ router.post('/:boardId/lists', async (req: Request, res: Response, next: NextFun
 
     // Verify board exists and belongs to the user
     const board = await prisma.board.findFirst({
-      where: { boardId, authorId, status: 'ACTIVE' },
+      where: { boardId, userId, status: 'ACTIVE' },
     });
 
     if (!board) {
@@ -319,7 +318,7 @@ router.post('/:boardId/lists', async (req: Request, res: Response, next: NextFun
     const list = await prisma.list.create({
       data: {
         name: name.trim(),
-        boardId: board.id, // Use the board's primary key
+        boardId: board.boardId, // Use the board's persistent ID
         position: listPosition,
       },
       include: {

@@ -18,14 +18,14 @@ describe('Lists API Integration Tests', () => {
     board = await prisma.board.create({
       data: {
         name: 'Test Board for Lists',
-        authorId: testUser.id,
+        user: { connect: { userId: testUser.userId } },
       },
     });
 
     list1 = await prisma.list.create({
       data: {
         name: 'Test List 1',
-        boardId: board.id,
+        boardId: board.boardId,
         position: 100,
       },
     });
@@ -33,7 +33,7 @@ describe('Lists API Integration Tests', () => {
 
   afterAll(async () => {
     if (testUser) {
-      await prisma.board.deleteMany({ where: { authorId: testUser.id } });
+      await prisma.board.deleteMany({ where: { userId: testUser.userId } });
       await prisma.user.delete({ where: { id: testUser.id } });
     }
   });
@@ -78,7 +78,9 @@ describe('Lists API Integration Tests', () => {
         .get(`/api/lists/${list1.listId}`)
         .set(authHeaders);
       expect(response.status).toBe(200);
-      expect(response.body.data.listId).toBe(list1.listId);
+      if (response.status === 200) {
+        expect(response.body.data.listId).toBe(list1.listId);
+      }
     });
 
     it('should return 404 for non-existent list', async () => {
@@ -97,19 +99,21 @@ describe('Lists API Integration Tests', () => {
         .set(authHeaders)
         .send({ name: newName });
       expect(response.status).toBe(200);
-      const updatedList = response.body.data;
-      expect(updatedList.name).toBe(newName);
-      expect(updatedList.version).toBe(list1.version + 1);
+      if (response.status === 200) {
+        const updatedList = response.body.data;
+        expect(updatedList.name).toBe(newName);
+        expect(updatedList.version).toBe(list1.version + 1);
 
-      const oldList = await prisma.list.findUnique({ where: { id: list1.id } });
-      expect(oldList?.status).toBe('INACTIVE');
+        const oldList = await prisma.list.findUnique({ where: { id: list1.id } });
+        expect(oldList?.status).toBe('INACTIVE');
+      }
     });
   });
 
   describe('PUT /api/lists/:id/move', () => {
     it('should move a list and create a new version', async () => {
       const list2 = await prisma.list.create({
-        data: { name: 'List B', boardId: board.id, position: 200 },
+        data: { name: 'List B', boardId: board.boardId, position: 200 },
       });
 
       const moveResponse = await request
@@ -130,7 +134,7 @@ describe('Lists API Integration Tests', () => {
   describe('DELETE /api/lists/:id', () => {
     it('should mark a list as inactive', async () => {
       const listToDelete = await prisma.list.create({
-        data: { name: 'To Be Deleted', boardId: board.id, position: 300 },
+        data: { name: 'To Be Deleted', boardId: board.boardId, position: 300 },
       });
       
       const response = await request

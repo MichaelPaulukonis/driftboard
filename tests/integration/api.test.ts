@@ -34,7 +34,7 @@ describe('Boards API', () => {
 
   afterAll(async () => {
     if (testUser) {
-      await prisma.board.deleteMany({ where: { authorId: testUser.id } });
+      await prisma.board.deleteMany({ where: { userId: testUser.userId } });
       await prisma.user.delete({ where: { id: testUser.id } });
     }
   });
@@ -69,7 +69,7 @@ describe('Boards API', () => {
     const inactiveList = await prisma.list.create({
       data: {
         name: 'Inactive List',
-        boardId: createdBoard.id, // Use persistent boardId
+        boardId: createdBoard.boardId, // Use persistent boardId
         position: 999,
         status: 'INACTIVE',
       },
@@ -77,7 +77,7 @@ describe('Boards API', () => {
     await prisma.card.create({
       data: {
         title: 'Inactive Card',
-        listId: inactiveList.id,
+        listId: inactiveList.listId,
         position: 0,
         status: 'INACTIVE',
       },

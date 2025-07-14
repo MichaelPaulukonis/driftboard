@@ -22,9 +22,9 @@ router.use(authMiddleware);
 router.get('/:id', async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   try {
     const { id } = req.params;
-    const authorId = req.user?.id;
+    const userId = req.user?.uid;
 
-    if (!authorId) {
+    if (!userId) {
       throw new AppError('User not authenticated', 401, 'NOT_AUTHENTICATED');
     }
 
@@ -41,7 +41,7 @@ router.get('/:id', async (req: Request, res: Response, next: NextFunction): Prom
         listId: id,
         status: 'ACTIVE',
         board: {
-          authorId,
+          userId,
           status: 'ACTIVE',
         },
       },
@@ -82,9 +82,9 @@ router.put('/:id', async (req: Request, res: Response, next: NextFunction): Prom
   try {
     const { id } = req.params;
     const { name }: UpdateListDto = req.body;
-    const authorId = req.user?.id;
+    const userId = req.user?.uid;
 
-    if (!authorId) {
+    if (!userId) {
       throw new AppError('User not authenticated', 401, 'NOT_AUTHENTICATED');
     }
 
@@ -110,7 +110,7 @@ router.put('/:id', async (req: Request, res: Response, next: NextFunction): Prom
         listId: id, 
         status: 'ACTIVE',
         board: {
-          authorId,
+          userId,
           status: 'ACTIVE'
         }
       },
@@ -127,13 +127,15 @@ router.put('/:id', async (req: Request, res: Response, next: NextFunction): Prom
         data: { status: 'INACTIVE' },
       });
 
+      const { id: oldId, listId: oldListId, boardId: oldBoardId, ...restOfList } = existingList;
+
       const newList = await tx.list.create({
         data: {
-          listId: existingList.listId, // Copy the persistent ID
+          ...restOfList,
           version: existingList.version + 1,
           name: name.trim(),
           board: {
-            connect: { id: existingList.boardId },
+            connect: { boardId: existingList.boardId },
           },
           position: existingList.position,
           status: 'ACTIVE',
@@ -179,9 +181,9 @@ router.put('/:id/move', async (req: Request, res: Response, next: NextFunction) 
   try {
     const listId = req.params.id;
     const { position } = req.body as MoveListDto;
-    const authorId = req.user?.id;
+    const userId = req.user?.uid;
 
-    if (!authorId) {
+    if (!userId) {
       throw new AppError('User not authenticated', 401, 'NOT_AUTHENTICATED');
     }
 
@@ -194,7 +196,7 @@ router.put('/:id/move', async (req: Request, res: Response, next: NextFunction) 
         listId: listId,
         status: 'ACTIVE',
         board: {
-          authorId,
+          userId,
           status: 'ACTIVE',
         },
       },
@@ -210,7 +212,7 @@ router.put('/:id/move', async (req: Request, res: Response, next: NextFunction) 
         data: { status: 'INACTIVE' },
       });
 
-      const { id: oldId, ...restOfList } = existingList;
+      const { id: oldId, listId: oldListId, boardId: oldBoardId, ...restOfList } = existingList;
 
       const newList = await tx.list.create({
         data: {
@@ -218,6 +220,9 @@ router.put('/:id/move', async (req: Request, res: Response, next: NextFunction) 
           version: existingList.version + 1,
           status: 'ACTIVE',
           position: position,
+          board: {
+            connect: { boardId: oldBoardId },
+          },
         },
       });
 
@@ -249,9 +254,9 @@ router.put('/:id/move', async (req: Request, res: Response, next: NextFunction) 
 router.delete('/:id', async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   try {
     const listId = req.params.id;
-    const authorId = req.user?.id;
+    const userId = req.user?.uid;
 
-    if (!authorId) {
+    if (!userId) {
       throw new AppError('User not authenticated', 401, 'NOT_AUTHENTICATED');
     }
 
@@ -269,7 +274,7 @@ router.delete('/:id', async (req: Request, res: Response, next: NextFunction): P
         listId: listId, 
         status: 'ACTIVE',
         board: {
-          authorId,
+          userId,
           status: 'ACTIVE'
         }
       },
@@ -298,10 +303,10 @@ router.delete('/:id', async (req: Request, res: Response, next: NextFunction): P
  */
 router.post('/:id/cards', async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const authorId = req.user?.id;
+    const userId = req.user?.uid;
     const listId = req.params.id;
 
-    if (!authorId) {
+    if (!userId) {
       throw new AppError('User not authenticated', 401, 'NOT_AUTHENTICATED');
     }
 
@@ -321,7 +326,7 @@ router.post('/:id/cards', async (req: Request, res: Response, next: NextFunction
         listId: listId,
         status: 'ACTIVE',
         board: {
-          authorId,
+          userId,
           status: 'ACTIVE',
         },
       },

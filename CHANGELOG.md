@@ -8,6 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Fixed
+- Replaced all incorrect `authorId` references with the correct `userId` field across the backend API and integration tests, resolving a critical data consistency issue.
 - Resolved a fundamental conflict between the database migration history and the Prisma schema that prevented the development database from being created and seeded correctly.
 
 ### Chore

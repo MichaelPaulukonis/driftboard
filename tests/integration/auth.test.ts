@@ -20,15 +20,15 @@ describe('Auth Middleware and Routes', () => {
 
     // Create a board for user1 directly in the DB for testing access control
     board1 = await prisma.board.create({
-      data: { 
-        name: 'User 1 Board', 
-        authorId: user1.id
+      data: {
+        name: 'User 1 Board',
+        user: { connect: { userId: user1.userId } },
       },
     });
   });
 
   afterAll(async () => {
-    await prisma.board.deleteMany({ where: { authorId: { in: [user1.id, user2.id] } } });
+    await prisma.board.deleteMany({ where: { userId: { in: [user1.userId, user2.userId] } } });
     await prisma.user.deleteMany({ where: { id: { in: [user1.id, user2.id] } } });
   });
 
@@ -47,7 +47,7 @@ describe('Auth Middleware and Routes', () => {
       const response = await request.get('/api/boards').set(authHeaders1);
       expect(response.status).toBe(200);
       expect(Array.isArray(response.body.data)).toBe(true);
-      expect(response.body.data[0].authorId).toBe(user1.id);
+      expect(response.body.data[0].userId).toBe(user1.userId);
     });
 
     it('should return an empty array if user has no boards', async () => {
@@ -80,7 +80,7 @@ describe('Auth Middleware and Routes', () => {
         .send({ name: boardName });
       expect(response.status).toBe(201);
       expect(response.body.data.name).toBe(boardName);
-      expect(response.body.data.authorId).toBe(user1.id);
+      expect(response.body.data.userId).toBe(user1.userId);
     });
   });
 
@@ -118,7 +118,7 @@ describe('Auth Middleware and Routes', () => {
 
     it('should allow a user to delete their own board', async () => {
       // We need a new board for this test since board1 is already inactive from the update test
-      const newBoard = await prisma.board.create({ data: { name: 'Board to Delete', authorId: user1.id } });
+      const newBoard = await prisma.board.create({ data: { name: 'Board to Delete', user: { connect: { userId: user1.userId } } } });
       
       const response = await request.delete(`/api/boards/${newBoard.boardId}`).set(authHeaders1);
       expect(response.status).toBe(204);
