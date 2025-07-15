@@ -8663,11 +8663,11 @@ export namespace Prisma {
 
   export type ListWhereUniqueInput = Prisma.AtLeast<{
     id?: string
-    listId?: string
     listId_version?: ListListIdVersionCompoundUniqueInput
     AND?: ListWhereInput | ListWhereInput[]
     OR?: ListWhereInput[]
     NOT?: ListWhereInput | ListWhereInput[]
+    listId?: StringFilter<"List"> | string
     version?: IntFilter<"List"> | number
     status?: EnumStatusFilter<"List"> | $Enums.Status
     name?: StringFilter<"List"> | string
@@ -8677,7 +8677,7 @@ export namespace Prisma {
     updatedAt?: DateTimeFilter<"List"> | Date | string
     board?: XOR<BoardScalarRelationFilter, BoardWhereInput>
     cards?: CardListRelationFilter
-  }, "id" | "listId" | "listId_version">
+  }, "id" | "listId_version">
 
   export type ListOrderByWithAggregationInput = {
     id?: SortOrder

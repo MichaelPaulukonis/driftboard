@@ -79,83 +79,97 @@ export function BoardDetailPage() {
     
     // Handle List Reordering
     if (activeType === 'List' && over) {
-      if (activeId === overId) return;
+      const activeList = active.data.current?.list as List;
+      if (!activeList || activeList.listId === over.data.current?.list?.listId) {
+        setActiveItem(null);
+        return;
+      }
 
       const sortedLists = [...board.lists].sort((a, b) => a.position - b.position);
-      const oldIndex = sortedLists.findIndex(l => l.id === activeId);
-      const newIndex = sortedLists.findIndex(l => l.id === overId);
+      const oldIndex = sortedLists.findIndex(l => l.listId === activeList.listId);
+      const newIndex = sortedLists.findIndex(l => l.listId === over.data.current?.list?.listId);
 
       if (oldIndex === -1 || newIndex === -1) return;
       
-      const movedList = sortedLists[oldIndex];
       const itemBefore = newIndex === 0 ? undefined : sortedLists[newIndex - 1];
       const itemAfter = sortedLists[newIndex];
 
-      // Adjust if moving downwards
       const newPosition = oldIndex < newIndex 
         ? calculatePosition(itemAfter?.position, sortedLists[newIndex + 1]?.position)
         : calculatePosition(itemBefore?.position, itemAfter?.position);
 
       moveList({
-        id: movedList.listId,
+        id: activeList.listId,
         updates: { position: newPosition, boardId: board.boardId },
         boardId: board.boardId,
       });
+      setActiveItem(null);
       return;
     }
 
     // Handle Card Dragging
     if (activeType === 'Card' && over) {
       const activeCard = active.data.current?.card as Card;
-      if (!activeCard) return;
+      if (!activeCard) {
+        setActiveItem(null);
+        return;
+      }
 
       const overData = over.data.current;
-      
-      let targetListId: string;
+      let targetListId: string; // This must be the persistent listId
       let newPosition: number;
 
-      const allCards = board.lists.flatMap(l => l.cards || []);
-
+      // Determine the target list and new position based on the drop target
       if (overData?.type === 'List') {
-        // Card dropped on an empty list
-        const overList = board.lists.find(l => l.id === over.id);
+        // Case 1: Dropped on a List container (likely an empty list)
+        const overList = board.lists.find(l => l.listId === over.id);
         if (!overList) return;
-        targetListId = overList.listId; // Use the persistent listId
+        
+        targetListId = overList.listId;
+        const cardsInList = (overList.cards ?? []).sort((a, b) => a.position - b.position);
+        newPosition = calculatePosition(cardsInList[cardsInList.length - 1]?.position);
 
-        const cardsInList = [...(overList.cards ?? [])].sort((a, b) => a.position - b.position);
-        const lastCard = cardsInList[cardsInList.length - 1];
-        newPosition = calculatePosition(lastCard?.position);
       } else if (overData?.type === 'Card') {
-        // Card dropped on another card
-        const overCard = allCards.find(c => c.id === over.id);
-        if (!overCard) return;
+        // Case 2: Dropped on another Card
+        const overCard = overData.card as Card;
+        
+        // Find the list that the 'overCard' belongs to
+        const targetList = board.lists.find(l => l.id === overCard.listId);
+        if (!targetList) return;
+        targetListId = targetList.listId;
 
-        targetListId = overCard.listId; // This is the persistent listId from the card's data
-        const cardsInTargetList = board.lists.find(l => l.listId === targetListId)?.cards ?? [];
-        const sortedCardsInTargetList = [...cardsInTargetList].sort((a, b) => a.position - b.position);
+        const cardsInTargetList = [...targetList.cards].sort((a, b) => a.position - b.position);
+        const overCardIndex = cardsInTargetList.findIndex(c => c.cardId === over.id);
 
-        const oldIndex = sortedCardsInTargetList.findIndex(c => c.id === activeId);
-        const newIndex = sortedCardsInTargetList.findIndex(c => c.id === over.id);
+        if (activeCard.listId === overCard.listId) {
+          // Reordering within the same list
+          const activeCardIndex = cardsInTargetList.findIndex(c => c.cardId === activeCard.cardId);
+          
+          if (activeCardIndex === overCardIndex) return; // Dropped on itself
 
-        if (activeCard.listId === targetListId) {
-          // Sorting in the same list
-          const itemBefore = newIndex === 0 ? undefined : sortedCardsInTargetList[newIndex - 1];
-          const itemAfter = sortedCardsInTargetList[newIndex];
-          newPosition = oldIndex < newIndex
-            ? calculatePosition(itemAfter?.position, sortedCardsInTargetList[newIndex + 1]?.position)
-            : calculatePosition(itemBefore?.position, itemAfter?.position);
+          const itemBefore = activeCardIndex < overCardIndex 
+            ? cardsInTargetList[overCardIndex] 
+            : cardsInTargetList[overCardIndex - 1];
+          
+          const itemAfter = activeCardIndex < overCardIndex 
+            ? cardsInTargetList[overCardIndex + 1]
+            : cardsInTargetList[overCardIndex];
+
+          newPosition = calculatePosition(itemBefore?.position, itemAfter?.position);
         } else {
           // Moving to a new list
-          const itemBefore = newIndex === 0 ? undefined : sortedCardsInTargetList[newIndex - 1];
-          const itemAfter = sortedCardsInTargetList[newIndex];
+          const itemBefore = cardsInTargetList[overCardIndex - 1];
+          const itemAfter = cardsInTargetList[overCardIndex];
           newPosition = calculatePosition(itemBefore?.position, itemAfter?.position);
         }
       } else {
         return; // Invalid drop target
       }
 
+      // Don't dispatch if nothing changed
       if (activeCard.listId === targetListId && activeCard.position === newPosition) {
-        return; // No change
+        setActiveItem(null);
+        return;
       }
 
       moveCard({

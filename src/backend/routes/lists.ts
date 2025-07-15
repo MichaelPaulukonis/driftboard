@@ -105,6 +105,7 @@ router.put('/:id', async (req: Request, res: Response, next: NextFunction): Prom
       return;
     }
 
+    // 1. Find the existing list and its active cards
     const existingList = await prisma.list.findFirst({
       where: { 
         listId: id, 
@@ -114,6 +115,11 @@ router.put('/:id', async (req: Request, res: Response, next: NextFunction): Prom
           status: 'ACTIVE'
         }
       },
+      include: {
+        cards: {
+          where: { status: 'ACTIVE' },
+        },
+      },
     });
 
     if (!existingList) {
@@ -121,41 +127,39 @@ router.put('/:id', async (req: Request, res: Response, next: NextFunction): Prom
       return;
     }
 
-    const updatedList = await prisma.$transaction(async (tx) => {
+    // 2. Create the new list version and re-associate cards in a transaction
+    const newList = await prisma.$transaction(async (tx) => {
       await tx.list.update({
         where: { id: existingList.id },
         data: { status: 'INACTIVE' },
       });
 
-      const { id: oldId, listId: oldListId, boardId: oldBoardId, ...restOfList } = existingList;
-
-      const newList = await tx.list.create({
+      const createdList = await tx.list.create({
         data: {
-          ...restOfList,
+          listId: existingList.listId,
           version: existingList.version + 1,
           name: name.trim(),
-          board: {
-            connect: { boardId: existingList.boardId },
-          },
+          boardId: existingList.boardId,
           position: existingList.position,
           status: 'ACTIVE',
         },
-        include: {
-          cards: {
-            orderBy: { position: 'asc' },
-            include: { labels: true },
-          },
-        },
       });
 
-      // Update cards to point to the new list version
-      await tx.card.updateMany({
-        where: { listId: existingList.id },
-        data: { listId: newList.id },
-      });
+      if (existingList.cards.length > 0) {
+        await tx.card.updateMany({
+          where: { id: { in: existingList.cards.map(c => c.id) } },
+          data: { listId: createdList.id },
+        });
+      }
 
-      return newList;
+      return createdList;
     });
+
+    // 3. Manually construct the response
+    const updatedList = {
+      ...newList,
+      cards: existingList.cards.map(card => ({ ...card, listId: newList.id })),
+    };
 
     const response: ApiResponse<List> = {
       success: true,
@@ -191,6 +195,7 @@ router.put('/:id/move', async (req: Request, res: Response, next: NextFunction) 
       throw new AppError('List ID is required', 400, 'INVALID_INPUT');
     }
 
+    // 1. Find the existing list and its active cards
     const existingList = await prisma.list.findFirst({
       where: {
         listId: listId,
@@ -200,40 +205,50 @@ router.put('/:id/move', async (req: Request, res: Response, next: NextFunction) 
           status: 'ACTIVE',
         },
       },
+      include: {
+        cards: {
+          where: { status: 'ACTIVE' },
+        },
+      },
     });
 
     if (!existingList) {
       throw new AppError('List not found or access denied', 404, 'LIST_NOT_FOUND');
     }
 
-    const updatedList = await prisma.$transaction(async (tx) => {
+    // 2. Create the new list version and re-associate cards in a transaction
+    const newList = await prisma.$transaction(async (tx) => {
       await tx.list.update({
         where: { id: existingList.id },
         data: { status: 'INACTIVE' },
       });
 
-      const { id: oldId, listId: oldListId, boardId: oldBoardId, ...restOfList } = existingList;
-
-      const newList = await tx.list.create({
+      const createdList = await tx.list.create({
         data: {
-          ...restOfList,
+          listId: existingList.listId,
           version: existingList.version + 1,
-          status: 'ACTIVE',
+          name: existingList.name,
+          boardId: existingList.boardId,
           position: position,
-          board: {
-            connect: { boardId: oldBoardId },
-          },
+          status: 'ACTIVE',
         },
       });
 
-      // Update cards to point to the new list version
-      await tx.card.updateMany({
-        where: { listId: existingList.id },
-        data: { listId: newList.id },
-      });
+      if (existingList.cards.length > 0) {
+        await tx.card.updateMany({
+          where: { id: { in: existingList.cards.map(c => c.id) } },
+          data: { listId: createdList.id },
+        });
+      }
       
-      return newList;
+      return createdList;
     });
+
+    // 3. Manually construct the response
+    const updatedList = {
+      ...newList,
+      cards: existingList.cards.map(card => ({ ...card, listId: newList.id })),
+    };
 
     const response: ApiResponse<List> = {
       success: true,

@@ -16,7 +16,7 @@ router.use(authMiddleware);
 router.get('/:id', async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   try {
     const { id } = req.params;
-    const userId = req.user?.id;
+    const userId = req.user?.uid;
 
     if (!userId) {
       throw new AppError('User not authenticated', 401, 'NOT_AUTHENTICATED');
@@ -74,7 +74,7 @@ router.put('/:id', async (req: Request, res: Response, next: NextFunction): Prom
   try {
     const { id } = req.params;
     const { title, description, dueDate }: UpdateCardDto = req.body;
-    const userId = req.user?.id;
+    const userId = req.user?.uid;
 
     if (!userId) {
       throw new AppError('User not authenticated', 401, 'NOT_AUTHENTICATED');
@@ -172,7 +172,7 @@ router.put('/:id/move', async (req: Request, res: Response, next: NextFunction):
   try {
     const cardId = req.params.id;
     const { listId, position }: MoveCardDto = req.body;
-    const userId = req.user?.id;
+    const userId = req.user?.uid;
 
     if (!userId) {
       throw new AppError('User not authenticated', 401, 'NOT_AUTHENTICATED');
@@ -214,9 +214,7 @@ router.put('/:id/move', async (req: Request, res: Response, next: NextFunction):
         listId: listId, // Find target list by its persistent listId
         status: 'ACTIVE',
         board: {
-          user: {
-            id: userId,
-          },
+          userId: userId,
           status: 'ACTIVE',
         },
       },
@@ -269,7 +267,7 @@ router.put('/:id/move', async (req: Request, res: Response, next: NextFunction):
 router.delete('/:id', async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   try {
     const cardId = req.params.id;
-    const userId = req.user?.id;
+    const userId = req.user?.uid;
 
     if (!userId) {
       throw new AppError('User not authenticated', 401, 'NOT_AUTHENTICATED');

@@ -84,7 +84,7 @@ export const Board: React.FC<BoardProps> = ({
   // Sort lists by position and get their IDs for SortableContext
   const { sortedLists, listIds } = useMemo(() => {
     const sorted = board.lists ? [...board.lists].sort((a, b) => a.position - b.position) : [];
-    const ids = sorted.map(l => l.id); // Use the version-specific 'id' for dnd-kit keys
+    const ids = sorted.map(l => l.listId); // Use the version-specific 'id' for dnd-kit keys
     return { sortedLists: sorted, listIds: ids };
   }, [board.lists]);
 
@@ -187,7 +187,7 @@ export const Board: React.FC<BoardProps> = ({
             <SortableContext items={listIds} strategy={horizontalListSortingStrategy}>
               {sortedLists.map((list) => (
                 <List
-                  key={list.id} // Use the version-specific 'id' for React keys
+                  key={list.listId} // Use the version-specific 'id' for React keys
                   list={list}
                   onUpdate={(updates) => onUpdateList?.(list.listId, updates)}
                   onDelete={() => onDeleteList?.(list.listId)}

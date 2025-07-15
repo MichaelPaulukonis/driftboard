@@ -92,41 +92,67 @@ describe('Lists API Integration Tests', () => {
   });
 
   describe('PUT /api/lists/:id', () => {
-    it('should update a list name and create a new version', async () => {
+    it('should update a list name, create a new version, and carry over its cards', async () => {
+      // 1. Create a card in the list we're about to update
+      await prisma.card.create({
+        data: { title: 'Card in List', listId: list1.id, position: 1 },
+      });
+
+      // 2. Update the list's name
       const newName = 'Updated Test List';
       const response = await request
         .put(`/api/lists/${list1.listId}`)
         .set(authHeaders)
         .send({ name: newName });
-      expect(response.status).toBe(200);
-      if (response.status === 200) {
-        const updatedList = response.body.data;
-        expect(updatedList.name).toBe(newName);
-        expect(updatedList.version).toBe(list1.version + 1);
 
-        const oldList = await prisma.list.findUnique({ where: { id: list1.id } });
-        expect(oldList?.status).toBe('INACTIVE');
-      }
+      // 3. Assert the response is successful and contains the correct data
+      expect(response.status).toBe(200);
+      const updatedList = response.body.data;
+      expect(updatedList.name).toBe(newName);
+      expect(updatedList.version).toBe(list1.version + 1);
+
+      // 4. Assert that the card was carried over to the new list version
+      expect(updatedList.cards).toBeDefined();
+      expect(updatedList.cards.length).toBe(1);
+      expect(updatedList.cards[0].listId).toBe(updatedList.id);
+
+      // 5. Assert the old list version is now inactive
+      const oldList = await prisma.list.findUnique({ where: { id: list1.id } });
+      expect(oldList?.status).toBe('INACTIVE');
     });
   });
 
   describe('PUT /api/lists/:id/move', () => {
-    it('should move a list and create a new version', async () => {
-      const list2 = await prisma.list.create({
-        data: { name: 'List B', boardId: board.boardId, position: 200 },
+    it('should move a list, create a new version, and carry over its cards', async () => {
+      // 1. Create a list and a card within it
+      const listToMove = await prisma.list.create({
+        data: { name: 'List to Move', boardId: board.boardId, position: 200 },
+      });
+      const cardInList = await prisma.card.create({
+        data: { title: 'Card in Moved List', listId: listToMove.id, position: 1 },
       });
 
+      // 2. Move the list to a new position
+      const newPosition = 50; // Move it before list1
       const moveResponse = await request
-        .put(`/api/lists/${list2.listId}/move`)
+        .put(`/api/lists/${listToMove.listId}/move`)
         .set(authHeaders)
-        .send({ position: 50 }); // Move it before list1
+        .send({ position: newPosition });
 
+      // 3. Assert the response is successful and contains the correct data
       expect(moveResponse.status).toBe(200);
       const movedList = moveResponse.body.data;
-      expect(movedList.position).toBe(50);
-      expect(movedList.version).toBe(list2.version + 1);
+      expect(movedList.position).toBe(newPosition);
+      expect(movedList.version).toBe(listToMove.version + 1);
+      
+      // 4. Assert that the card was carried over to the new list version
+      expect(movedList.cards).toBeDefined();
+      expect(movedList.cards.length).toBe(1);
+      expect(movedList.cards[0].cardId).toBe(cardInList.cardId);
+      expect(movedList.cards[0].listId).toBe(movedList.id); // Card now belongs to the new list version's ID
 
-      const oldList = await prisma.list.findUnique({ where: { id: list2.id } });
+      // 5. Assert the old list version is now inactive
+      const oldList = await prisma.list.findUnique({ where: { id: listToMove.id } });
       expect(oldList?.status).toBe('INACTIVE');
     });
   });

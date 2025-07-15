@@ -65,6 +65,16 @@ describe('Boards API', () => {
       return;
     }
 
+    // Manually create an ACTIVE list for the card
+    const activeList = await prisma.list.create({
+      data: {
+        name: 'Active List',
+        boardId: createdBoard.boardId,
+        position: 1,
+        status: 'ACTIVE',
+      },
+    });
+
     // Manually create an INACTIVE list and card to test the filter
     const inactiveList = await prisma.list.create({
       data: {
@@ -77,8 +87,8 @@ describe('Boards API', () => {
     await prisma.card.create({
       data: {
         title: 'Inactive Card',
-        listId: inactiveList.listId,
-        position: 0,
+        listId: activeList.id,
+        position: 1,
         status: 'INACTIVE',
       },
     });

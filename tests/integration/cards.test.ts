@@ -34,7 +34,7 @@ describe('Cards API Integration Tests', () => {
     card1 = await prisma.card.create({
       data: { 
         title: 'Initial Card', 
-        listId: list1.listId, 
+        listId: list1.id, 
         position: 100 
       },
     });
@@ -76,10 +76,8 @@ describe('Cards API Integration Tests', () => {
       const response = await request
         .get(`/api/cards/${card1.cardId}`)
         .set(authHeaders);
-      expect(response.status).toBe(404);
-      if (response.status === 200) {
-        expect(response.body.data.cardId).toBe(card1.cardId);
-      }
+      expect(response.status).toBe(200);
+      expect(response.body.data.cardId).toBe(card1.cardId);
     });
   });
 
@@ -93,16 +91,14 @@ describe('Cards API Integration Tests', () => {
         .put(`/api/cards/${card1.cardId}`)
         .set(authHeaders)
         .send(updates);
-      expect(response.status).toBe(404);
-      if (response.status === 200) {
-        const updatedCard = response.body.data;
-        expect(updatedCard.title).toBe(updates.title);
-        expect(updatedCard.description).toBe(updates.description);
-        expect(updatedCard.version).toBe(card1.version + 1);
+      expect(response.status).toBe(200);
+      const updatedCard = response.body.data;
+      expect(updatedCard.title).toBe(updates.title);
+      expect(updatedCard.description).toBe(updates.description);
+      expect(updatedCard.version).toBe(card1.version + 1);
 
-        const oldCard = await prisma.card.findUnique({ where: { id: card1.id } });
-        expect(oldCard?.status).toBe('INACTIVE');
-      }
+      const oldCard = await prisma.card.findUnique({ where: { id: card1.id } });
+      expect(oldCard?.status).toBe('INACTIVE');
     });
   });
 
@@ -119,30 +115,26 @@ describe('Cards API Integration Tests', () => {
           listId: list2.listId,
           position: 1,
         });
-      expect(response.status).toBe(404);
-      if (response.status === 200) {
-        const movedCard = response.body.data;
-        expect(movedCard.listId).toBe(list2.id);
-        expect(movedCard.version).toBe(card1.version + 2); // +1 from update test, +1 from this move
-      }
+      expect(response.status).toBe(200);
+      const movedCard = response.body.data;
+      expect(movedCard.listId).toBe(list2.id);
+      expect(movedCard.version).toBe(card1.version + 2); // +1 from update test, +1 from this move
     });
   });
 
   describe('DELETE /api/cards/:id', () => {
     it('should mark a card as inactive', async () => {
       const cardToDelete = await prisma.card.create({
-        data: { title: 'To Be Deleted', listId: list1.listId, position: 200 },
+        data: { title: 'To Be Deleted', listId: list1.id, position: 200 },
       });
 
       const response = await request
         .delete(`/api/cards/${cardToDelete.cardId}`)
         .set(authHeaders);
-      expect(response.status).toBe(404);
+      expect(response.status).toBe(204);
 
-      if (response.status === 204) {
-        const dbCard = await prisma.card.findUnique({ where: { id: cardToDelete.id } });
-        expect(dbCard?.status).toBe('INACTIVE');
-      }
+      const dbCard = await prisma.card.findUnique({ where: { id: cardToDelete.id } });
+      expect(dbCard?.status).toBe('INACTIVE');
     });
   });
 });

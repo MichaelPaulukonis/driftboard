@@ -37,7 +37,7 @@ export const List: React.FC<ListProps> = ({
     transform,
     transition,
     isDragging,
-  } = useSortable({ id: list.id, data: { type: 'List', list } });
+  } = useSortable({ id: list.listId, data: { type: 'List', list } });
 
   const style = {
     transform: CSS.Transform.toString(transform),
@@ -71,7 +71,7 @@ export const List: React.FC<ListProps> = ({
     const sorted = (list.cards ? [...list.cards] : []).sort(
       (a: CardType, b: CardType) => a.position - b.position
     );
-    const ids = sorted.map((c) => c.id); // Use the version-specific 'id' for dnd-kit keys
+    const ids = sorted.map((c) => c.cardId); // Use the version-specific 'id' for dnd-kit keys
     return { sortedCards: sorted, cardIds: ids };
   }, [list.cards]);
 
@@ -121,7 +121,7 @@ export const List: React.FC<ListProps> = ({
             {/* Cards */}
             {sortedCards.map((card: CardType) => (
               <KanbanCard
-                key={card.id} // Use the version-specific 'id' for React keys
+                key={card.cardId} // Use the version-specific 'id' for React keys
                 card={card}
                 onUpdate={(updates: Partial<CardType>) =>
                   onUpdateCard?.(card.cardId, updates)
