@@ -1,22 +1,12 @@
 import { test, expect } from '@playwright/test';
 
-test.describe('Smoke Tests', () => {
-  test('basic smoke test - can access application', async ({ page }) => {
-    // Navigate to the application
-    await page.goto('http://localhost:3002');
-    
-    // Wait for page to load
-    await page.waitForTimeout(2000);
-    
-    // Check that the header is visible
-    await expect(page.locator('header')).toBeVisible();
-    
-    // Check that DriftBoard title is visible
-    await expect(page.getByText('DriftBoard')).toBeVisible();
-  });
+test.describe('Smoke Test', () => {
+  test('should allow a logged-in user to view the boards page', async ({ page }) => {
+    // The `auth.setup.ts` file has already logged us in,
+    // so we can navigate directly to the page we want to test.
+    await page.goto('/boards');
 
-  test('API health check via direct request', async ({ request }) => {
-    const response = await request.get('http://localhost:8000/api/health');
-    expect(response.ok()).toBeTruthy();
+    // Assert that the main heading is visible, confirming we are on the correct page.
+    await expect(page.locator('h1:has-text("My Boards")')).toBeVisible();
   });
 });
