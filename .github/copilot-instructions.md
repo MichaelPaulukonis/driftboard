@@ -600,7 +600,7 @@ Follow Conventional Commits specification:
 - `docs(api): update endpoint documentation`
 - `refactor(store): simplify RTK Query cache management`
 
-For changelog management and semantic versioning, see [Changelog Management Guidelines](docs/changelog-management.md)
+For changelog management and semantic versioning, see [Changelog Management Guidelines](./changelog-management.md)
 
 ## 17. Error Handling
 
