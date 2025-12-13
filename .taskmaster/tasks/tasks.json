@@ -1,0 +1,147 @@
+{
+  "master": {
+    "tasks": [
+      {
+        "id": 1,
+        "title": "Database Schema Update",
+        "description": "Implement the BoardMembership and Role models to create many-to-many relationships between users and boards",
+        "status": "pending",
+        "dependencies": [],
+        "priority": "high",
+        "details": "Create new database models in Firebase including BoardMembership with fields for userId, boardId, and role. Implement Role as an enum with values 'OWNER' and 'EDITOR'. Update the Board model to support multiple users through this relationship. Create necessary indexes for efficient queries on the BoardMembership collection. Ensure backward compatibility with existing board data by migrating current boards to have their creators as 'OWNER'.",
+        "testStrategy": "Unit tests for model validation, relationship integrity tests between users and boards. Test migration of existing boards to the new schema. Verify constraints and security rules in the Firebase environment.",
+        "subtasks": []
+      },
+      {
+        "id": 2,
+        "title": "API Endpoints for Board Sharing",
+        "description": "Implement RESTful API endpoints to invite users, manage board memberships, and handle permissions",
+        "status": "pending",
+        "dependencies": [
+          1
+        ],
+        "priority": "high",
+        "details": "Create new endpoints for `/api/boards/{boardId}/members` with POST (invite), GET (list members), and DELETE (remove member) operations. Implement invitation logic that verifies user existence by email/username and adds a new BoardMembership record with 'EDITOR' role. Include error handling for invalid emails, non-existent users, and duplicate invitations.",
+        "testStrategy": "Unit tests for each endpoint with various scenarios. Test successful invitations, listing members, removing members. Test error cases including invalid emails, non-existent users, and permission failures.",
+        "subtasks": []
+      },
+      {
+        "id": 3,
+        "title": "Role-Based Authorization Implementation",
+        "description": "Enforce that only 'OWNER' roles can delete boards or invite new users",
+        "status": "pending",
+        "dependencies": [
+          1,
+          2
+        ],
+        "priority": "high",
+        "details": "Update existing board deletion endpoints to verify the user has 'OWNER' role before proceeding. Modify the invitation endpoint to check for 'OWNER' role. Create middleware or utility functions to validate user permissions based on their role for a given board. Implement proper error responses (403 Forbidden) for unauthorized actions.",
+        "testStrategy": "Test authorization checks for board deletion and member invitation with different user roles. Verify 'EDITOR' users cannot delete boards or invite others. Test error responses and messaging for unauthorized actions.",
+        "subtasks": []
+      },
+      {
+        "id": 4,
+        "title": "Activity Logging Enhancement",
+        "description": "Extend the Activity model to track collaborative actions with user attribution",
+        "status": "pending",
+        "dependencies": [
+          1
+        ],
+        "priority": "medium",
+        "details": "Update the existing Activity model to include userId for attribution. Modify activity creation logic to record user information for key events (card creation, moves, comments). Ensure backward compatibility with existing activity data. Create indexes for efficient querying of activities by board, card, and user.",
+        "testStrategy": "Unit tests for activity logging with user attribution. Verify card creation, moves, and comment activities include the correct user information. Test querying capabilities for activities by different criteria.",
+        "subtasks": []
+      },
+      {
+        "id": 5,
+        "title": "Frontend UI for User Invitation",
+        "description": "Implement UI elements allowing board owners to invite users by email/username",
+        "status": "pending",
+        "dependencies": [
+          2,
+          3
+        ],
+        "priority": "high",
+        "details": "Add a 'Share' button to the board header. Create a modal dialog with an input field for email/username, validation, and invitation submission. Implement form validation for valid email formats. Display success confirmation when invitation is sent and error messages for failed invitations. Use existing styling patterns for consistency.",
+        "testStrategy": "Component tests for the share button and invitation modal. Test form validation for various inputs. Test success and error state handling. Integration tests for the complete invitation flow.",
+        "subtasks": []
+      },
+      {
+        "id": 6,
+        "title": "Shared Boards in User Interface",
+        "description": "Update the board list UI to display boards shared with the user",
+        "status": "pending",
+        "dependencies": [
+          2
+        ],
+        "priority": "medium",
+        "details": "Modify the board fetching logic to include boards where the user has 'EDITOR' role via BoardMembership. Update the main board list component to display both owned and shared boards. Consider adding visual differentiation between owned and shared boards in the list. Ensure proper ordering and display of board metadata.",
+        "testStrategy": "Test board fetching logic with users having various board memberships. Component tests for board list rendering with owned and shared boards. Integration tests to verify correct boards appear for different user accounts.",
+        "subtasks": []
+      },
+      {
+        "id": 7,
+        "title": "Card and List Editing for Shared Boards",
+        "description": "Ensure collaborators (Editors) can fully interact with cards and lists",
+        "status": "pending",
+        "dependencies": [
+          3,
+          6
+        ],
+        "priority": "high",
+        "details": "Update card and list creation, editing, and movement permissions to allow users with 'EDITOR' role. Modify the frontend to enable these actions for editors. Ensure proper authorization checks on the backend for these operations. Block editors from deleting the board or inviting others per requirements.",
+        "testStrategy": "Test card and list operations as both owner and editor users. Verify editors can create, edit, and move cards and lists. Confirm editors cannot delete boards or invite others. Integration tests for the complete user journey.",
+        "subtasks": []
+      },
+      {
+        "id": 8,
+        "title": "Activity Log Display in Card Details",
+        "description": "Implement a view of activities within a card's detailed view",
+        "status": "pending",
+        "dependencies": [
+          4
+        ],
+        "priority": "medium",
+        "details": "Create a component to display activities related to a specific card. Show chronological list of actions with user attribution (who performed each action). Include timestamp and activity type (creation, move, comment). Style the activity entries consistently with the application design. Implement pagination if needed for cards with many activities.",
+        "testStrategy": "Component tests for activity display with various activity types. Test rendering of user information and timestamps. Verify activities appear in correct chronological order. Test with different numbers of activities to ensure proper handling of pagination if implemented.",
+        "subtasks": []
+      },
+      {
+        "id": 9,
+        "title": "Visual Indicators for Shared Boards",
+        "description": "Add subtle visual indication that a board is shared and with whom",
+        "status": "pending",
+        "dependencies": [
+          5,
+          6
+        ],
+        "priority": "low",
+        "details": "Implement a visual indicator (icon or badge) on board cards and in the board view to show when a board is shared. Consider showing collaborator avatars or a count of total collaborators. Add hover tooltip with collaborator information. Keep the design subtle but informative, following the application's existing design patterns.",
+        "testStrategy": "Visual tests for shared board indicators in different states (single collaborator, multiple collaborators). Test tooltip functionality and content. Verify indicators appear appropriately on both board list and board detail views.",
+        "subtasks": []
+      },
+      {
+        "id": 10,
+        "title": "End-to-End Testing and Deployment Preparation",
+        "description": "Comprehensive testing of the sharing feature and preparation for deployment",
+        "status": "pending",
+        "dependencies": [
+          5,
+          6,
+          7,
+          8,
+          9
+        ],
+        "priority": "medium",
+        "details": "Implement end-to-end tests covering the complete sharing workflow from invitation to collaborative editing. Prepare deployment configuration for Vercel and Docker environments. Update documentation with information about the new sharing feature. Create database migration scripts if needed for production deployment.",
+        "testStrategy": "End-to-end tests using Cypress or similar framework to test full user journeys. Test owner inviting editor, editor accepting and making changes, both users seeing updates. Verify correct behavior in different browsers and deployment environments.",
+        "subtasks": []
+      }
+    ],
+    "metadata": {
+      "created": "2025-12-12T22:25:01.772Z",
+      "updated": "2025-12-12T22:25:01.772Z",
+      "description": "Tasks for master context"
+    }
+  }
+}

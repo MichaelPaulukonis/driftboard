@@ -108,3 +108,18 @@ firebase.info.ts
 
 # Local development
 .env.local
+
+dev-debug.log
+# Editor directories and files
+.idea
+.vscode
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+# OS specific
+
+# Task files
+# tasks.json
+# tasks/ 
