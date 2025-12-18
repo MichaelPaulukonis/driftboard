@@ -12,6 +12,13 @@ import { AppError } from '../middleware/errorHandler.js';
 
 const router = Router();
 
+const buildBoardAccessWhere = (userId: string) => ({
+  OR: [
+    { memberships: { some: { userId } } },
+    { userId },
+  ],
+});
+
 // Apply authentication middleware to all routes
 router.use(authMiddleware);
 
@@ -41,8 +48,8 @@ router.get('/:id', async (req: Request, res: Response, next: NextFunction): Prom
         listId: id,
         status: 'ACTIVE',
         board: {
-          userId,
           status: 'ACTIVE',
+          ...buildBoardAccessWhere(userId),
         },
       },
       include: {
@@ -111,8 +118,8 @@ router.put('/:id', async (req: Request, res: Response, next: NextFunction): Prom
         listId: id, 
         status: 'ACTIVE',
         board: {
-          userId,
-          status: 'ACTIVE'
+          status: 'ACTIVE',
+          ...buildBoardAccessWhere(userId),
         }
       },
       include: {
@@ -201,8 +208,8 @@ router.put('/:id/move', async (req: Request, res: Response, next: NextFunction) 
         listId: listId,
         status: 'ACTIVE',
         board: {
-          userId,
           status: 'ACTIVE',
+          ...buildBoardAccessWhere(userId),
         },
       },
       include: {
@@ -289,8 +296,8 @@ router.delete('/:id', async (req: Request, res: Response, next: NextFunction): P
         listId: listId, 
         status: 'ACTIVE',
         board: {
-          userId,
-          status: 'ACTIVE'
+          status: 'ACTIVE',
+          ...buildBoardAccessWhere(userId),
         }
       },
     });
@@ -341,8 +348,8 @@ router.post('/:id/cards', async (req: Request, res: Response, next: NextFunction
         listId: listId,
         status: 'ACTIVE',
         board: {
-          userId,
           status: 'ACTIVE',
+          ...buildBoardAccessWhere(userId),
         },
       },
     });

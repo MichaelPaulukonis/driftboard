@@ -108,6 +108,13 @@ For a complete overview and detailed diagrams of the system, please refer to the
 - [Architecture Documentation](./docs/architecture/README.md) - System design and technical decisions
 - [Development Setup](./docs/development-setup.md) - Getting started guide (coming soon)
 
+### Shared Boards
+
+- Overview: Collaboration via `BoardMembership` and roles (`OWNER`, `EDITOR`)
+- PRD: [Shared Boards Feature](./docs/plans/19.shared-boards-feature.md)
+- Auth Strategy: [Role-Based Access](./docs/auth-strategy-overview.md)
+- Implementation: [schema.prisma](./prisma/schema.prisma), routers [boards](./src/backend/routes/boards.ts), [lists](./src/backend/routes/lists.ts), [cards](./src/backend/routes/cards.ts)
+
 ## 🎯 Current Status
 
 **Phase**: Initial architecture design and documentation

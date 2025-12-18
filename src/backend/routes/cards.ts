@@ -6,6 +6,13 @@ import { AppError } from '../middleware/errorHandler.js';
 
 const router = Router();
 
+const buildBoardAccessWhere = (userId: string) => ({
+  OR: [
+    { memberships: { some: { userId } } },
+    { userId },
+  ],
+});
+
 // Apply authentication middleware to all routes
 router.use(authMiddleware);
 
@@ -36,8 +43,8 @@ router.get('/:id', async (req: Request, res: Response, next: NextFunction): Prom
         status: 'ACTIVE',
         list: {
           board: {
-            userId,
             status: 'ACTIVE',
+            ...buildBoardAccessWhere(userId),
           },
         },
       },
@@ -108,8 +115,8 @@ router.put('/:id', async (req: Request, res: Response, next: NextFunction): Prom
         status: 'ACTIVE',
         list: {
           board: {
-            userId,
             status: 'ACTIVE',
+            ...buildBoardAccessWhere(userId),
           },
         },
       },
@@ -197,8 +204,8 @@ router.put('/:id/move', async (req: Request, res: Response, next: NextFunction):
         status: 'ACTIVE',
         list: {
           board: {
-            userId,
             status: 'ACTIVE',
+            ...buildBoardAccessWhere(userId),
           },
         },
       },
@@ -214,8 +221,8 @@ router.put('/:id/move', async (req: Request, res: Response, next: NextFunction):
         listId: listId, // Find target list by its persistent listId
         status: 'ACTIVE',
         board: {
-          userId: userId,
           status: 'ACTIVE',
+          ...buildBoardAccessWhere(userId),
         },
       },
     });
@@ -288,8 +295,8 @@ router.delete('/:id', async (req: Request, res: Response, next: NextFunction): P
         status: 'ACTIVE',
         list: {
           board: {
-            userId,
-            status: 'ACTIVE'
+            status: 'ACTIVE',
+            ...buildBoardAccessWhere(userId)
           }
         }
       },

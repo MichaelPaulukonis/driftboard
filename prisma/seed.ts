@@ -27,6 +27,12 @@ async function main() {
           userId: testUser.userId,
         },
       },
+      memberships: {
+        create: {
+          userId: testUser.userId,
+          role: 'OWNER',
+        },
+      },
       lists: {
         create: [
           {

@@ -43,6 +43,11 @@ export type Label = $Result.DefaultSelection<Prisma.$LabelPayload>
  * 
  */
 export type Activity = $Result.DefaultSelection<Prisma.$ActivityPayload>
+/**
+ * Model BoardMembership
+ * 
+ */
+export type BoardMembership = $Result.DefaultSelection<Prisma.$BoardMembershipPayload>
 
 /**
  * Enums
@@ -56,11 +61,23 @@ export namespace $Enums {
 
 export type Status = (typeof Status)[keyof typeof Status]
 
+
+export const Role: {
+  OWNER: 'OWNER',
+  EDITOR: 'EDITOR'
+};
+
+export type Role = (typeof Role)[keyof typeof Role]
+
 }
 
 export type Status = $Enums.Status
 
 export const Status: typeof $Enums.Status
+
+export type Role = $Enums.Role
+
+export const Role: typeof $Enums.Role
 
 /**
  * ##  Prisma Client ʲˢ
@@ -246,6 +263,16 @@ export class PrismaClient<
     * ```
     */
   get activity(): Prisma.ActivityDelegate<ExtArgs, ClientOptions>;
+
+  /**
+   * `prisma.boardMembership`: Exposes CRUD operations for the **BoardMembership** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more BoardMemberships
+    * const boardMemberships = await prisma.boardMembership.findMany()
+    * ```
+    */
+  get boardMembership(): Prisma.BoardMembershipDelegate<ExtArgs, ClientOptions>;
 }
 
 export namespace Prisma {
@@ -691,7 +718,8 @@ export namespace Prisma {
     List: 'List',
     Card: 'Card',
     Label: 'Label',
-    Activity: 'Activity'
+    Activity: 'Activity',
+    BoardMembership: 'BoardMembership'
   };
 
   export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -710,7 +738,7 @@ export namespace Prisma {
       omit: GlobalOmitOptions
     }
     meta: {
-      modelProps: "user" | "board" | "list" | "card" | "label" | "activity"
+      modelProps: "user" | "board" | "list" | "card" | "label" | "activity" | "boardMembership"
       txIsolationLevel: Prisma.TransactionIsolationLevel
     }
     model: {
@@ -1158,6 +1186,80 @@ export namespace Prisma {
           }
         }
       }
+      BoardMembership: {
+        payload: Prisma.$BoardMembershipPayload<ExtArgs>
+        fields: Prisma.BoardMembershipFieldRefs
+        operations: {
+          findUnique: {
+            args: Prisma.BoardMembershipFindUniqueArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$BoardMembershipPayload> | null
+          }
+          findUniqueOrThrow: {
+            args: Prisma.BoardMembershipFindUniqueOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$BoardMembershipPayload>
+          }
+          findFirst: {
+            args: Prisma.BoardMembershipFindFirstArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$BoardMembershipPayload> | null
+          }
+          findFirstOrThrow: {
+            args: Prisma.BoardMembershipFindFirstOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$BoardMembershipPayload>
+          }
+          findMany: {
+            args: Prisma.BoardMembershipFindManyArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$BoardMembershipPayload>[]
+          }
+          create: {
+            args: Prisma.BoardMembershipCreateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$BoardMembershipPayload>
+          }
+          createMany: {
+            args: Prisma.BoardMembershipCreateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          createManyAndReturn: {
+            args: Prisma.BoardMembershipCreateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$BoardMembershipPayload>[]
+          }
+          delete: {
+            args: Prisma.BoardMembershipDeleteArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$BoardMembershipPayload>
+          }
+          update: {
+            args: Prisma.BoardMembershipUpdateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$BoardMembershipPayload>
+          }
+          deleteMany: {
+            args: Prisma.BoardMembershipDeleteManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateMany: {
+            args: Prisma.BoardMembershipUpdateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateManyAndReturn: {
+            args: Prisma.BoardMembershipUpdateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$BoardMembershipPayload>[]
+          }
+          upsert: {
+            args: Prisma.BoardMembershipUpsertArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$BoardMembershipPayload>
+          }
+          aggregate: {
+            args: Prisma.BoardMembershipAggregateArgs<ExtArgs>
+            result: $Utils.Optional<AggregateBoardMembership>
+          }
+          groupBy: {
+            args: Prisma.BoardMembershipGroupByArgs<ExtArgs>
+            result: $Utils.Optional<BoardMembershipGroupByOutputType>[]
+          }
+          count: {
+            args: Prisma.BoardMembershipCountArgs<ExtArgs>
+            result: $Utils.Optional<BoardMembershipCountAggregateOutputType> | number
+          }
+        }
+      }
     }
   } & {
     other: {
@@ -1248,6 +1350,7 @@ export namespace Prisma {
     card?: CardOmit
     label?: LabelOmit
     activity?: ActivityOmit
+    boardMembership?: BoardMembershipOmit
   }
 
   /* Types for Logging */
@@ -1343,10 +1446,12 @@ export namespace Prisma {
 
   export type UserCountOutputType = {
     boards: number
+    memberships: number
   }
 
   export type UserCountOutputTypeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     boards?: boolean | UserCountOutputTypeCountBoardsArgs
+    memberships?: boolean | UserCountOutputTypeCountMembershipsArgs
   }
 
   // Custom InputTypes
@@ -1367,6 +1472,13 @@ export namespace Prisma {
     where?: BoardWhereInput
   }
 
+  /**
+   * UserCountOutputType without action
+   */
+  export type UserCountOutputTypeCountMembershipsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: BoardMembershipWhereInput
+  }
+
 
   /**
    * Count Type BoardCountOutputType
@@ -1374,10 +1486,12 @@ export namespace Prisma {
 
   export type BoardCountOutputType = {
     lists: number
+    memberships: number
   }
 
   export type BoardCountOutputTypeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     lists?: boolean | BoardCountOutputTypeCountListsArgs
+    memberships?: boolean | BoardCountOutputTypeCountMembershipsArgs
   }
 
   // Custom InputTypes
@@ -1396,6 +1510,13 @@ export namespace Prisma {
    */
   export type BoardCountOutputTypeCountListsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     where?: ListWhereInput
+  }
+
+  /**
+   * BoardCountOutputType without action
+   */
+  export type BoardCountOutputTypeCountMembershipsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: BoardMembershipWhereInput
   }
 
 
@@ -1697,6 +1818,7 @@ export namespace Prisma {
     createdAt?: boolean
     updatedAt?: boolean
     boards?: boolean | User$boardsArgs<ExtArgs>
+    memberships?: boolean | User$membershipsArgs<ExtArgs>
     _count?: boolean | UserCountOutputTypeDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["user"]>
 
@@ -1736,6 +1858,7 @@ export namespace Prisma {
   export type UserOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "userId" | "version" | "status" | "email" | "name" | "createdAt" | "updatedAt", ExtArgs["result"]["user"]>
   export type UserInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     boards?: boolean | User$boardsArgs<ExtArgs>
+    memberships?: boolean | User$membershipsArgs<ExtArgs>
     _count?: boolean | UserCountOutputTypeDefaultArgs<ExtArgs>
   }
   export type UserIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {}
@@ -1745,6 +1868,7 @@ export namespace Prisma {
     name: "User"
     objects: {
       boards: Prisma.$BoardPayload<ExtArgs>[]
+      memberships: Prisma.$BoardMembershipPayload<ExtArgs>[]
     }
     scalars: $Extensions.GetPayloadResult<{
       id: string
@@ -2150,6 +2274,7 @@ export namespace Prisma {
   export interface Prisma__UserClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
     readonly [Symbol.toStringTag]: "PrismaPromise"
     boards<T extends User$boardsArgs<ExtArgs> = {}>(args?: Subset<T, User$boardsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$BoardPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+    memberships<T extends User$membershipsArgs<ExtArgs> = {}>(args?: Subset<T, User$membershipsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$BoardMembershipPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
      * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -2597,6 +2722,30 @@ export namespace Prisma {
   }
 
   /**
+   * User.memberships
+   */
+  export type User$membershipsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the BoardMembership
+     */
+    select?: BoardMembershipSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the BoardMembership
+     */
+    omit?: BoardMembershipOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: BoardMembershipInclude<ExtArgs> | null
+    where?: BoardMembershipWhereInput
+    orderBy?: BoardMembershipOrderByWithRelationInput | BoardMembershipOrderByWithRelationInput[]
+    cursor?: BoardMembershipWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: BoardMembershipScalarFieldEnum | BoardMembershipScalarFieldEnum[]
+  }
+
+  /**
    * User without action
    */
   export type UserDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -2854,6 +3003,7 @@ export namespace Prisma {
     archivedAt?: boolean
     userId?: boolean
     lists?: boolean | Board$listsArgs<ExtArgs>
+    memberships?: boolean | Board$membershipsArgs<ExtArgs>
     user?: boolean | UserDefaultArgs<ExtArgs>
     _count?: boolean | BoardCountOutputTypeDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["board"]>
@@ -2902,6 +3052,7 @@ export namespace Prisma {
   export type BoardOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "boardId" | "version" | "status" | "name" | "description" | "createdAt" | "updatedAt" | "archivedAt" | "userId", ExtArgs["result"]["board"]>
   export type BoardInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     lists?: boolean | Board$listsArgs<ExtArgs>
+    memberships?: boolean | Board$membershipsArgs<ExtArgs>
     user?: boolean | UserDefaultArgs<ExtArgs>
     _count?: boolean | BoardCountOutputTypeDefaultArgs<ExtArgs>
   }
@@ -2916,6 +3067,7 @@ export namespace Prisma {
     name: "Board"
     objects: {
       lists: Prisma.$ListPayload<ExtArgs>[]
+      memberships: Prisma.$BoardMembershipPayload<ExtArgs>[]
       user: Prisma.$UserPayload<ExtArgs>
     }
     scalars: $Extensions.GetPayloadResult<{
@@ -3324,6 +3476,7 @@ export namespace Prisma {
   export interface Prisma__BoardClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
     readonly [Symbol.toStringTag]: "PrismaPromise"
     lists<T extends Board$listsArgs<ExtArgs> = {}>(args?: Subset<T, Board$listsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ListPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+    memberships<T extends Board$membershipsArgs<ExtArgs> = {}>(args?: Subset<T, Board$membershipsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$BoardMembershipPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     user<T extends UserDefaultArgs<ExtArgs> = {}>(args?: Subset<T, UserDefaultArgs<ExtArgs>>): Prisma__UserClient<$Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
@@ -3779,6 +3932,30 @@ export namespace Prisma {
     take?: number
     skip?: number
     distinct?: ListScalarFieldEnum | ListScalarFieldEnum[]
+  }
+
+  /**
+   * Board.memberships
+   */
+  export type Board$membershipsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the BoardMembership
+     */
+    select?: BoardMembershipSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the BoardMembership
+     */
+    omit?: BoardMembershipOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: BoardMembershipInclude<ExtArgs> | null
+    where?: BoardMembershipWhereInput
+    orderBy?: BoardMembershipOrderByWithRelationInput | BoardMembershipOrderByWithRelationInput[]
+    cursor?: BoardMembershipWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: BoardMembershipScalarFieldEnum | BoardMembershipScalarFieldEnum[]
   }
 
   /**
@@ -8319,6 +8496,1083 @@ export namespace Prisma {
 
 
   /**
+   * Model BoardMembership
+   */
+
+  export type AggregateBoardMembership = {
+    _count: BoardMembershipCountAggregateOutputType | null
+    _min: BoardMembershipMinAggregateOutputType | null
+    _max: BoardMembershipMaxAggregateOutputType | null
+  }
+
+  export type BoardMembershipMinAggregateOutputType = {
+    id: string | null
+    userId: string | null
+    boardId: string | null
+    role: $Enums.Role | null
+    createdAt: Date | null
+    updatedAt: Date | null
+  }
+
+  export type BoardMembershipMaxAggregateOutputType = {
+    id: string | null
+    userId: string | null
+    boardId: string | null
+    role: $Enums.Role | null
+    createdAt: Date | null
+    updatedAt: Date | null
+  }
+
+  export type BoardMembershipCountAggregateOutputType = {
+    id: number
+    userId: number
+    boardId: number
+    role: number
+    createdAt: number
+    updatedAt: number
+    _all: number
+  }
+
+
+  export type BoardMembershipMinAggregateInputType = {
+    id?: true
+    userId?: true
+    boardId?: true
+    role?: true
+    createdAt?: true
+    updatedAt?: true
+  }
+
+  export type BoardMembershipMaxAggregateInputType = {
+    id?: true
+    userId?: true
+    boardId?: true
+    role?: true
+    createdAt?: true
+    updatedAt?: true
+  }
+
+  export type BoardMembershipCountAggregateInputType = {
+    id?: true
+    userId?: true
+    boardId?: true
+    role?: true
+    createdAt?: true
+    updatedAt?: true
+    _all?: true
+  }
+
+  export type BoardMembershipAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which BoardMembership to aggregate.
+     */
+    where?: BoardMembershipWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of BoardMemberships to fetch.
+     */
+    orderBy?: BoardMembershipOrderByWithRelationInput | BoardMembershipOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the start position
+     */
+    cursor?: BoardMembershipWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` BoardMemberships from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` BoardMemberships.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Count returned BoardMemberships
+    **/
+    _count?: true | BoardMembershipCountAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the minimum value
+    **/
+    _min?: BoardMembershipMinAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the maximum value
+    **/
+    _max?: BoardMembershipMaxAggregateInputType
+  }
+
+  export type GetBoardMembershipAggregateType<T extends BoardMembershipAggregateArgs> = {
+        [P in keyof T & keyof AggregateBoardMembership]: P extends '_count' | 'count'
+      ? T[P] extends true
+        ? number
+        : GetScalarType<T[P], AggregateBoardMembership[P]>
+      : GetScalarType<T[P], AggregateBoardMembership[P]>
+  }
+
+
+
+
+  export type BoardMembershipGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: BoardMembershipWhereInput
+    orderBy?: BoardMembershipOrderByWithAggregationInput | BoardMembershipOrderByWithAggregationInput[]
+    by: BoardMembershipScalarFieldEnum[] | BoardMembershipScalarFieldEnum
+    having?: BoardMembershipScalarWhereWithAggregatesInput
+    take?: number
+    skip?: number
+    _count?: BoardMembershipCountAggregateInputType | true
+    _min?: BoardMembershipMinAggregateInputType
+    _max?: BoardMembershipMaxAggregateInputType
+  }
+
+  export type BoardMembershipGroupByOutputType = {
+    id: string
+    userId: string
+    boardId: string
+    role: $Enums.Role
+    createdAt: Date
+    updatedAt: Date
+    _count: BoardMembershipCountAggregateOutputType | null
+    _min: BoardMembershipMinAggregateOutputType | null
+    _max: BoardMembershipMaxAggregateOutputType | null
+  }
+
+  type GetBoardMembershipGroupByPayload<T extends BoardMembershipGroupByArgs> = Prisma.PrismaPromise<
+    Array<
+      PickEnumerable<BoardMembershipGroupByOutputType, T['by']> &
+        {
+          [P in ((keyof T) & (keyof BoardMembershipGroupByOutputType))]: P extends '_count'
+            ? T[P] extends boolean
+              ? number
+              : GetScalarType<T[P], BoardMembershipGroupByOutputType[P]>
+            : GetScalarType<T[P], BoardMembershipGroupByOutputType[P]>
+        }
+      >
+    >
+
+
+  export type BoardMembershipSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    userId?: boolean
+    boardId?: boolean
+    role?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+    user?: boolean | UserDefaultArgs<ExtArgs>
+    board?: boolean | BoardDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["boardMembership"]>
+
+  export type BoardMembershipSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    userId?: boolean
+    boardId?: boolean
+    role?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+    user?: boolean | UserDefaultArgs<ExtArgs>
+    board?: boolean | BoardDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["boardMembership"]>
+
+  export type BoardMembershipSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    userId?: boolean
+    boardId?: boolean
+    role?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+    user?: boolean | UserDefaultArgs<ExtArgs>
+    board?: boolean | BoardDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["boardMembership"]>
+
+  export type BoardMembershipSelectScalar = {
+    id?: boolean
+    userId?: boolean
+    boardId?: boolean
+    role?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+  }
+
+  export type BoardMembershipOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "userId" | "boardId" | "role" | "createdAt" | "updatedAt", ExtArgs["result"]["boardMembership"]>
+  export type BoardMembershipInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    user?: boolean | UserDefaultArgs<ExtArgs>
+    board?: boolean | BoardDefaultArgs<ExtArgs>
+  }
+  export type BoardMembershipIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    user?: boolean | UserDefaultArgs<ExtArgs>
+    board?: boolean | BoardDefaultArgs<ExtArgs>
+  }
+  export type BoardMembershipIncludeUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    user?: boolean | UserDefaultArgs<ExtArgs>
+    board?: boolean | BoardDefaultArgs<ExtArgs>
+  }
+
+  export type $BoardMembershipPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    name: "BoardMembership"
+    objects: {
+      user: Prisma.$UserPayload<ExtArgs>
+      board: Prisma.$BoardPayload<ExtArgs>
+    }
+    scalars: $Extensions.GetPayloadResult<{
+      id: string
+      userId: string
+      boardId: string
+      role: $Enums.Role
+      createdAt: Date
+      updatedAt: Date
+    }, ExtArgs["result"]["boardMembership"]>
+    composites: {}
+  }
+
+  type BoardMembershipGetPayload<S extends boolean | null | undefined | BoardMembershipDefaultArgs> = $Result.GetResult<Prisma.$BoardMembershipPayload, S>
+
+  type BoardMembershipCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> =
+    Omit<BoardMembershipFindManyArgs, 'select' | 'include' | 'distinct' | 'omit'> & {
+      select?: BoardMembershipCountAggregateInputType | true
+    }
+
+  export interface BoardMembershipDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> {
+    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['BoardMembership'], meta: { name: 'BoardMembership' } }
+    /**
+     * Find zero or one BoardMembership that matches the filter.
+     * @param {BoardMembershipFindUniqueArgs} args - Arguments to find a BoardMembership
+     * @example
+     * // Get one BoardMembership
+     * const boardMembership = await prisma.boardMembership.findUnique({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUnique<T extends BoardMembershipFindUniqueArgs>(args: SelectSubset<T, BoardMembershipFindUniqueArgs<ExtArgs>>): Prisma__BoardMembershipClient<$Result.GetResult<Prisma.$BoardMembershipPayload<ExtArgs>, T, "findUnique", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find one BoardMembership that matches the filter or throw an error with `error.code='P2025'`
+     * if no matches were found.
+     * @param {BoardMembershipFindUniqueOrThrowArgs} args - Arguments to find a BoardMembership
+     * @example
+     * // Get one BoardMembership
+     * const boardMembership = await prisma.boardMembership.findUniqueOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUniqueOrThrow<T extends BoardMembershipFindUniqueOrThrowArgs>(args: SelectSubset<T, BoardMembershipFindUniqueOrThrowArgs<ExtArgs>>): Prisma__BoardMembershipClient<$Result.GetResult<Prisma.$BoardMembershipPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first BoardMembership that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {BoardMembershipFindFirstArgs} args - Arguments to find a BoardMembership
+     * @example
+     * // Get one BoardMembership
+     * const boardMembership = await prisma.boardMembership.findFirst({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirst<T extends BoardMembershipFindFirstArgs>(args?: SelectSubset<T, BoardMembershipFindFirstArgs<ExtArgs>>): Prisma__BoardMembershipClient<$Result.GetResult<Prisma.$BoardMembershipPayload<ExtArgs>, T, "findFirst", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first BoardMembership that matches the filter or
+     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {BoardMembershipFindFirstOrThrowArgs} args - Arguments to find a BoardMembership
+     * @example
+     * // Get one BoardMembership
+     * const boardMembership = await prisma.boardMembership.findFirstOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirstOrThrow<T extends BoardMembershipFindFirstOrThrowArgs>(args?: SelectSubset<T, BoardMembershipFindFirstOrThrowArgs<ExtArgs>>): Prisma__BoardMembershipClient<$Result.GetResult<Prisma.$BoardMembershipPayload<ExtArgs>, T, "findFirstOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find zero or more BoardMemberships that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {BoardMembershipFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @example
+     * // Get all BoardMemberships
+     * const boardMemberships = await prisma.boardMembership.findMany()
+     * 
+     * // Get first 10 BoardMemberships
+     * const boardMemberships = await prisma.boardMembership.findMany({ take: 10 })
+     * 
+     * // Only select the `id`
+     * const boardMembershipWithIdOnly = await prisma.boardMembership.findMany({ select: { id: true } })
+     * 
+     */
+    findMany<T extends BoardMembershipFindManyArgs>(args?: SelectSubset<T, BoardMembershipFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$BoardMembershipPayload<ExtArgs>, T, "findMany", GlobalOmitOptions>>
+
+    /**
+     * Create a BoardMembership.
+     * @param {BoardMembershipCreateArgs} args - Arguments to create a BoardMembership.
+     * @example
+     * // Create one BoardMembership
+     * const BoardMembership = await prisma.boardMembership.create({
+     *   data: {
+     *     // ... data to create a BoardMembership
+     *   }
+     * })
+     * 
+     */
+    create<T extends BoardMembershipCreateArgs>(args: SelectSubset<T, BoardMembershipCreateArgs<ExtArgs>>): Prisma__BoardMembershipClient<$Result.GetResult<Prisma.$BoardMembershipPayload<ExtArgs>, T, "create", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Create many BoardMemberships.
+     * @param {BoardMembershipCreateManyArgs} args - Arguments to create many BoardMemberships.
+     * @example
+     * // Create many BoardMemberships
+     * const boardMembership = await prisma.boardMembership.createMany({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *     
+     */
+    createMany<T extends BoardMembershipCreateManyArgs>(args?: SelectSubset<T, BoardMembershipCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create many BoardMemberships and returns the data saved in the database.
+     * @param {BoardMembershipCreateManyAndReturnArgs} args - Arguments to create many BoardMemberships.
+     * @example
+     * // Create many BoardMemberships
+     * const boardMembership = await prisma.boardMembership.createManyAndReturn({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Create many BoardMemberships and only return the `id`
+     * const boardMembershipWithIdOnly = await prisma.boardMembership.createManyAndReturn({
+     *   select: { id: true },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    createManyAndReturn<T extends BoardMembershipCreateManyAndReturnArgs>(args?: SelectSubset<T, BoardMembershipCreateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$BoardMembershipPayload<ExtArgs>, T, "createManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Delete a BoardMembership.
+     * @param {BoardMembershipDeleteArgs} args - Arguments to delete one BoardMembership.
+     * @example
+     * // Delete one BoardMembership
+     * const BoardMembership = await prisma.boardMembership.delete({
+     *   where: {
+     *     // ... filter to delete one BoardMembership
+     *   }
+     * })
+     * 
+     */
+    delete<T extends BoardMembershipDeleteArgs>(args: SelectSubset<T, BoardMembershipDeleteArgs<ExtArgs>>): Prisma__BoardMembershipClient<$Result.GetResult<Prisma.$BoardMembershipPayload<ExtArgs>, T, "delete", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Update one BoardMembership.
+     * @param {BoardMembershipUpdateArgs} args - Arguments to update one BoardMembership.
+     * @example
+     * // Update one BoardMembership
+     * const boardMembership = await prisma.boardMembership.update({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    update<T extends BoardMembershipUpdateArgs>(args: SelectSubset<T, BoardMembershipUpdateArgs<ExtArgs>>): Prisma__BoardMembershipClient<$Result.GetResult<Prisma.$BoardMembershipPayload<ExtArgs>, T, "update", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Delete zero or more BoardMemberships.
+     * @param {BoardMembershipDeleteManyArgs} args - Arguments to filter BoardMemberships to delete.
+     * @example
+     * // Delete a few BoardMemberships
+     * const { count } = await prisma.boardMembership.deleteMany({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     * 
+     */
+    deleteMany<T extends BoardMembershipDeleteManyArgs>(args?: SelectSubset<T, BoardMembershipDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more BoardMemberships.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {BoardMembershipUpdateManyArgs} args - Arguments to update one or more rows.
+     * @example
+     * // Update many BoardMemberships
+     * const boardMembership = await prisma.boardMembership.updateMany({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    updateMany<T extends BoardMembershipUpdateManyArgs>(args: SelectSubset<T, BoardMembershipUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more BoardMemberships and returns the data updated in the database.
+     * @param {BoardMembershipUpdateManyAndReturnArgs} args - Arguments to update many BoardMemberships.
+     * @example
+     * // Update many BoardMemberships
+     * const boardMembership = await prisma.boardMembership.updateManyAndReturn({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Update zero or more BoardMemberships and only return the `id`
+     * const boardMembershipWithIdOnly = await prisma.boardMembership.updateManyAndReturn({
+     *   select: { id: true },
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    updateManyAndReturn<T extends BoardMembershipUpdateManyAndReturnArgs>(args: SelectSubset<T, BoardMembershipUpdateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$BoardMembershipPayload<ExtArgs>, T, "updateManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Create or update one BoardMembership.
+     * @param {BoardMembershipUpsertArgs} args - Arguments to update or create a BoardMembership.
+     * @example
+     * // Update or create a BoardMembership
+     * const boardMembership = await prisma.boardMembership.upsert({
+     *   create: {
+     *     // ... data to create a BoardMembership
+     *   },
+     *   update: {
+     *     // ... in case it already exists, update
+     *   },
+     *   where: {
+     *     // ... the filter for the BoardMembership we want to update
+     *   }
+     * })
+     */
+    upsert<T extends BoardMembershipUpsertArgs>(args: SelectSubset<T, BoardMembershipUpsertArgs<ExtArgs>>): Prisma__BoardMembershipClient<$Result.GetResult<Prisma.$BoardMembershipPayload<ExtArgs>, T, "upsert", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+
+    /**
+     * Count the number of BoardMemberships.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {BoardMembershipCountArgs} args - Arguments to filter BoardMemberships to count.
+     * @example
+     * // Count the number of BoardMemberships
+     * const count = await prisma.boardMembership.count({
+     *   where: {
+     *     // ... the filter for the BoardMemberships we want to count
+     *   }
+     * })
+    **/
+    count<T extends BoardMembershipCountArgs>(
+      args?: Subset<T, BoardMembershipCountArgs>,
+    ): Prisma.PrismaPromise<
+      T extends $Utils.Record<'select', any>
+        ? T['select'] extends true
+          ? number
+          : GetScalarType<T['select'], BoardMembershipCountAggregateOutputType>
+        : number
+    >
+
+    /**
+     * Allows you to perform aggregations operations on a BoardMembership.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {BoardMembershipAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @example
+     * // Ordered by age ascending
+     * // Where email contains prisma.io
+     * // Limited to the 10 users
+     * const aggregations = await prisma.user.aggregate({
+     *   _avg: {
+     *     age: true,
+     *   },
+     *   where: {
+     *     email: {
+     *       contains: "prisma.io",
+     *     },
+     *   },
+     *   orderBy: {
+     *     age: "asc",
+     *   },
+     *   take: 10,
+     * })
+    **/
+    aggregate<T extends BoardMembershipAggregateArgs>(args: Subset<T, BoardMembershipAggregateArgs>): Prisma.PrismaPromise<GetBoardMembershipAggregateType<T>>
+
+    /**
+     * Group by BoardMembership.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {BoardMembershipGroupByArgs} args - Group by arguments.
+     * @example
+     * // Group by city, order by createdAt, get count
+     * const result = await prisma.user.groupBy({
+     *   by: ['city', 'createdAt'],
+     *   orderBy: {
+     *     createdAt: true
+     *   },
+     *   _count: {
+     *     _all: true
+     *   },
+     * })
+     * 
+    **/
+    groupBy<
+      T extends BoardMembershipGroupByArgs,
+      HasSelectOrTake extends Or<
+        Extends<'skip', Keys<T>>,
+        Extends<'take', Keys<T>>
+      >,
+      OrderByArg extends True extends HasSelectOrTake
+        ? { orderBy: BoardMembershipGroupByArgs['orderBy'] }
+        : { orderBy?: BoardMembershipGroupByArgs['orderBy'] },
+      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
+      ByFields extends MaybeTupleToUnion<T['by']>,
+      ByValid extends Has<ByFields, OrderFields>,
+      HavingFields extends GetHavingFields<T['having']>,
+      HavingValid extends Has<ByFields, HavingFields>,
+      ByEmpty extends T['by'] extends never[] ? True : False,
+      InputErrors extends ByEmpty extends True
+      ? `Error: "by" must not be empty.`
+      : HavingValid extends False
+      ? {
+          [P in HavingFields]: P extends ByFields
+            ? never
+            : P extends string
+            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
+            : [
+                Error,
+                'Field ',
+                P,
+                ` in "having" needs to be provided in "by"`,
+              ]
+        }[HavingFields]
+      : 'take' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "take", you also need to provide "orderBy"'
+      : 'skip' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "skip", you also need to provide "orderBy"'
+      : ByValid extends True
+      ? {}
+      : {
+          [P in OrderFields]: P extends ByFields
+            ? never
+            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+        }[OrderFields]
+    >(args: SubsetIntersection<T, BoardMembershipGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetBoardMembershipGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
+  /**
+   * Fields of the BoardMembership model
+   */
+  readonly fields: BoardMembershipFieldRefs;
+  }
+
+  /**
+   * The delegate class that acts as a "Promise-like" for BoardMembership.
+   * Why is this prefixed with `Prisma__`?
+   * Because we want to prevent naming conflicts as mentioned in
+   * https://github.com/prisma/prisma-client-js/issues/707
+   */
+  export interface Prisma__BoardMembershipClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
+    readonly [Symbol.toStringTag]: "PrismaPromise"
+    user<T extends UserDefaultArgs<ExtArgs> = {}>(args?: Subset<T, UserDefaultArgs<ExtArgs>>): Prisma__UserClient<$Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+    board<T extends BoardDefaultArgs<ExtArgs> = {}>(args?: Subset<T, BoardDefaultArgs<ExtArgs>>): Prisma__BoardClient<$Result.GetResult<Prisma.$BoardPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+    /**
+     * Attaches callbacks for the resolution and/or rejection of the Promise.
+     * @param onfulfilled The callback to execute when the Promise is resolved.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of which ever callback is executed.
+     */
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    /**
+     * Attaches a callback for only the rejection of the Promise.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of the callback.
+     */
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    /**
+     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
+     * resolved value cannot be modified from the callback.
+     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
+     * @returns A Promise for the completion of the callback.
+     */
+    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
+  }
+
+
+
+
+  /**
+   * Fields of the BoardMembership model
+   */
+  interface BoardMembershipFieldRefs {
+    readonly id: FieldRef<"BoardMembership", 'String'>
+    readonly userId: FieldRef<"BoardMembership", 'String'>
+    readonly boardId: FieldRef<"BoardMembership", 'String'>
+    readonly role: FieldRef<"BoardMembership", 'Role'>
+    readonly createdAt: FieldRef<"BoardMembership", 'DateTime'>
+    readonly updatedAt: FieldRef<"BoardMembership", 'DateTime'>
+  }
+    
+
+  // Custom InputTypes
+  /**
+   * BoardMembership findUnique
+   */
+  export type BoardMembershipFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the BoardMembership
+     */
+    select?: BoardMembershipSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the BoardMembership
+     */
+    omit?: BoardMembershipOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: BoardMembershipInclude<ExtArgs> | null
+    /**
+     * Filter, which BoardMembership to fetch.
+     */
+    where: BoardMembershipWhereUniqueInput
+  }
+
+  /**
+   * BoardMembership findUniqueOrThrow
+   */
+  export type BoardMembershipFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the BoardMembership
+     */
+    select?: BoardMembershipSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the BoardMembership
+     */
+    omit?: BoardMembershipOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: BoardMembershipInclude<ExtArgs> | null
+    /**
+     * Filter, which BoardMembership to fetch.
+     */
+    where: BoardMembershipWhereUniqueInput
+  }
+
+  /**
+   * BoardMembership findFirst
+   */
+  export type BoardMembershipFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the BoardMembership
+     */
+    select?: BoardMembershipSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the BoardMembership
+     */
+    omit?: BoardMembershipOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: BoardMembershipInclude<ExtArgs> | null
+    /**
+     * Filter, which BoardMembership to fetch.
+     */
+    where?: BoardMembershipWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of BoardMemberships to fetch.
+     */
+    orderBy?: BoardMembershipOrderByWithRelationInput | BoardMembershipOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for BoardMemberships.
+     */
+    cursor?: BoardMembershipWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` BoardMemberships from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` BoardMemberships.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of BoardMemberships.
+     */
+    distinct?: BoardMembershipScalarFieldEnum | BoardMembershipScalarFieldEnum[]
+  }
+
+  /**
+   * BoardMembership findFirstOrThrow
+   */
+  export type BoardMembershipFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the BoardMembership
+     */
+    select?: BoardMembershipSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the BoardMembership
+     */
+    omit?: BoardMembershipOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: BoardMembershipInclude<ExtArgs> | null
+    /**
+     * Filter, which BoardMembership to fetch.
+     */
+    where?: BoardMembershipWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of BoardMemberships to fetch.
+     */
+    orderBy?: BoardMembershipOrderByWithRelationInput | BoardMembershipOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for BoardMemberships.
+     */
+    cursor?: BoardMembershipWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` BoardMemberships from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` BoardMemberships.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of BoardMemberships.
+     */
+    distinct?: BoardMembershipScalarFieldEnum | BoardMembershipScalarFieldEnum[]
+  }
+
+  /**
+   * BoardMembership findMany
+   */
+  export type BoardMembershipFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the BoardMembership
+     */
+    select?: BoardMembershipSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the BoardMembership
+     */
+    omit?: BoardMembershipOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: BoardMembershipInclude<ExtArgs> | null
+    /**
+     * Filter, which BoardMemberships to fetch.
+     */
+    where?: BoardMembershipWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of BoardMemberships to fetch.
+     */
+    orderBy?: BoardMembershipOrderByWithRelationInput | BoardMembershipOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for listing BoardMemberships.
+     */
+    cursor?: BoardMembershipWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` BoardMemberships from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` BoardMemberships.
+     */
+    skip?: number
+    distinct?: BoardMembershipScalarFieldEnum | BoardMembershipScalarFieldEnum[]
+  }
+
+  /**
+   * BoardMembership create
+   */
+  export type BoardMembershipCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the BoardMembership
+     */
+    select?: BoardMembershipSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the BoardMembership
+     */
+    omit?: BoardMembershipOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: BoardMembershipInclude<ExtArgs> | null
+    /**
+     * The data needed to create a BoardMembership.
+     */
+    data: XOR<BoardMembershipCreateInput, BoardMembershipUncheckedCreateInput>
+  }
+
+  /**
+   * BoardMembership createMany
+   */
+  export type BoardMembershipCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to create many BoardMemberships.
+     */
+    data: BoardMembershipCreateManyInput | BoardMembershipCreateManyInput[]
+  }
+
+  /**
+   * BoardMembership createManyAndReturn
+   */
+  export type BoardMembershipCreateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the BoardMembership
+     */
+    select?: BoardMembershipSelectCreateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the BoardMembership
+     */
+    omit?: BoardMembershipOmit<ExtArgs> | null
+    /**
+     * The data used to create many BoardMemberships.
+     */
+    data: BoardMembershipCreateManyInput | BoardMembershipCreateManyInput[]
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: BoardMembershipIncludeCreateManyAndReturn<ExtArgs> | null
+  }
+
+  /**
+   * BoardMembership update
+   */
+  export type BoardMembershipUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the BoardMembership
+     */
+    select?: BoardMembershipSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the BoardMembership
+     */
+    omit?: BoardMembershipOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: BoardMembershipInclude<ExtArgs> | null
+    /**
+     * The data needed to update a BoardMembership.
+     */
+    data: XOR<BoardMembershipUpdateInput, BoardMembershipUncheckedUpdateInput>
+    /**
+     * Choose, which BoardMembership to update.
+     */
+    where: BoardMembershipWhereUniqueInput
+  }
+
+  /**
+   * BoardMembership updateMany
+   */
+  export type BoardMembershipUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to update BoardMemberships.
+     */
+    data: XOR<BoardMembershipUpdateManyMutationInput, BoardMembershipUncheckedUpdateManyInput>
+    /**
+     * Filter which BoardMemberships to update
+     */
+    where?: BoardMembershipWhereInput
+    /**
+     * Limit how many BoardMemberships to update.
+     */
+    limit?: number
+  }
+
+  /**
+   * BoardMembership updateManyAndReturn
+   */
+  export type BoardMembershipUpdateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the BoardMembership
+     */
+    select?: BoardMembershipSelectUpdateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the BoardMembership
+     */
+    omit?: BoardMembershipOmit<ExtArgs> | null
+    /**
+     * The data used to update BoardMemberships.
+     */
+    data: XOR<BoardMembershipUpdateManyMutationInput, BoardMembershipUncheckedUpdateManyInput>
+    /**
+     * Filter which BoardMemberships to update
+     */
+    where?: BoardMembershipWhereInput
+    /**
+     * Limit how many BoardMemberships to update.
+     */
+    limit?: number
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: BoardMembershipIncludeUpdateManyAndReturn<ExtArgs> | null
+  }
+
+  /**
+   * BoardMembership upsert
+   */
+  export type BoardMembershipUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the BoardMembership
+     */
+    select?: BoardMembershipSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the BoardMembership
+     */
+    omit?: BoardMembershipOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: BoardMembershipInclude<ExtArgs> | null
+    /**
+     * The filter to search for the BoardMembership to update in case it exists.
+     */
+    where: BoardMembershipWhereUniqueInput
+    /**
+     * In case the BoardMembership found by the `where` argument doesn't exist, create a new BoardMembership with this data.
+     */
+    create: XOR<BoardMembershipCreateInput, BoardMembershipUncheckedCreateInput>
+    /**
+     * In case the BoardMembership was found with the provided `where` argument, update it with this data.
+     */
+    update: XOR<BoardMembershipUpdateInput, BoardMembershipUncheckedUpdateInput>
+  }
+
+  /**
+   * BoardMembership delete
+   */
+  export type BoardMembershipDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the BoardMembership
+     */
+    select?: BoardMembershipSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the BoardMembership
+     */
+    omit?: BoardMembershipOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: BoardMembershipInclude<ExtArgs> | null
+    /**
+     * Filter which BoardMembership to delete.
+     */
+    where: BoardMembershipWhereUniqueInput
+  }
+
+  /**
+   * BoardMembership deleteMany
+   */
+  export type BoardMembershipDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which BoardMemberships to delete
+     */
+    where?: BoardMembershipWhereInput
+    /**
+     * Limit how many BoardMemberships to delete.
+     */
+    limit?: number
+  }
+
+  /**
+   * BoardMembership without action
+   */
+  export type BoardMembershipDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the BoardMembership
+     */
+    select?: BoardMembershipSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the BoardMembership
+     */
+    omit?: BoardMembershipOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: BoardMembershipInclude<ExtArgs> | null
+  }
+
+
+  /**
    * Enums
    */
 
@@ -8413,6 +9667,18 @@ export namespace Prisma {
   export type ActivityScalarFieldEnum = (typeof ActivityScalarFieldEnum)[keyof typeof ActivityScalarFieldEnum]
 
 
+  export const BoardMembershipScalarFieldEnum: {
+    id: 'id',
+    userId: 'userId',
+    boardId: 'boardId',
+    role: 'role',
+    createdAt: 'createdAt',
+    updatedAt: 'updatedAt'
+  };
+
+  export type BoardMembershipScalarFieldEnum = (typeof BoardMembershipScalarFieldEnum)[keyof typeof BoardMembershipScalarFieldEnum]
+
+
   export const SortOrder: {
     asc: 'asc',
     desc: 'desc'
@@ -8467,6 +9733,13 @@ export namespace Prisma {
    */
   export type FloatFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Float'>
     
+
+
+  /**
+   * Reference to a field of type 'Role'
+   */
+  export type EnumRoleFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Role'>
+    
   /**
    * Deep Input Types
    */
@@ -8485,6 +9758,7 @@ export namespace Prisma {
     createdAt?: DateTimeFilter<"User"> | Date | string
     updatedAt?: DateTimeFilter<"User"> | Date | string
     boards?: BoardListRelationFilter
+    memberships?: BoardMembershipListRelationFilter
   }
 
   export type UserOrderByWithRelationInput = {
@@ -8497,6 +9771,7 @@ export namespace Prisma {
     createdAt?: SortOrder
     updatedAt?: SortOrder
     boards?: BoardOrderByRelationAggregateInput
+    memberships?: BoardMembershipOrderByRelationAggregateInput
   }
 
   export type UserWhereUniqueInput = Prisma.AtLeast<{
@@ -8512,6 +9787,7 @@ export namespace Prisma {
     createdAt?: DateTimeFilter<"User"> | Date | string
     updatedAt?: DateTimeFilter<"User"> | Date | string
     boards?: BoardListRelationFilter
+    memberships?: BoardMembershipListRelationFilter
   }, "id" | "userId" | "email">
 
   export type UserOrderByWithAggregationInput = {
@@ -8559,6 +9835,7 @@ export namespace Prisma {
     archivedAt?: DateTimeNullableFilter<"Board"> | Date | string | null
     userId?: StringFilter<"Board"> | string
     lists?: ListListRelationFilter
+    memberships?: BoardMembershipListRelationFilter
     user?: XOR<UserScalarRelationFilter, UserWhereInput>
   }
 
@@ -8574,6 +9851,7 @@ export namespace Prisma {
     archivedAt?: SortOrderInput | SortOrder
     userId?: SortOrder
     lists?: ListOrderByRelationAggregateInput
+    memberships?: BoardMembershipOrderByRelationAggregateInput
     user?: UserOrderByWithRelationInput
   }
 
@@ -8593,6 +9871,7 @@ export namespace Prisma {
     archivedAt?: DateTimeNullableFilter<"Board"> | Date | string | null
     userId?: StringFilter<"Board"> | string
     lists?: ListListRelationFilter
+    memberships?: BoardMembershipListRelationFilter
     user?: XOR<UserScalarRelationFilter, UserWhereInput>
   }, "id" | "boardId" | "boardId_version">
 
@@ -8915,6 +10194,70 @@ export namespace Prisma {
     createdAt?: DateTimeWithAggregatesFilter<"Activity"> | Date | string
   }
 
+  export type BoardMembershipWhereInput = {
+    AND?: BoardMembershipWhereInput | BoardMembershipWhereInput[]
+    OR?: BoardMembershipWhereInput[]
+    NOT?: BoardMembershipWhereInput | BoardMembershipWhereInput[]
+    id?: StringFilter<"BoardMembership"> | string
+    userId?: StringFilter<"BoardMembership"> | string
+    boardId?: StringFilter<"BoardMembership"> | string
+    role?: EnumRoleFilter<"BoardMembership"> | $Enums.Role
+    createdAt?: DateTimeFilter<"BoardMembership"> | Date | string
+    updatedAt?: DateTimeFilter<"BoardMembership"> | Date | string
+    user?: XOR<UserScalarRelationFilter, UserWhereInput>
+    board?: XOR<BoardScalarRelationFilter, BoardWhereInput>
+  }
+
+  export type BoardMembershipOrderByWithRelationInput = {
+    id?: SortOrder
+    userId?: SortOrder
+    boardId?: SortOrder
+    role?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+    user?: UserOrderByWithRelationInput
+    board?: BoardOrderByWithRelationInput
+  }
+
+  export type BoardMembershipWhereUniqueInput = Prisma.AtLeast<{
+    id?: string
+    userId_boardId?: BoardMembershipUserIdBoardIdCompoundUniqueInput
+    AND?: BoardMembershipWhereInput | BoardMembershipWhereInput[]
+    OR?: BoardMembershipWhereInput[]
+    NOT?: BoardMembershipWhereInput | BoardMembershipWhereInput[]
+    userId?: StringFilter<"BoardMembership"> | string
+    boardId?: StringFilter<"BoardMembership"> | string
+    role?: EnumRoleFilter<"BoardMembership"> | $Enums.Role
+    createdAt?: DateTimeFilter<"BoardMembership"> | Date | string
+    updatedAt?: DateTimeFilter<"BoardMembership"> | Date | string
+    user?: XOR<UserScalarRelationFilter, UserWhereInput>
+    board?: XOR<BoardScalarRelationFilter, BoardWhereInput>
+  }, "id" | "userId_boardId">
+
+  export type BoardMembershipOrderByWithAggregationInput = {
+    id?: SortOrder
+    userId?: SortOrder
+    boardId?: SortOrder
+    role?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+    _count?: BoardMembershipCountOrderByAggregateInput
+    _max?: BoardMembershipMaxOrderByAggregateInput
+    _min?: BoardMembershipMinOrderByAggregateInput
+  }
+
+  export type BoardMembershipScalarWhereWithAggregatesInput = {
+    AND?: BoardMembershipScalarWhereWithAggregatesInput | BoardMembershipScalarWhereWithAggregatesInput[]
+    OR?: BoardMembershipScalarWhereWithAggregatesInput[]
+    NOT?: BoardMembershipScalarWhereWithAggregatesInput | BoardMembershipScalarWhereWithAggregatesInput[]
+    id?: StringWithAggregatesFilter<"BoardMembership"> | string
+    userId?: StringWithAggregatesFilter<"BoardMembership"> | string
+    boardId?: StringWithAggregatesFilter<"BoardMembership"> | string
+    role?: EnumRoleWithAggregatesFilter<"BoardMembership"> | $Enums.Role
+    createdAt?: DateTimeWithAggregatesFilter<"BoardMembership"> | Date | string
+    updatedAt?: DateTimeWithAggregatesFilter<"BoardMembership"> | Date | string
+  }
+
   export type UserCreateInput = {
     id?: string
     userId?: string
@@ -8925,6 +10268,7 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string
     boards?: BoardCreateNestedManyWithoutUserInput
+    memberships?: BoardMembershipCreateNestedManyWithoutUserInput
   }
 
   export type UserUncheckedCreateInput = {
@@ -8937,6 +10281,7 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string
     boards?: BoardUncheckedCreateNestedManyWithoutUserInput
+    memberships?: BoardMembershipUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserUpdateInput = {
@@ -8949,6 +10294,7 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     boards?: BoardUpdateManyWithoutUserNestedInput
+    memberships?: BoardMembershipUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateInput = {
@@ -8961,6 +10307,7 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     boards?: BoardUncheckedUpdateManyWithoutUserNestedInput
+    memberships?: BoardMembershipUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type UserCreateManyInput = {
@@ -9007,6 +10354,7 @@ export namespace Prisma {
     updatedAt?: Date | string
     archivedAt?: Date | string | null
     lists?: ListCreateNestedManyWithoutBoardInput
+    memberships?: BoardMembershipCreateNestedManyWithoutBoardInput
     user: UserCreateNestedOneWithoutBoardsInput
   }
 
@@ -9022,6 +10370,7 @@ export namespace Prisma {
     archivedAt?: Date | string | null
     userId: string
     lists?: ListUncheckedCreateNestedManyWithoutBoardInput
+    memberships?: BoardMembershipUncheckedCreateNestedManyWithoutBoardInput
   }
 
   export type BoardUpdateInput = {
@@ -9035,6 +10384,7 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     archivedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     lists?: ListUpdateManyWithoutBoardNestedInput
+    memberships?: BoardMembershipUpdateManyWithoutBoardNestedInput
     user?: UserUpdateOneRequiredWithoutBoardsNestedInput
   }
 
@@ -9050,6 +10400,7 @@ export namespace Prisma {
     archivedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     userId?: StringFieldUpdateOperationsInput | string
     lists?: ListUncheckedUpdateManyWithoutBoardNestedInput
+    memberships?: BoardMembershipUncheckedUpdateManyWithoutBoardNestedInput
   }
 
   export type BoardCreateManyInput = {
@@ -9392,6 +10743,67 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
+  export type BoardMembershipCreateInput = {
+    id?: string
+    role?: $Enums.Role
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    user: UserCreateNestedOneWithoutMembershipsInput
+    board: BoardCreateNestedOneWithoutMembershipsInput
+  }
+
+  export type BoardMembershipUncheckedCreateInput = {
+    id?: string
+    userId: string
+    boardId: string
+    role?: $Enums.Role
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type BoardMembershipUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    user?: UserUpdateOneRequiredWithoutMembershipsNestedInput
+    board?: BoardUpdateOneRequiredWithoutMembershipsNestedInput
+  }
+
+  export type BoardMembershipUncheckedUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    userId?: StringFieldUpdateOperationsInput | string
+    boardId?: StringFieldUpdateOperationsInput | string
+    role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type BoardMembershipCreateManyInput = {
+    id?: string
+    userId: string
+    boardId: string
+    role?: $Enums.Role
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type BoardMembershipUpdateManyMutationInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type BoardMembershipUncheckedUpdateManyInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    userId?: StringFieldUpdateOperationsInput | string
+    boardId?: StringFieldUpdateOperationsInput | string
+    role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
   export type StringFilter<$PrismaModel = never> = {
     equals?: string | StringFieldRefInput<$PrismaModel>
     in?: string[]
@@ -9455,12 +10867,22 @@ export namespace Prisma {
     none?: BoardWhereInput
   }
 
+  export type BoardMembershipListRelationFilter = {
+    every?: BoardMembershipWhereInput
+    some?: BoardMembershipWhereInput
+    none?: BoardMembershipWhereInput
+  }
+
   export type SortOrderInput = {
     sort: SortOrder
     nulls?: NullsOrder
   }
 
   export type BoardOrderByRelationAggregateInput = {
+    _count?: SortOrder
+  }
+
+  export type BoardMembershipOrderByRelationAggregateInput = {
     _count?: SortOrder
   }
 
@@ -9899,6 +11321,55 @@ export namespace Prisma {
     createdAt?: SortOrder
   }
 
+  export type EnumRoleFilter<$PrismaModel = never> = {
+    equals?: $Enums.Role | EnumRoleFieldRefInput<$PrismaModel>
+    in?: $Enums.Role[]
+    notIn?: $Enums.Role[]
+    not?: NestedEnumRoleFilter<$PrismaModel> | $Enums.Role
+  }
+
+  export type BoardMembershipUserIdBoardIdCompoundUniqueInput = {
+    userId: string
+    boardId: string
+  }
+
+  export type BoardMembershipCountOrderByAggregateInput = {
+    id?: SortOrder
+    userId?: SortOrder
+    boardId?: SortOrder
+    role?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type BoardMembershipMaxOrderByAggregateInput = {
+    id?: SortOrder
+    userId?: SortOrder
+    boardId?: SortOrder
+    role?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type BoardMembershipMinOrderByAggregateInput = {
+    id?: SortOrder
+    userId?: SortOrder
+    boardId?: SortOrder
+    role?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type EnumRoleWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: $Enums.Role | EnumRoleFieldRefInput<$PrismaModel>
+    in?: $Enums.Role[]
+    notIn?: $Enums.Role[]
+    not?: NestedEnumRoleWithAggregatesFilter<$PrismaModel> | $Enums.Role
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedEnumRoleFilter<$PrismaModel>
+    _max?: NestedEnumRoleFilter<$PrismaModel>
+  }
+
   export type BoardCreateNestedManyWithoutUserInput = {
     create?: XOR<BoardCreateWithoutUserInput, BoardUncheckedCreateWithoutUserInput> | BoardCreateWithoutUserInput[] | BoardUncheckedCreateWithoutUserInput[]
     connectOrCreate?: BoardCreateOrConnectWithoutUserInput | BoardCreateOrConnectWithoutUserInput[]
@@ -9906,11 +11377,25 @@ export namespace Prisma {
     connect?: BoardWhereUniqueInput | BoardWhereUniqueInput[]
   }
 
+  export type BoardMembershipCreateNestedManyWithoutUserInput = {
+    create?: XOR<BoardMembershipCreateWithoutUserInput, BoardMembershipUncheckedCreateWithoutUserInput> | BoardMembershipCreateWithoutUserInput[] | BoardMembershipUncheckedCreateWithoutUserInput[]
+    connectOrCreate?: BoardMembershipCreateOrConnectWithoutUserInput | BoardMembershipCreateOrConnectWithoutUserInput[]
+    createMany?: BoardMembershipCreateManyUserInputEnvelope
+    connect?: BoardMembershipWhereUniqueInput | BoardMembershipWhereUniqueInput[]
+  }
+
   export type BoardUncheckedCreateNestedManyWithoutUserInput = {
     create?: XOR<BoardCreateWithoutUserInput, BoardUncheckedCreateWithoutUserInput> | BoardCreateWithoutUserInput[] | BoardUncheckedCreateWithoutUserInput[]
     connectOrCreate?: BoardCreateOrConnectWithoutUserInput | BoardCreateOrConnectWithoutUserInput[]
     createMany?: BoardCreateManyUserInputEnvelope
     connect?: BoardWhereUniqueInput | BoardWhereUniqueInput[]
+  }
+
+  export type BoardMembershipUncheckedCreateNestedManyWithoutUserInput = {
+    create?: XOR<BoardMembershipCreateWithoutUserInput, BoardMembershipUncheckedCreateWithoutUserInput> | BoardMembershipCreateWithoutUserInput[] | BoardMembershipUncheckedCreateWithoutUserInput[]
+    connectOrCreate?: BoardMembershipCreateOrConnectWithoutUserInput | BoardMembershipCreateOrConnectWithoutUserInput[]
+    createMany?: BoardMembershipCreateManyUserInputEnvelope
+    connect?: BoardMembershipWhereUniqueInput | BoardMembershipWhereUniqueInput[]
   }
 
   export type StringFieldUpdateOperationsInput = {
@@ -9951,6 +11436,20 @@ export namespace Prisma {
     deleteMany?: BoardScalarWhereInput | BoardScalarWhereInput[]
   }
 
+  export type BoardMembershipUpdateManyWithoutUserNestedInput = {
+    create?: XOR<BoardMembershipCreateWithoutUserInput, BoardMembershipUncheckedCreateWithoutUserInput> | BoardMembershipCreateWithoutUserInput[] | BoardMembershipUncheckedCreateWithoutUserInput[]
+    connectOrCreate?: BoardMembershipCreateOrConnectWithoutUserInput | BoardMembershipCreateOrConnectWithoutUserInput[]
+    upsert?: BoardMembershipUpsertWithWhereUniqueWithoutUserInput | BoardMembershipUpsertWithWhereUniqueWithoutUserInput[]
+    createMany?: BoardMembershipCreateManyUserInputEnvelope
+    set?: BoardMembershipWhereUniqueInput | BoardMembershipWhereUniqueInput[]
+    disconnect?: BoardMembershipWhereUniqueInput | BoardMembershipWhereUniqueInput[]
+    delete?: BoardMembershipWhereUniqueInput | BoardMembershipWhereUniqueInput[]
+    connect?: BoardMembershipWhereUniqueInput | BoardMembershipWhereUniqueInput[]
+    update?: BoardMembershipUpdateWithWhereUniqueWithoutUserInput | BoardMembershipUpdateWithWhereUniqueWithoutUserInput[]
+    updateMany?: BoardMembershipUpdateManyWithWhereWithoutUserInput | BoardMembershipUpdateManyWithWhereWithoutUserInput[]
+    deleteMany?: BoardMembershipScalarWhereInput | BoardMembershipScalarWhereInput[]
+  }
+
   export type BoardUncheckedUpdateManyWithoutUserNestedInput = {
     create?: XOR<BoardCreateWithoutUserInput, BoardUncheckedCreateWithoutUserInput> | BoardCreateWithoutUserInput[] | BoardUncheckedCreateWithoutUserInput[]
     connectOrCreate?: BoardCreateOrConnectWithoutUserInput | BoardCreateOrConnectWithoutUserInput[]
@@ -9965,11 +11464,32 @@ export namespace Prisma {
     deleteMany?: BoardScalarWhereInput | BoardScalarWhereInput[]
   }
 
+  export type BoardMembershipUncheckedUpdateManyWithoutUserNestedInput = {
+    create?: XOR<BoardMembershipCreateWithoutUserInput, BoardMembershipUncheckedCreateWithoutUserInput> | BoardMembershipCreateWithoutUserInput[] | BoardMembershipUncheckedCreateWithoutUserInput[]
+    connectOrCreate?: BoardMembershipCreateOrConnectWithoutUserInput | BoardMembershipCreateOrConnectWithoutUserInput[]
+    upsert?: BoardMembershipUpsertWithWhereUniqueWithoutUserInput | BoardMembershipUpsertWithWhereUniqueWithoutUserInput[]
+    createMany?: BoardMembershipCreateManyUserInputEnvelope
+    set?: BoardMembershipWhereUniqueInput | BoardMembershipWhereUniqueInput[]
+    disconnect?: BoardMembershipWhereUniqueInput | BoardMembershipWhereUniqueInput[]
+    delete?: BoardMembershipWhereUniqueInput | BoardMembershipWhereUniqueInput[]
+    connect?: BoardMembershipWhereUniqueInput | BoardMembershipWhereUniqueInput[]
+    update?: BoardMembershipUpdateWithWhereUniqueWithoutUserInput | BoardMembershipUpdateWithWhereUniqueWithoutUserInput[]
+    updateMany?: BoardMembershipUpdateManyWithWhereWithoutUserInput | BoardMembershipUpdateManyWithWhereWithoutUserInput[]
+    deleteMany?: BoardMembershipScalarWhereInput | BoardMembershipScalarWhereInput[]
+  }
+
   export type ListCreateNestedManyWithoutBoardInput = {
     create?: XOR<ListCreateWithoutBoardInput, ListUncheckedCreateWithoutBoardInput> | ListCreateWithoutBoardInput[] | ListUncheckedCreateWithoutBoardInput[]
     connectOrCreate?: ListCreateOrConnectWithoutBoardInput | ListCreateOrConnectWithoutBoardInput[]
     createMany?: ListCreateManyBoardInputEnvelope
     connect?: ListWhereUniqueInput | ListWhereUniqueInput[]
+  }
+
+  export type BoardMembershipCreateNestedManyWithoutBoardInput = {
+    create?: XOR<BoardMembershipCreateWithoutBoardInput, BoardMembershipUncheckedCreateWithoutBoardInput> | BoardMembershipCreateWithoutBoardInput[] | BoardMembershipUncheckedCreateWithoutBoardInput[]
+    connectOrCreate?: BoardMembershipCreateOrConnectWithoutBoardInput | BoardMembershipCreateOrConnectWithoutBoardInput[]
+    createMany?: BoardMembershipCreateManyBoardInputEnvelope
+    connect?: BoardMembershipWhereUniqueInput | BoardMembershipWhereUniqueInput[]
   }
 
   export type UserCreateNestedOneWithoutBoardsInput = {
@@ -9983,6 +11503,13 @@ export namespace Prisma {
     connectOrCreate?: ListCreateOrConnectWithoutBoardInput | ListCreateOrConnectWithoutBoardInput[]
     createMany?: ListCreateManyBoardInputEnvelope
     connect?: ListWhereUniqueInput | ListWhereUniqueInput[]
+  }
+
+  export type BoardMembershipUncheckedCreateNestedManyWithoutBoardInput = {
+    create?: XOR<BoardMembershipCreateWithoutBoardInput, BoardMembershipUncheckedCreateWithoutBoardInput> | BoardMembershipCreateWithoutBoardInput[] | BoardMembershipUncheckedCreateWithoutBoardInput[]
+    connectOrCreate?: BoardMembershipCreateOrConnectWithoutBoardInput | BoardMembershipCreateOrConnectWithoutBoardInput[]
+    createMany?: BoardMembershipCreateManyBoardInputEnvelope
+    connect?: BoardMembershipWhereUniqueInput | BoardMembershipWhereUniqueInput[]
   }
 
   export type NullableDateTimeFieldUpdateOperationsInput = {
@@ -10001,6 +11528,20 @@ export namespace Prisma {
     update?: ListUpdateWithWhereUniqueWithoutBoardInput | ListUpdateWithWhereUniqueWithoutBoardInput[]
     updateMany?: ListUpdateManyWithWhereWithoutBoardInput | ListUpdateManyWithWhereWithoutBoardInput[]
     deleteMany?: ListScalarWhereInput | ListScalarWhereInput[]
+  }
+
+  export type BoardMembershipUpdateManyWithoutBoardNestedInput = {
+    create?: XOR<BoardMembershipCreateWithoutBoardInput, BoardMembershipUncheckedCreateWithoutBoardInput> | BoardMembershipCreateWithoutBoardInput[] | BoardMembershipUncheckedCreateWithoutBoardInput[]
+    connectOrCreate?: BoardMembershipCreateOrConnectWithoutBoardInput | BoardMembershipCreateOrConnectWithoutBoardInput[]
+    upsert?: BoardMembershipUpsertWithWhereUniqueWithoutBoardInput | BoardMembershipUpsertWithWhereUniqueWithoutBoardInput[]
+    createMany?: BoardMembershipCreateManyBoardInputEnvelope
+    set?: BoardMembershipWhereUniqueInput | BoardMembershipWhereUniqueInput[]
+    disconnect?: BoardMembershipWhereUniqueInput | BoardMembershipWhereUniqueInput[]
+    delete?: BoardMembershipWhereUniqueInput | BoardMembershipWhereUniqueInput[]
+    connect?: BoardMembershipWhereUniqueInput | BoardMembershipWhereUniqueInput[]
+    update?: BoardMembershipUpdateWithWhereUniqueWithoutBoardInput | BoardMembershipUpdateWithWhereUniqueWithoutBoardInput[]
+    updateMany?: BoardMembershipUpdateManyWithWhereWithoutBoardInput | BoardMembershipUpdateManyWithWhereWithoutBoardInput[]
+    deleteMany?: BoardMembershipScalarWhereInput | BoardMembershipScalarWhereInput[]
   }
 
   export type UserUpdateOneRequiredWithoutBoardsNestedInput = {
@@ -10023,6 +11564,20 @@ export namespace Prisma {
     update?: ListUpdateWithWhereUniqueWithoutBoardInput | ListUpdateWithWhereUniqueWithoutBoardInput[]
     updateMany?: ListUpdateManyWithWhereWithoutBoardInput | ListUpdateManyWithWhereWithoutBoardInput[]
     deleteMany?: ListScalarWhereInput | ListScalarWhereInput[]
+  }
+
+  export type BoardMembershipUncheckedUpdateManyWithoutBoardNestedInput = {
+    create?: XOR<BoardMembershipCreateWithoutBoardInput, BoardMembershipUncheckedCreateWithoutBoardInput> | BoardMembershipCreateWithoutBoardInput[] | BoardMembershipUncheckedCreateWithoutBoardInput[]
+    connectOrCreate?: BoardMembershipCreateOrConnectWithoutBoardInput | BoardMembershipCreateOrConnectWithoutBoardInput[]
+    upsert?: BoardMembershipUpsertWithWhereUniqueWithoutBoardInput | BoardMembershipUpsertWithWhereUniqueWithoutBoardInput[]
+    createMany?: BoardMembershipCreateManyBoardInputEnvelope
+    set?: BoardMembershipWhereUniqueInput | BoardMembershipWhereUniqueInput[]
+    disconnect?: BoardMembershipWhereUniqueInput | BoardMembershipWhereUniqueInput[]
+    delete?: BoardMembershipWhereUniqueInput | BoardMembershipWhereUniqueInput[]
+    connect?: BoardMembershipWhereUniqueInput | BoardMembershipWhereUniqueInput[]
+    update?: BoardMembershipUpdateWithWhereUniqueWithoutBoardInput | BoardMembershipUpdateWithWhereUniqueWithoutBoardInput[]
+    updateMany?: BoardMembershipUpdateManyWithWhereWithoutBoardInput | BoardMembershipUpdateManyWithWhereWithoutBoardInput[]
+    deleteMany?: BoardMembershipScalarWhereInput | BoardMembershipScalarWhereInput[]
   }
 
   export type BoardCreateNestedOneWithoutListsInput = {
@@ -10213,6 +11768,38 @@ export namespace Prisma {
     upsert?: CardUpsertWithoutActivitiesInput
     connect?: CardWhereUniqueInput
     update?: XOR<XOR<CardUpdateToOneWithWhereWithoutActivitiesInput, CardUpdateWithoutActivitiesInput>, CardUncheckedUpdateWithoutActivitiesInput>
+  }
+
+  export type UserCreateNestedOneWithoutMembershipsInput = {
+    create?: XOR<UserCreateWithoutMembershipsInput, UserUncheckedCreateWithoutMembershipsInput>
+    connectOrCreate?: UserCreateOrConnectWithoutMembershipsInput
+    connect?: UserWhereUniqueInput
+  }
+
+  export type BoardCreateNestedOneWithoutMembershipsInput = {
+    create?: XOR<BoardCreateWithoutMembershipsInput, BoardUncheckedCreateWithoutMembershipsInput>
+    connectOrCreate?: BoardCreateOrConnectWithoutMembershipsInput
+    connect?: BoardWhereUniqueInput
+  }
+
+  export type EnumRoleFieldUpdateOperationsInput = {
+    set?: $Enums.Role
+  }
+
+  export type UserUpdateOneRequiredWithoutMembershipsNestedInput = {
+    create?: XOR<UserCreateWithoutMembershipsInput, UserUncheckedCreateWithoutMembershipsInput>
+    connectOrCreate?: UserCreateOrConnectWithoutMembershipsInput
+    upsert?: UserUpsertWithoutMembershipsInput
+    connect?: UserWhereUniqueInput
+    update?: XOR<XOR<UserUpdateToOneWithWhereWithoutMembershipsInput, UserUpdateWithoutMembershipsInput>, UserUncheckedUpdateWithoutMembershipsInput>
+  }
+
+  export type BoardUpdateOneRequiredWithoutMembershipsNestedInput = {
+    create?: XOR<BoardCreateWithoutMembershipsInput, BoardUncheckedCreateWithoutMembershipsInput>
+    connectOrCreate?: BoardCreateOrConnectWithoutMembershipsInput
+    upsert?: BoardUpsertWithoutMembershipsInput
+    connect?: BoardWhereUniqueInput
+    update?: XOR<XOR<BoardUpdateToOneWithWhereWithoutMembershipsInput, BoardUpdateWithoutMembershipsInput>, BoardUncheckedUpdateWithoutMembershipsInput>
   }
 
   export type NestedStringFilter<$PrismaModel = never> = {
@@ -10409,6 +11996,23 @@ export namespace Prisma {
     _max?: NestedFloatFilter<$PrismaModel>
   }
 
+  export type NestedEnumRoleFilter<$PrismaModel = never> = {
+    equals?: $Enums.Role | EnumRoleFieldRefInput<$PrismaModel>
+    in?: $Enums.Role[]
+    notIn?: $Enums.Role[]
+    not?: NestedEnumRoleFilter<$PrismaModel> | $Enums.Role
+  }
+
+  export type NestedEnumRoleWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: $Enums.Role | EnumRoleFieldRefInput<$PrismaModel>
+    in?: $Enums.Role[]
+    notIn?: $Enums.Role[]
+    not?: NestedEnumRoleWithAggregatesFilter<$PrismaModel> | $Enums.Role
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedEnumRoleFilter<$PrismaModel>
+    _max?: NestedEnumRoleFilter<$PrismaModel>
+  }
+
   export type BoardCreateWithoutUserInput = {
     id?: string
     boardId?: string
@@ -10420,6 +12024,7 @@ export namespace Prisma {
     updatedAt?: Date | string
     archivedAt?: Date | string | null
     lists?: ListCreateNestedManyWithoutBoardInput
+    memberships?: BoardMembershipCreateNestedManyWithoutBoardInput
   }
 
   export type BoardUncheckedCreateWithoutUserInput = {
@@ -10433,6 +12038,7 @@ export namespace Prisma {
     updatedAt?: Date | string
     archivedAt?: Date | string | null
     lists?: ListUncheckedCreateNestedManyWithoutBoardInput
+    memberships?: BoardMembershipUncheckedCreateNestedManyWithoutBoardInput
   }
 
   export type BoardCreateOrConnectWithoutUserInput = {
@@ -10442,6 +12048,31 @@ export namespace Prisma {
 
   export type BoardCreateManyUserInputEnvelope = {
     data: BoardCreateManyUserInput | BoardCreateManyUserInput[]
+  }
+
+  export type BoardMembershipCreateWithoutUserInput = {
+    id?: string
+    role?: $Enums.Role
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    board: BoardCreateNestedOneWithoutMembershipsInput
+  }
+
+  export type BoardMembershipUncheckedCreateWithoutUserInput = {
+    id?: string
+    boardId: string
+    role?: $Enums.Role
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type BoardMembershipCreateOrConnectWithoutUserInput = {
+    where: BoardMembershipWhereUniqueInput
+    create: XOR<BoardMembershipCreateWithoutUserInput, BoardMembershipUncheckedCreateWithoutUserInput>
+  }
+
+  export type BoardMembershipCreateManyUserInputEnvelope = {
+    data: BoardMembershipCreateManyUserInput | BoardMembershipCreateManyUserInput[]
   }
 
   export type BoardUpsertWithWhereUniqueWithoutUserInput = {
@@ -10474,6 +12105,34 @@ export namespace Prisma {
     updatedAt?: DateTimeFilter<"Board"> | Date | string
     archivedAt?: DateTimeNullableFilter<"Board"> | Date | string | null
     userId?: StringFilter<"Board"> | string
+  }
+
+  export type BoardMembershipUpsertWithWhereUniqueWithoutUserInput = {
+    where: BoardMembershipWhereUniqueInput
+    update: XOR<BoardMembershipUpdateWithoutUserInput, BoardMembershipUncheckedUpdateWithoutUserInput>
+    create: XOR<BoardMembershipCreateWithoutUserInput, BoardMembershipUncheckedCreateWithoutUserInput>
+  }
+
+  export type BoardMembershipUpdateWithWhereUniqueWithoutUserInput = {
+    where: BoardMembershipWhereUniqueInput
+    data: XOR<BoardMembershipUpdateWithoutUserInput, BoardMembershipUncheckedUpdateWithoutUserInput>
+  }
+
+  export type BoardMembershipUpdateManyWithWhereWithoutUserInput = {
+    where: BoardMembershipScalarWhereInput
+    data: XOR<BoardMembershipUpdateManyMutationInput, BoardMembershipUncheckedUpdateManyWithoutUserInput>
+  }
+
+  export type BoardMembershipScalarWhereInput = {
+    AND?: BoardMembershipScalarWhereInput | BoardMembershipScalarWhereInput[]
+    OR?: BoardMembershipScalarWhereInput[]
+    NOT?: BoardMembershipScalarWhereInput | BoardMembershipScalarWhereInput[]
+    id?: StringFilter<"BoardMembership"> | string
+    userId?: StringFilter<"BoardMembership"> | string
+    boardId?: StringFilter<"BoardMembership"> | string
+    role?: EnumRoleFilter<"BoardMembership"> | $Enums.Role
+    createdAt?: DateTimeFilter<"BoardMembership"> | Date | string
+    updatedAt?: DateTimeFilter<"BoardMembership"> | Date | string
   }
 
   export type ListCreateWithoutBoardInput = {
@@ -10509,6 +12168,31 @@ export namespace Prisma {
     data: ListCreateManyBoardInput | ListCreateManyBoardInput[]
   }
 
+  export type BoardMembershipCreateWithoutBoardInput = {
+    id?: string
+    role?: $Enums.Role
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    user: UserCreateNestedOneWithoutMembershipsInput
+  }
+
+  export type BoardMembershipUncheckedCreateWithoutBoardInput = {
+    id?: string
+    userId: string
+    role?: $Enums.Role
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type BoardMembershipCreateOrConnectWithoutBoardInput = {
+    where: BoardMembershipWhereUniqueInput
+    create: XOR<BoardMembershipCreateWithoutBoardInput, BoardMembershipUncheckedCreateWithoutBoardInput>
+  }
+
+  export type BoardMembershipCreateManyBoardInputEnvelope = {
+    data: BoardMembershipCreateManyBoardInput | BoardMembershipCreateManyBoardInput[]
+  }
+
   export type UserCreateWithoutBoardsInput = {
     id?: string
     userId?: string
@@ -10518,6 +12202,7 @@ export namespace Prisma {
     name?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
+    memberships?: BoardMembershipCreateNestedManyWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutBoardsInput = {
@@ -10529,6 +12214,7 @@ export namespace Prisma {
     name?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
+    memberships?: BoardMembershipUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserCreateOrConnectWithoutBoardsInput = {
@@ -10567,6 +12253,22 @@ export namespace Prisma {
     updatedAt?: DateTimeFilter<"List"> | Date | string
   }
 
+  export type BoardMembershipUpsertWithWhereUniqueWithoutBoardInput = {
+    where: BoardMembershipWhereUniqueInput
+    update: XOR<BoardMembershipUpdateWithoutBoardInput, BoardMembershipUncheckedUpdateWithoutBoardInput>
+    create: XOR<BoardMembershipCreateWithoutBoardInput, BoardMembershipUncheckedCreateWithoutBoardInput>
+  }
+
+  export type BoardMembershipUpdateWithWhereUniqueWithoutBoardInput = {
+    where: BoardMembershipWhereUniqueInput
+    data: XOR<BoardMembershipUpdateWithoutBoardInput, BoardMembershipUncheckedUpdateWithoutBoardInput>
+  }
+
+  export type BoardMembershipUpdateManyWithWhereWithoutBoardInput = {
+    where: BoardMembershipScalarWhereInput
+    data: XOR<BoardMembershipUpdateManyMutationInput, BoardMembershipUncheckedUpdateManyWithoutBoardInput>
+  }
+
   export type UserUpsertWithoutBoardsInput = {
     update: XOR<UserUpdateWithoutBoardsInput, UserUncheckedUpdateWithoutBoardsInput>
     create: XOR<UserCreateWithoutBoardsInput, UserUncheckedCreateWithoutBoardsInput>
@@ -10587,6 +12289,7 @@ export namespace Prisma {
     name?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    memberships?: BoardMembershipUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutBoardsInput = {
@@ -10598,6 +12301,7 @@ export namespace Prisma {
     name?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    memberships?: BoardMembershipUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type BoardCreateWithoutListsInput = {
@@ -10610,6 +12314,7 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string
     archivedAt?: Date | string | null
+    memberships?: BoardMembershipCreateNestedManyWithoutBoardInput
     user: UserCreateNestedOneWithoutBoardsInput
   }
 
@@ -10624,6 +12329,7 @@ export namespace Prisma {
     updatedAt?: Date | string
     archivedAt?: Date | string | null
     userId: string
+    memberships?: BoardMembershipUncheckedCreateNestedManyWithoutBoardInput
   }
 
   export type BoardCreateOrConnectWithoutListsInput = {
@@ -10691,6 +12397,7 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     archivedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    memberships?: BoardMembershipUpdateManyWithoutBoardNestedInput
     user?: UserUpdateOneRequiredWithoutBoardsNestedInput
   }
 
@@ -10705,6 +12412,7 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     archivedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     userId?: StringFieldUpdateOperationsInput | string
+    memberships?: BoardMembershipUncheckedUpdateManyWithoutBoardNestedInput
   }
 
   export type CardUpsertWithWhereUniqueWithoutListInput = {
@@ -11056,6 +12764,142 @@ export namespace Prisma {
     labels?: LabelUncheckedUpdateManyWithoutCardNestedInput
   }
 
+  export type UserCreateWithoutMembershipsInput = {
+    id?: string
+    userId?: string
+    version?: number
+    status?: $Enums.Status
+    email: string
+    name?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    boards?: BoardCreateNestedManyWithoutUserInput
+  }
+
+  export type UserUncheckedCreateWithoutMembershipsInput = {
+    id?: string
+    userId?: string
+    version?: number
+    status?: $Enums.Status
+    email: string
+    name?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    boards?: BoardUncheckedCreateNestedManyWithoutUserInput
+  }
+
+  export type UserCreateOrConnectWithoutMembershipsInput = {
+    where: UserWhereUniqueInput
+    create: XOR<UserCreateWithoutMembershipsInput, UserUncheckedCreateWithoutMembershipsInput>
+  }
+
+  export type BoardCreateWithoutMembershipsInput = {
+    id?: string
+    boardId?: string
+    version?: number
+    status?: $Enums.Status
+    name: string
+    description?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    archivedAt?: Date | string | null
+    lists?: ListCreateNestedManyWithoutBoardInput
+    user: UserCreateNestedOneWithoutBoardsInput
+  }
+
+  export type BoardUncheckedCreateWithoutMembershipsInput = {
+    id?: string
+    boardId?: string
+    version?: number
+    status?: $Enums.Status
+    name: string
+    description?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    archivedAt?: Date | string | null
+    userId: string
+    lists?: ListUncheckedCreateNestedManyWithoutBoardInput
+  }
+
+  export type BoardCreateOrConnectWithoutMembershipsInput = {
+    where: BoardWhereUniqueInput
+    create: XOR<BoardCreateWithoutMembershipsInput, BoardUncheckedCreateWithoutMembershipsInput>
+  }
+
+  export type UserUpsertWithoutMembershipsInput = {
+    update: XOR<UserUpdateWithoutMembershipsInput, UserUncheckedUpdateWithoutMembershipsInput>
+    create: XOR<UserCreateWithoutMembershipsInput, UserUncheckedCreateWithoutMembershipsInput>
+    where?: UserWhereInput
+  }
+
+  export type UserUpdateToOneWithWhereWithoutMembershipsInput = {
+    where?: UserWhereInput
+    data: XOR<UserUpdateWithoutMembershipsInput, UserUncheckedUpdateWithoutMembershipsInput>
+  }
+
+  export type UserUpdateWithoutMembershipsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    userId?: StringFieldUpdateOperationsInput | string
+    version?: IntFieldUpdateOperationsInput | number
+    status?: EnumStatusFieldUpdateOperationsInput | $Enums.Status
+    email?: StringFieldUpdateOperationsInput | string
+    name?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    boards?: BoardUpdateManyWithoutUserNestedInput
+  }
+
+  export type UserUncheckedUpdateWithoutMembershipsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    userId?: StringFieldUpdateOperationsInput | string
+    version?: IntFieldUpdateOperationsInput | number
+    status?: EnumStatusFieldUpdateOperationsInput | $Enums.Status
+    email?: StringFieldUpdateOperationsInput | string
+    name?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    boards?: BoardUncheckedUpdateManyWithoutUserNestedInput
+  }
+
+  export type BoardUpsertWithoutMembershipsInput = {
+    update: XOR<BoardUpdateWithoutMembershipsInput, BoardUncheckedUpdateWithoutMembershipsInput>
+    create: XOR<BoardCreateWithoutMembershipsInput, BoardUncheckedCreateWithoutMembershipsInput>
+    where?: BoardWhereInput
+  }
+
+  export type BoardUpdateToOneWithWhereWithoutMembershipsInput = {
+    where?: BoardWhereInput
+    data: XOR<BoardUpdateWithoutMembershipsInput, BoardUncheckedUpdateWithoutMembershipsInput>
+  }
+
+  export type BoardUpdateWithoutMembershipsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    boardId?: StringFieldUpdateOperationsInput | string
+    version?: IntFieldUpdateOperationsInput | number
+    status?: EnumStatusFieldUpdateOperationsInput | $Enums.Status
+    name?: StringFieldUpdateOperationsInput | string
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    archivedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    lists?: ListUpdateManyWithoutBoardNestedInput
+    user?: UserUpdateOneRequiredWithoutBoardsNestedInput
+  }
+
+  export type BoardUncheckedUpdateWithoutMembershipsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    boardId?: StringFieldUpdateOperationsInput | string
+    version?: IntFieldUpdateOperationsInput | number
+    status?: EnumStatusFieldUpdateOperationsInput | $Enums.Status
+    name?: StringFieldUpdateOperationsInput | string
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    archivedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    userId?: StringFieldUpdateOperationsInput | string
+    lists?: ListUncheckedUpdateManyWithoutBoardNestedInput
+  }
+
   export type BoardCreateManyUserInput = {
     id?: string
     boardId?: string
@@ -11066,6 +12910,14 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string
     archivedAt?: Date | string | null
+  }
+
+  export type BoardMembershipCreateManyUserInput = {
+    id?: string
+    boardId: string
+    role?: $Enums.Role
+    createdAt?: Date | string
+    updatedAt?: Date | string
   }
 
   export type BoardUpdateWithoutUserInput = {
@@ -11079,6 +12931,7 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     archivedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     lists?: ListUpdateManyWithoutBoardNestedInput
+    memberships?: BoardMembershipUpdateManyWithoutBoardNestedInput
   }
 
   export type BoardUncheckedUpdateWithoutUserInput = {
@@ -11092,6 +12945,7 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     archivedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     lists?: ListUncheckedUpdateManyWithoutBoardNestedInput
+    memberships?: BoardMembershipUncheckedUpdateManyWithoutBoardNestedInput
   }
 
   export type BoardUncheckedUpdateManyWithoutUserInput = {
@@ -11106,6 +12960,30 @@ export namespace Prisma {
     archivedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   }
 
+  export type BoardMembershipUpdateWithoutUserInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    board?: BoardUpdateOneRequiredWithoutMembershipsNestedInput
+  }
+
+  export type BoardMembershipUncheckedUpdateWithoutUserInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    boardId?: StringFieldUpdateOperationsInput | string
+    role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type BoardMembershipUncheckedUpdateManyWithoutUserInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    boardId?: StringFieldUpdateOperationsInput | string
+    role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
   export type ListCreateManyBoardInput = {
     id?: string
     listId?: string
@@ -11113,6 +12991,14 @@ export namespace Prisma {
     status?: $Enums.Status
     name: string
     position: number
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type BoardMembershipCreateManyBoardInput = {
+    id?: string
+    userId: string
+    role?: $Enums.Role
     createdAt?: Date | string
     updatedAt?: Date | string
   }
@@ -11148,6 +13034,30 @@ export namespace Prisma {
     status?: EnumStatusFieldUpdateOperationsInput | $Enums.Status
     name?: StringFieldUpdateOperationsInput | string
     position?: FloatFieldUpdateOperationsInput | number
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type BoardMembershipUpdateWithoutBoardInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    user?: UserUpdateOneRequiredWithoutMembershipsNestedInput
+  }
+
+  export type BoardMembershipUncheckedUpdateWithoutBoardInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    userId?: StringFieldUpdateOperationsInput | string
+    role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type BoardMembershipUncheckedUpdateManyWithoutBoardInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    userId?: StringFieldUpdateOperationsInput | string
+    role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }

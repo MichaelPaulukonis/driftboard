@@ -91,6 +91,15 @@ Phased development plan:
 3. **Plan implementation**: Follow [Implementation Phases](./07-implementation-phases.md)
 4. **Set up development environment**: Use [Development & Deployment](./05-development-deployment.md)
 
+## Traceability
+
+End-to-end references to follow the Shared Boards change:
+- **PRD**: [Shared Boards Feature](../plans/19.shared-boards-feature.md)
+- **Schema**: [prisma/schema.prisma](../../prisma/schema.prisma) (`BoardMembership`, `Role`)
+- **Routers**: [boards](../../src/backend/routes/boards.ts), [lists](../../src/backend/routes/lists.ts), [cards](../../src/backend/routes/cards.ts)
+- **Auth Strategy**: [Role-Based Access](../auth-strategy-overview.md)
+- **Tests**: Integration tests in [tests/integration](../../tests/integration) and unit test [tests/unit/memberships.test.ts](../../tests/unit/memberships.test.ts)
+
 ## Architecture Principles
 
 ### Core Values

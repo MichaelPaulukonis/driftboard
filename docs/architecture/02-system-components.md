@@ -124,6 +124,15 @@ export const boardsApi = createApi({
     └── POST   /:id/comments     # Add comment
 ```
 
+### Shared Boards (Membership Model)
+
+- **Data Model**: `BoardMembership` binds `userId` and `boardId` with a `role` (`OWNER`, `EDITOR`). See [prisma/schema.prisma](../../prisma/schema.prisma).
+- **Access Rules**: APIs authorize via a membership-aware filter:
+  - `OR: [{ memberships: { some: { userId } } }, { userId }]`
+  - Applied to boards and nested resources via `list.board`
+- **Routers**: Implementation in [boards](../../src/backend/routes/boards.ts), [lists](../../src/backend/routes/lists.ts), and [cards](../../src/backend/routes/cards.ts).
+- **Versioning**: Memberships are recreated when boards are versioned; legacy boards are backfilled with `OWNER` for the creator.
+
 ### Backend Service Architecture
 ```typescript
 // Service Layer

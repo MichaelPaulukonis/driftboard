@@ -7,6 +7,13 @@ import { authMiddleware } from '../middleware/authMiddleware.js';
 const router = Router();
 router.use(authMiddleware);
 
+const buildBoardAccessWhere = (userId: string) => ({
+  OR: [
+    { memberships: { some: { userId } } },
+    { userId },
+  ],
+});
+
 /**
  * Get all boards for the authenticated user
  * GET /api/boards
@@ -19,8 +26,12 @@ router.get('/', async (req: Request, res: Response, next: NextFunction) => {
     }
 
     const boards = await prisma.board.findMany({
-      where: { userId, status: 'ACTIVE' },
+      where: {
+        status: 'ACTIVE',
+        ...buildBoardAccessWhere(userId),
+      },
       include: {
+        memberships: true,
         lists: {
           where: { status: 'ACTIVE' },
           orderBy: { position: 'asc' },
@@ -67,12 +78,13 @@ router.get('/:boardId', async (req: Request, res: Response, next: NextFunction) 
     }
 
     const board = await prisma.board.findFirst({
-      where: { 
+      where: {
         boardId: boardId,
-        userId,
-        status: 'ACTIVE'
+        status: 'ACTIVE',
+        ...buildBoardAccessWhere(userId),
       },
       include: {
+        memberships: true,
         lists: {
           where: { status: 'ACTIVE' },
           orderBy: { position: 'asc' },
@@ -127,9 +139,16 @@ router.post('/', async (req: Request, res: Response, next: NextFunction) => {
         name,
         description: description ?? null,
         userId: userId,
+        memberships: {
+          create: {
+            userId,
+            role: 'OWNER',
+          },
+        },
       },
       include: {
         lists: true,
+        memberships: true,
       },
     });
 
@@ -164,21 +183,29 @@ router.put('/:boardId', async (req: Request, res: Response, next: NextFunction) 
     }
 
     const existingBoard = await prisma.board.findFirst({
-      where: { boardId: boardId, userId, status: 'ACTIVE' },
+      where: { boardId: boardId, status: 'ACTIVE', ...buildBoardAccessWhere(userId) },
+      include: { memberships: true },
     });
 
     if (!existingBoard) {
       throw new AppError('Board not found or access denied', 404, 'BOARD_NOT_FOUND');
     }
 
+    const membershipPayload = existingBoard.memberships.map((membership) => ({
+      userId: membership.userId,
+      role: membership.role,
+    }));
+
+    if (!membershipPayload.some((membership) => membership.userId === existingBoard.userId)) {
+      membershipPayload.push({ userId: existingBoard.userId, role: 'OWNER' });
+    }
+
     const updatedBoard = await prisma.$transaction(async (tx) => {
-      // 1. Deactivate the old board version
       await tx.board.update({
         where: { id: existingBoard.id },
         data: { status: 'INACTIVE' },
       });
 
-      // 2. Create the new board version
       const newBoard = await tx.board.create({
         data: {
           version: existingBoard.version + 1,
@@ -186,10 +213,13 @@ router.put('/:boardId', async (req: Request, res: Response, next: NextFunction) 
           description: description ?? existingBoard.description,
           userId: existingBoard.userId,
           status: 'ACTIVE',
+          memberships: {
+            create: membershipPayload,
+          },
         },
+        include: { memberships: true },
       });
 
-      // 3. Re-parent the lists to the new board version
       await tx.list.updateMany({
         where: { boardId: existingBoard.boardId },
         data: { boardId: newBoard.boardId },
@@ -198,9 +228,27 @@ router.put('/:boardId', async (req: Request, res: Response, next: NextFunction) 
       return newBoard;
     });
 
+    const boardWithRelations = await prisma.board.findUnique({
+      where: { id: updatedBoard.id },
+      include: {
+        memberships: true,
+        lists: {
+          where: { status: 'ACTIVE' },
+          orderBy: { position: 'asc' },
+          include: {
+            cards: {
+              where: { status: 'ACTIVE' },
+              orderBy: { position: 'asc' },
+              include: { labels: true },
+            },
+          },
+        },
+      },
+    });
+
     const response: ApiResponse<BoardWithDetails> = {
       success: true,
-      data: updatedBoard as BoardWithDetails,
+      data: (boardWithRelations ?? updatedBoard) as BoardWithDetails,
       message: 'Board updated successfully',
     };
 
@@ -228,21 +276,35 @@ router.delete('/:boardId', async (req: Request, res: Response, next: NextFunctio
     }
 
     const existingBoard = await prisma.board.findFirst({
-      where: { 
+      where: {
         boardId: boardId,
-        userId,
         status: 'ACTIVE',
+        ...buildBoardAccessWhere(userId),
       },
       include: {
+        memberships: true,
         lists: {
           where: { status: 'ACTIVE' },
-          select: { id: true }
-        }
-      }
+          select: { id: true },
+        },
+      },
     });
 
     if (!existingBoard) {
       throw new AppError('Board not found or access denied', 404, 'BOARD_NOT_FOUND');
+    }
+
+    let membership = existingBoard.memberships.find((entry) => entry.userId === userId);
+    if (!membership && existingBoard.userId === userId) {
+      membership = await prisma.boardMembership.upsert({
+        where: { userId_boardId: { userId, boardId: existingBoard.boardId } },
+        update: { role: 'OWNER' },
+        create: { userId, boardId: existingBoard.boardId, role: 'OWNER' },
+      });
+    }
+
+    if (!membership || membership.role !== 'OWNER') {
+      throw new AppError('Only owners can delete a board', 403, 'FORBIDDEN');
     }
 
     await prisma.$transaction(async (tx) => {
@@ -298,7 +360,7 @@ router.post('/:boardId/lists', async (req: Request, res: Response, next: NextFun
 
     // Verify board exists and belongs to the user
     const board = await prisma.board.findFirst({
-      where: { boardId, userId, status: 'ACTIVE' },
+      where: { boardId, status: 'ACTIVE', ...buildBoardAccessWhere(userId) },
     });
 
     if (!board) {
@@ -309,7 +371,7 @@ router.post('/:boardId/lists', async (req: Request, res: Response, next: NextFun
     let listPosition = position;
     if (listPosition === undefined) {
       const maxPosition = await prisma.list.aggregate({
-        where: { boardId: board.id, status: 'ACTIVE' },
+        where: { boardId: board.boardId, status: 'ACTIVE' },
         _max: { position: true },
       });
       listPosition = (maxPosition._max?.position ?? -1) + 1;

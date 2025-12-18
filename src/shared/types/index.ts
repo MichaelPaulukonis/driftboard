@@ -26,6 +26,7 @@ export interface Board {
   createdAt: Date;
   updatedAt: Date;
   lists?: List[];
+  memberships?: BoardMembership[];
 }
 
 export interface List {
@@ -71,6 +72,17 @@ export interface Activity {
   cardId: string;
   userId: string;
   createdAt: Date;
+}
+
+export type Role = 'OWNER' | 'EDITOR';
+
+export interface BoardMembership {
+  id: string;
+  userId: string;
+  boardId: string;
+  role: Role;
+  createdAt: Date;
+  updatedAt: Date;
 }
 
 export type ActivityType = 'comment' | 'moved' | 'edited' | 'created' | 'archived' | 'restored';
@@ -150,6 +162,7 @@ export interface BoardWithDetails extends Board {
       labels: Label[];
     })[];
   })[];
+  memberships: BoardMembership[];
 }
 
 // Firebase Auth user

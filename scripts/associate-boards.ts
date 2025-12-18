@@ -47,6 +47,19 @@ async function main() {
     await prisma.$executeRaw`UPDATE boards SET userId = ${TARGET_USER_ID} WHERE userId <> ${TARGET_USER_ID}`;
 
   console.log(`Successfully updated ${updateResult} boards.`);
+
+  const boardsForUser = await prisma.board.findMany({ where: { userId: TARGET_USER_ID } });
+  let createdMemberships = 0;
+  for (const board of boardsForUser) {
+    await prisma.boardMembership.upsert({
+      where: { userId_boardId: { userId: TARGET_USER_ID, boardId: board.boardId } },
+      update: { role: 'OWNER' },
+      create: { userId: TARGET_USER_ID, boardId: board.boardId, role: 'OWNER' },
+    });
+    createdMemberships++;
+  }
+
+  console.log(`Ensured OWNER memberships for ${createdMemberships} boards.`);
 }
 
 main()

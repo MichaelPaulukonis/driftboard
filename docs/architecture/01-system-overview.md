@@ -121,6 +121,14 @@ DriftBoard is a personal Kanban board application designed as a self-hosted, con
 - **Container Security**: Non-root users in containers, minimal attack surface
 - **Local Network Only**: No external exposure by default (HTTPS for future public deployment)
 
+## Shared Boards & Collaboration
+
+DriftBoard supports shared boards via a membership model.
+
+- **Overview**: Role-based access using `OWNER` and `EDITOR` roles attached to board memberships
+- **Docs**: See [auth strategy](../auth-strategy-overview.md) and the PRD [Shared Boards Feature](../plans/19.shared-boards-feature.md)
+- **Implementation**: Data model in [prisma/schema.prisma](../../prisma/schema.prisma) with `BoardMembership` and access checks in backend routers: [boards](../../src/backend/routes/boards.ts), [lists](../../src/backend/routes/lists.ts), [cards](../../src/backend/routes/cards.ts)
+
 ## Development Environment
 
 - **Hot Reloading**: Vite dev server + nodemon for backend

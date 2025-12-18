@@ -65,3 +65,30 @@ This document outlines a comprehensive strategy for implementing user authentica
 *   This page displays non-sensitive user information (e.g., display name, email address) retrieved from the application's state, which was populated from the JWT upon login.
 
 This strategy provides a robust, secure, and user-friendly authentication system that can be adapted to various projects and technology stacks.
+
+## Role-Based Access (DriftBoard)
+
+DriftBoard supports shared boards via a membership model to enable collaboration between users.
+
+- **Models**
+    - `BoardMembership`: links `userId` ↔ `boardId` with a `role`
+    - `Role` enum: `OWNER`, `EDITOR`
+
+- **Permissions**
+    - `OWNER`: full access including deleting boards and managing invitations
+    - `EDITOR`: can create/edit/move lists/cards; cannot delete the board or invite users
+
+- **Access Checks**
+    - Backend filters access using memberships or creator ownership:
+        - Prisma where clause: `OR: [{ memberships: { some: { userId } } }, { userId }]`
+        - Applied to boards and nested resources via `list.board`
+
+- **Versioning & Migration**
+    - When a board is versioned, existing memberships are recreated on the new version
+    - Legacy boards without memberships are backfilled so the creator (`board.userId`) receives `OWNER`
+
+- **API Semantics**
+    - `DELETE /api/boards/:id`: only `OWNER`
+    - Invite/remove endpoints will be implemented in Task 2
+
+See code references: [schema.prisma](mdc:prisma/schema.prisma), [boards router](mdc:src/backend/routes/boards.ts), [lists router](mdc:src/backend/routes/lists.ts), [cards router](mdc:src/backend/routes/cards.ts).

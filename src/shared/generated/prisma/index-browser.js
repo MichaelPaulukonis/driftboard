@@ -183,6 +183,15 @@ exports.Prisma.ActivityScalarFieldEnum = {
   createdAt: 'createdAt'
 };
 
+exports.Prisma.BoardMembershipScalarFieldEnum = {
+  id: 'id',
+  userId: 'userId',
+  boardId: 'boardId',
+  role: 'role',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
 exports.Prisma.SortOrder = {
   asc: 'asc',
   desc: 'desc'
@@ -198,13 +207,19 @@ exports.Status = exports.$Enums.Status = {
   ARCHIVED: 'ARCHIVED'
 };
 
+exports.Role = exports.$Enums.Role = {
+  OWNER: 'OWNER',
+  EDITOR: 'EDITOR'
+};
+
 exports.Prisma.ModelName = {
   User: 'User',
   Board: 'Board',
   List: 'List',
   Card: 'Card',
   Label: 'Label',
-  Activity: 'Activity'
+  Activity: 'Activity',
+  BoardMembership: 'BoardMembership'
 };
 
 /**
